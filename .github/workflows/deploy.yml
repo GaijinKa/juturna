@@ -1,0 +1,44 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [documentation]
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # Setup Python e Sphinx
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+
+      - name: Install dependencies
+        run: |
+          pip install sphinx pydata-sphinx-theme
+
+      # Build documentazione
+      - name: Build Sphinx
+        run: |
+          sphinx-build -b html docs/source/ docs/build/html/
+
+      # Copia pagine statiche + asset
+      - name: Prepare site
+        run: |
+          mkdir -p site
+          cp -r web/* site/                  # Copia HTML, CSS, JS
+          cp -r docs/build/html site/docs    # Documentazione in /docs
+          # Gestione versioni (esempio: "latest" e "v1.0")
+          echo '["latest", "v1.0"]' > site/switcher.json
+
+      # Deploy su branch gh-pages
+      - name: Deploy
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./site
+          keep_files: true   # Mantieni versioni precedenti
