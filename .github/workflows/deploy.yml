@@ -21,15 +21,15 @@ jobs:
         run: |
           pip install sphinx sphinx-design sphinx-new-tab-link pydata-sphinx-theme
 
+      - name: Copy shared static files
+        run: |
+          mkdir -p docs/source/_static
+          cp -r web/assets/* docs/source/_static/
+
       # Build documentazione
       - name: Build Sphinx
         run: |
           sphinx-build -b html docs/source/ docs/build/html/
-
-			- name: Copy shared static files
-        run: |
-          mkdir -p docs/source/_static
-          cp -r web/assets/* docs/source/_static/
 
       # Copia pagine statiche + asset
       - name: Prepare site
