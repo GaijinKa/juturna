@@ -30,7 +30,7 @@ jobs:
       - name: Prepare site
         run: |
           mkdir -p site
-          cp -r web/* site/                  # Copia HTML, CSS, JS
+          #cp -r web/* site/                  # Copia HTML, CSS, JS
           cp -r docs/build/html site/docs    # Documentazione in /docs
           # Gestione versioni (esempio: "latest" e "v1.0")
           echo '["latest", "v1.0"]' > site/switcher.json
