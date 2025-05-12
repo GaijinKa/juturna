@@ -83,7 +83,7 @@ exploring and testing AI models, in a modular and flexible fashion.
             To the reference guide
 
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 2
    :caption: Explore the docs
 
    guides/install
