@@ -19,7 +19,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install sphinx sphinx-design pydata-sphinx-theme
+          pip install sphinx sphinx-design sphinx-new-tab-link pydata-sphinx-theme
 
       # Build documentazione
       - name: Build Sphinx
