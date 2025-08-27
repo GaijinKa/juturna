@@ -1,6 +1,6 @@
+from asyncio.log import logger
 import pathlib
 import time
-import string
 import subprocess
 
 from juturna.components import Message
@@ -47,7 +47,6 @@ class VideostreamFFMPEG(BaseNode[ImagePayload, None]):
         self._gop = gop
         self._ffmpeg_proc_path = ffmpeg_proc_path
 
-        self._ffmpeg_pipe = None
         self._ffmpeg_proc = None
         self._ffmpeg_launcher_path = None
 
@@ -61,7 +60,8 @@ class VideostreamFFMPEG(BaseNode[ImagePayload, None]):
         self._ffmpeg_proc = subprocess.Popen(
             ['sh', self.ffmpeg_launcher],
             stdin=subprocess.PIPE,
-            stdout=subprocess.PIPE,
+            stdout=None,
+            stderr=None,
             bufsize=10**8)
 
         super().start()
@@ -98,3 +98,4 @@ class VideostreamFFMPEG(BaseNode[ImagePayload, None]):
                     '_dst_port': self._dst_port,
                     '_gop': self._gop,
                     '_sdp_file_path': self._session_sdp_file })
+            

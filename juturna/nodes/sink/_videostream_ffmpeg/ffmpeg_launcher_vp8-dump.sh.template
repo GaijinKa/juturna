@@ -1,0 +1,16 @@
+ffmpeg \
+    -re \
+    -f rawvideo \
+    -pix_fmt rgb24 \
+    -s $_in_frame_shape \
+    -i pipe: \
+    -loglevel quiet \
+    -pix_fmt yuv420p \
+    -vcodec libvpx \
+    -auto-alt-ref 1 \
+    -lag-in-frames 16 \
+    -keyint_min 15 \
+    -g $_gop \
+    -b:v 1M \
+    output.webm \
+    -y
