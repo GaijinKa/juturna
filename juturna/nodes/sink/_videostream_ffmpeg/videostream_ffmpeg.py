@@ -68,8 +68,7 @@ class VideostreamFFMPEG(BaseNode[ImagePayload, None]):
             ['sh', self.ffmpeg_launcher],
             stdin=subprocess.PIPE,
             stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            bufsize=10**8)
+            stderr=subprocess.PIPE)
 
         threading.Thread(target=self._log_stream, args=(self._ffmpeg_proc.stdout, logging.INFO), daemon=True).start()
         threading.Thread(target=self._log_stream, args=(self._ffmpeg_proc.stderr, logging.ERROR), daemon=True).start()
