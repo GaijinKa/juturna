@@ -2,6 +2,7 @@ from asyncio.log import logger
 import pathlib
 import time
 import subprocess
+import logging
 
 from juturna.components import Message
 from juturna.components import BaseNode
@@ -83,7 +84,7 @@ class VideostreamFFMPEG(BaseNode[ImagePayload, None]):
     def update(self, message: Message[ImagePayload]):
         frame = message.payload.image
         frame_bytes = frame.tobytes()
-
+        logging.debug(f'writing {len(frame_bytes)} bytes to ffmpeg stdin')
         self._ffmpeg_proc.stdin.write(frame_bytes)
         self._ffmpeg_proc.stdin.flush()
 
