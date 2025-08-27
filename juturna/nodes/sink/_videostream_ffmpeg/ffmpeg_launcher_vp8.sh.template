@@ -5,7 +5,6 @@ ffmpeg \
     -s $_in_frame_shape \
     -i pipe: \
     -f rtp \
-    -loglevel quiet \
     -pix_fmt yuv420p \
     -sdp_file $_sdp_file_path \
     -vcodec libvpx \

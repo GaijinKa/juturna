@@ -3,7 +3,6 @@ ffmpeg \
     -pix_fmt rgb24 \
     -s $_in_frame_shape \
     -i pipe: \
-    -loglevel quiet \
     -pix_fmt yuv420p \
     -vcodec libvpx \
     -b:v 1M \
