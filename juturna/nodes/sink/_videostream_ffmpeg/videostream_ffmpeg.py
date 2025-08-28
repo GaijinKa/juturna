@@ -2,9 +2,6 @@ from asyncio.log import logger
 import pathlib
 import time
 import subprocess
-import logging
-import threading
-
 
 from juturna.components import Message
 from juturna.components import BaseNode
@@ -55,10 +52,6 @@ class VideostreamFFMPEG(BaseNode[ImagePayload, None]):
         self._ffmpeg_proc = None
         self._ffmpeg_launcher_path = None
 
-    def log_thread(stderr):
-        for line in iter(stderr.readline, b''):
-            print(line.decode(errors='ignore').replace('\r','\n').strip())
-
     def warmup(self):
         self._session_sdp_file = pathlib.Path(
             self.pipe_path, '_session_out.sdp')
@@ -69,11 +62,7 @@ class VideostreamFFMPEG(BaseNode[ImagePayload, None]):
         self._ffmpeg_proc = subprocess.Popen(
             ['sh', self.ffmpeg_launcher],
             stdin=subprocess.PIPE,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
             bufsize=65536)
-
-        threading.Thread(target=self.log_thread, args=(self._ffmpeg_proc.stderr), daemon=True).start()
 
         super().start()
 
