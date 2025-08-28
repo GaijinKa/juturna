@@ -27,6 +27,7 @@ class TrackerYolo(BaseNode[ImagePayload, ImagePayload]):
     def warmup(self):
         self._model = YOLO(self._model_name)
         self._model.to(self._device)
+        print(next(self._model.model.parameters()).device)
         self._classes = [
             {v: k for k, v in self._model.names.items()}[t]
             for t in self._targets
