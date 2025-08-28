@@ -3,6 +3,8 @@ import pathlib
 import time
 import subprocess
 import logging
+import threading
+
 
 from juturna.components import Message
 from juturna.components import BaseNode
@@ -51,10 +53,10 @@ class VideostreamFFMPEG(BaseNode[ImagePayload, None]):
         self._ffmpeg_proc = None
         self._ffmpeg_launcher_path = None
 
-    def _log_stream(self, stream, level=logging.INFO):
-        for line in iter(stream.readline, b''):
-            logging.log(level, line.decode(errors='replace').rstrip())
-        stream.close()
+
+    def log_thread(stderr):
+        for line in iter(stderr.readline, b''):
+            print(line.decode(errors='ignore').replace('\r','\n').strip())
 
     def warmup(self):
         self._session_sdp_file = pathlib.Path(
@@ -68,7 +70,9 @@ class VideostreamFFMPEG(BaseNode[ImagePayload, None]):
             stdin=subprocess.PIPE,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
-            bufsize=1)
+            bufsize=65536)
+
+        threading.Thread(target=log_thread, args=(self._ffmpeg_proc.stderr,), daemon=True).start()
 
         super().start()
 
