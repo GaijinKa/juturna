@@ -63,7 +63,7 @@ class VideostreamFFMPEG(BaseNode[ImagePayload, None]):
             ['sh', self.ffmpeg_launcher],
             stdin=subprocess.PIPE,
             stdout=subprocess.PIPE,
-            bufsize=0)
+            bufsize=65536)
 
         super().start()
 
