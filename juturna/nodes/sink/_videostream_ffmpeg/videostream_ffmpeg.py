@@ -66,7 +66,9 @@ class VideostreamFFMPEG(BaseNode[ImagePayload, None]):
         self._ffmpeg_proc = subprocess.Popen(
             ['sh', self.ffmpeg_launcher],
             stdin=subprocess.PIPE,
-            stdout=subprocess.PIPE)
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            bufsize=1)
 
         super().start()
 
