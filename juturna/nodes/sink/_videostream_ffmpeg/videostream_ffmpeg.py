@@ -1,4 +1,3 @@
-from asyncio.log import logger
 import pathlib
 import time
 import subprocess
@@ -98,4 +97,3 @@ class VideostreamFFMPEG(BaseNode[ImagePayload, None]):
                     '_dst_port': self._dst_port,
                     '_gop': self._gop,
                     '_sdp_file_path': self._session_sdp_file })
-            
