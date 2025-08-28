@@ -50,7 +50,11 @@ class VideostreamFFMPEG(BaseNode[ImagePayload, None]):
 
         self._ffmpeg_proc = None
         self._ffmpeg_launcher_path = None
-        self._iteration = 1
+
+    def _log_stream(self, stream, level=logging.INFO):
+        for line in iter(stream.readline, b''):
+            logging.log(level, line.decode(errors='replace').rstrip())
+        stream.close()
 
     def warmup(self):
         self._session_sdp_file = pathlib.Path(
@@ -83,10 +87,8 @@ class VideostreamFFMPEG(BaseNode[ImagePayload, None]):
     def update(self, message: Message[ImagePayload]):
         frame = message.payload.image
         frame_bytes = frame.tobytes()
-        logging.debug(f'writing {len(frame_bytes)} bytes to ffmpeg stdin #{self._iteration}')
         self._ffmpeg_proc.stdin.write(frame_bytes)
         self._ffmpeg_proc.stdin.flush()
-        self._iteration += 1
 
     @property
     def ffmpeg_launcher(self) -> pathlib.Path:
