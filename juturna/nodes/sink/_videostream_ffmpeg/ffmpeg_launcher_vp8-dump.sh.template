@@ -3,6 +3,7 @@ ffmpeg \
     -f rawvideo \
     -pix_fmt rgb24 \
     -s $_in_frame_shape \
+    -loglevel $_process_log_level \
     -i pipe: \
     -c:v libvpx \
     -deadline realtime \

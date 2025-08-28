@@ -19,6 +19,7 @@ class VideostreamFFMPEG(BaseNode[ImagePayload, None]):
                  out_width: int,
                  out_height: int,
                  gop: int,
+                 process_log_level: str,
                  ffmpeg_proc_path: str):
         """
         Parameters
@@ -33,6 +34,8 @@ class VideostreamFFMPEG(BaseNode[ImagePayload, None]):
             Height of the video stream to send to the endpoint.
         gop : int
             Interval at which send keyframes in the output stream.
+        process_log_level : str
+            Log level for the ffmpeg process.
         ffmpeg_proc_path : str
             Path to the ffmpeg launcher script template.
         """
@@ -47,7 +50,8 @@ class VideostreamFFMPEG(BaseNode[ImagePayload, None]):
         self._out_height = out_height
         self._gop = gop
         self._ffmpeg_proc_path = ffmpeg_proc_path
-
+        self._process_log_level = process_log_level
+        
         self._ffmpeg_proc = None
         self._ffmpeg_launcher_path = None
 
@@ -97,4 +101,5 @@ class VideostreamFFMPEG(BaseNode[ImagePayload, None]):
                     '_dst_host': self._dst_host,
                     '_dst_port': self._dst_port,
                     '_gop': self._gop,
+                    '_process_log_level': self._process_log_level,
                     '_sdp_file_path': self._session_sdp_file })
