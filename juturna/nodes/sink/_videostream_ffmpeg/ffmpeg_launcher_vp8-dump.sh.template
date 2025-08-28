@@ -2,9 +2,11 @@ ffmpeg \
     -f rawvideo \
     -pix_fmt rgb24 \
     -s $_in_frame_shape \
-    -loglevel debug \
+    -loglevel verbose \
+    -stats \
     -i pipe: \
     -pix_fmt yuv420p \
     -vcodec libvpx \
+    -b:v 1M \
     output.webm \
     -y
