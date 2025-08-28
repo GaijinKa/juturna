@@ -3,11 +3,11 @@ ffmpeg \
     -f rawvideo \
     -pix_fmt rgb24 \
     -s $_in_frame_shape \
-    -loglevel verbose \
-    -stats \
     -i pipe: \
-    -pix_fmt yuv420p \
-    -vcodec libvpx \
-    -b:v 1M \
+    -c:v libvpx \
+    -deadline realtime \
+    -cpu-used 4 \
+    -g $_gop \
+    -b:v 256000 \
     output.webm \
     -y
