@@ -3,6 +3,8 @@ ffmpeg \
     -f rawvideo \
     -pix_fmt rgb24 \
     -s $_in_frame_shape \
+    -loglevel verbose \
+    -stats \
     -i pipe: \
     -f rtp \
     -pix_fmt yuv420p \

@@ -37,6 +37,8 @@ class VideostreamFFMPEG(BaseNode[ImagePayload, None]):
             Height of the video stream to send to the endpoint.
         gop : int
             Interval at which send keyframes in the output stream.
+        ffmpeg_proc_path : str
+            Path to the ffmpeg launcher script template.
         """
         super().__init__('sink')
 

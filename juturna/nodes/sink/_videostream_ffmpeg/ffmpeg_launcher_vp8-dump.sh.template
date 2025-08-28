@@ -1,4 +1,5 @@
 ffmpeg \
+    -re \
     -f rawvideo \
     -pix_fmt rgb24 \
     -s $_in_frame_shape \
