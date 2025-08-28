@@ -53,7 +53,6 @@ class VideostreamFFMPEG(BaseNode[ImagePayload, None]):
         self._ffmpeg_proc = None
         self._ffmpeg_launcher_path = None
 
-
     def log_thread(stderr):
         for line in iter(stderr.readline, b''):
             print(line.decode(errors='ignore').replace('\r','\n').strip())
@@ -72,7 +71,7 @@ class VideostreamFFMPEG(BaseNode[ImagePayload, None]):
             stderr=subprocess.PIPE,
             bufsize=65536)
 
-        threading.Thread(target=log_thread, args=(self._ffmpeg_proc.stderr,), daemon=True).start()
+        threading.Thread(target=self.log_thread, args=(self._ffmpeg_proc.stderr,), daemon=True).start()
 
         super().start()
 
