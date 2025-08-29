@@ -1,0 +1,21 @@
+ffmpeg \
+    -re \
+    -f rawvideo \
+    -pix_fmt rgb24 \
+    -s $_in_frame_shape \
+    -loglevel $_process_log_level \
+    -i pipe: \
+    -f rtp \
+    -g $_gop \
+    -level 3.1 \
+    -pix_fmt yuv420p \
+    -sdp_file $_sdp_file_path \
+    -vcodec h264_nvenc \
+    -preset p2 \
+    -tune ll \
+    -rc cbr \
+    -zerolatency \
+    -rc-rc_lookahead 4 \
+    -vprofile baseline \
+    rtp://$_dst_host:$_dst_port \
+    -y
