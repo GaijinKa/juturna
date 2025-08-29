@@ -15,7 +15,6 @@ ffmpeg \
     -tune ll \
     -rc cbr \
     -zerolatency \
-    -rc-rc_lookahead 4 \
     -vprofile baseline \
     rtp://$_dst_host:$_dst_port \
     -y
