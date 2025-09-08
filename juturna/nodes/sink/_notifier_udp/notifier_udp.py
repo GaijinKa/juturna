@@ -2,6 +2,7 @@ import socket
 import json
 import base64
 import typing
+import logging
 
 from juturna.components import BaseNode
 from juturna.components import Message
@@ -55,6 +56,9 @@ class NotifierUDP(BaseNode[ObjectPayload, None]):
     def update(self, message: Message[ObjectPayload]):
         chunks = self.prepare_chunks(message.payload, message.version)
 
+        logging.info(f'{self.name} receive: {message.version}')
+        logging.debug(f'{self.name} sending {len(chunks)} chunks to {self._address[0]}:{self._address[1]}')
+        
         for chunk in chunks:
             self._socket.sendto(chunk, tuple(self._address))
 
