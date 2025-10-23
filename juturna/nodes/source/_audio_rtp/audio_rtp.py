@@ -39,11 +39,11 @@ class AudioRTP(BaseNode[BytesPayload, AudioPayload]):
             Port of the RTP server to receive audio from. If set to "auto",
             the port will be assigned automatically by the resource broker.
         audio_rate : int
-            Audio sample rate in Hz (samples per seconds).
+            Internal audio sample rate in Hz (samples per seconds).
         block_size : int
             Size of the audio block to sample, in seconds.
         channels : int
-            Number of source audio channels.
+            Number of internal audio channels.
         process_log_level : str
             Log level for the ffmpeg process.
         payload_type : int
@@ -88,6 +88,7 @@ class AudioRTP(BaseNode[BytesPayload, AudioPayload]):
         self._ffmpeg_launcher_path = self.ffmpeg_launcher
 
     def start(self):
+        self.logger.debug('starting ffmpeg process...')
         self._ffmpeg_proc = subprocess.Popen(
             ['sh', self.ffmpeg_launcher],
             stdin=subprocess.PIPE,
@@ -95,11 +96,13 @@ class AudioRTP(BaseNode[BytesPayload, AudioPayload]):
             bufsize=64536,
         )
 
+        self.logger.debug('ffmpeg process started, launching monitor thread...')
         self._monitor_thread = threading.Thread(
             target=self.monitor_process, args=(self._ffmpeg_proc,)
         )
         self._monitor_thread.start()
 
+        self.logger.debug(f'setting source with process {self._ffmpeg_proc.pid}')
         self.set_source(
             lambda: Message[BytesPayload](
                 creator=self.name,
@@ -123,6 +126,8 @@ class AudioRTP(BaseNode[BytesPayload, AudioPayload]):
             time.sleep(2)
 
             self._ffmpeg_proc.terminate()
+            self.logger.debug('ffmpeg process terminated, waiting for it to exit...')
+            
             try:
                 self._ffmpeg_proc.wait(timeout=5)
             except subprocess.TimeoutExpired:
@@ -132,12 +137,15 @@ class AudioRTP(BaseNode[BytesPayload, AudioPayload]):
 
                 self._ffmpeg_proc.kill()
                 self._ffmpeg_proc.wait()
-
+                self.logger.debug('ffmpeg process killed.')
+                
             self._ffmpeg_proc = None
 
             self._monitor_thread.join()
-
+            self.logger.debug('ffmpeg monitor thread joined.')
+            
         except Exception:
+            self.logger.exception('Error while stopping ffmpeg process.')
             ...
 
         super().stop()
@@ -225,9 +233,9 @@ class AudioRTP(BaseNode[BytesPayload, AudioPayload]):
 
         if self.status == ComponentStatus.RUNNING:
             self.logger.info(
-                f'{self.name} subprocess is respawning in 5 seconds'
+                f'{self.name} subprocess is respawning ...'
             )
 
             self.stop()
-            time.sleep(5)
+            time.sleep(1)
             self.start()
