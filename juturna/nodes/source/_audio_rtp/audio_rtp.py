@@ -217,6 +217,7 @@ class AudioRTP(BaseNode[BytesPayload, AudioPayload]):
                 '_sdp_location': self.sdp_descriptor,
                 '_process_log_level': self._process_log_level,
                 '_audio_rate': self._audio_rate,
+                '_channels': self._channels,
             },
         )
 
