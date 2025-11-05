@@ -117,32 +117,53 @@ class AudioRTP(BaseNode[BytesPayload, AudioPayload]):
     def stop(self):
         try:
             assert self._ffmpeg_proc is not None
-            assert self._ffmpeg_proc.stdin is not None
-
-            self._ffmpeg_proc.stdin.write(b'q\n')
-            self._ffmpeg_proc.stdin.flush()
-            self._ffmpeg_proc.stdin.close()
-
-            time.sleep(2)
-
-            self._ffmpeg_proc.terminate()
-            self.logger.debug('ffmpeg process terminated, waiting for it to exit...')
             
-            try:
-                self._ffmpeg_proc.wait(timeout=5)
-            except subprocess.TimeoutExpired:
-                self.logger.warning(
-                    'ffmpeg process did not terminate in time, killing it.'
-                )
+            if self._ffmpeg_proc.poll() is None:
 
-                self._ffmpeg_proc.kill()
-                self._ffmpeg_proc.wait()
-                self.logger.debug('ffmpeg process killed.')
+                try:
+                    assert self._ffmpeg_proc.stdin is not None
+                    if not self._ffmpeg_proc.stdin.closed:
+                        self._ffmpeg_proc.stdin.write(b'q\n')
+                        self._ffmpeg_proc.stdin.flush()
+                except (BrokenPipeError, OSError) as e:
+                    self.logger.debug(f'stdin pipe already closed: {e}')
+
+            
+                try:
+                    if self._ffmpeg_proc.stdin and not self._ffmpeg_proc.stdin.closed:
+                        self._ffmpeg_proc.stdin.close()
+                except (BrokenPipeError, OSError):
+                    pass
+            
+            
+                time.sleep(2)
+
+                if self._ffmpeg_proc.poll() is None:
+                    self._ffmpeg_proc.terminate()
+                    self.logger.debug('ffmpeg process terminated, waiting for it to exit...')
+
+           
+                    try:
+                        self._ffmpeg_proc.wait(timeout=5)
+                    except subprocess.TimeoutExpired:
+                        self.logger.warning(
+                            'ffmpeg process did not terminate in time, killing it.'
+                        )
+
+                    self._ffmpeg_proc.kill()
+                    self._ffmpeg_proc.wait()
+                    self.logger.debug('ffmpeg process killed.')
+
+                else:
+                    self.logger.debug('ffmpeg process already exited.')
+            else:
+                self.logger.debug('ffmpeg process already terminated.')
                 
             self._ffmpeg_proc = None
 
-            self._monitor_thread.join()
-            self.logger.debug('ffmpeg monitor thread joined.')
+            if hasattr(self, '_monitor_thread') and self._monitor_thread:
+                self._monitor_thread.join()
+                self.logger.debug('ffmpeg monitor thread joined.')
             
         except Exception:
             self.logger.exception('Error while stopping ffmpeg process.')
