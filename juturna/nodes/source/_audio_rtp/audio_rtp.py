@@ -275,33 +275,31 @@ class AudioRTP(BaseNode[BytesPayload, AudioPayload]):
             f'- current node status: {self.status.name}'
         )
 
-        # Only attempt restart if:
-        # 1. Stop was not explicitly requested
-        # 2. Node is still in RUNNING state
-        # 3. Process didn't exit cleanly (returncode != 0)
+        # only attempt restart if:
+        # 1. stop was not explicitly requested
+        # 2. node is still in RUNNING state
+        # 3. process didn't exit cleanly (returncode != 0)
         if not self._stop_requested and self.status == ComponentStatus.RUNNING:
-            if returncode != 0:
-                self.logger.warning(
-                    f'subprocess crashed unexpectedly. '
-                    f'Attempting restart in 5 seconds...'
-                )
-                
-                time.sleep(5)
-                
-                # Use lock to prevent concurrent restart attempts
-                with self._restart_lock:
-                    # Double-check status before restarting
-                    if self.status == ComponentStatus.RUNNING and not self._stop_requested:
-                        try:
-                            self.logger.info(f'subprocess is respawning...')
-                            # Don't call stop() to avoid deadlock
-                            # Just restart the process directly
-                            self.start()
-                        except Exception as respawn_error:
-                            self.logger.exception(f'Failed to restart subprocess: {respawn_error}')
-                    else:
-                        self.logger.debug('Restart cancelled - node is no longer running.')
-            else:
-                self.logger.info(f'subprocess exited cleanly.')
+        
+            self.logger.warning(
+                f'subprocess crashed unexpectedly with code {returncode} '
+                f'attempting restart in 5 seconds...'
+            )
+            
+            time.sleep(5)
+            
+            # use lock to prevent concurrent restart attempts
+            with self._restart_lock:
+                # double-check status before restarting
+                if self.status == ComponentStatus.RUNNING and not self._stop_requested:
+                    try:
+                        self.logger.info(f'subprocess is respawning...')
+                        # Don't call stop() to avoid deadlock
+                        # Just restart the process directly
+                        self.start()
+                    except Exception as respawn_error:
+                        self.logger.exception(f'failed to restart subprocess: {respawn_error}')
+                else:
+                    self.logger.debug('restart cancelled - node is no longer running.')
         else:
-            self.logger.debug('Process termination was expected, no restart needed.')
+            self.logger.debug('process termination was expected, no restart needed.')
