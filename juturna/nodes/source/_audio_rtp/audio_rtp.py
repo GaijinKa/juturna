@@ -290,23 +290,35 @@ class AudioRTP(BaseNode[BytesPayload, AudioPayload]):
         
             self.logger.warning(
                 f'subprocess crashed unexpectedly with code {returncode} '
-                f'attempting restart in 5 seconds...'
+                f'attempting restart in 2 seconds...'
             )
             
-            time.sleep(5)
+            time.sleep(2)
             
-            # use lock to prevent concurrent restart attempts
-            with self._restart_lock:
-                # double-check status before restarting
-                if self.status == ComponentStatus.RUNNING and not self._stop_requested:
-                    try:
-                        self.logger.info(f'subprocess is respawning...')
-                        # Don't call stop() to avoid deadlock
-                        # Just restart the process directly
-                        self.start()
-                    except Exception as respawn_error:
-                        self.logger.exception(f'failed to restart subprocess: {respawn_error}')
-                else:
-                    self.logger.debug('restart cancelled - node is no longer running.')
+            def restart():
+                with self._restart_lock:
+                    if self.status == ComponentStatus.RUNNING and not self._stop_requested:
+                        try:
+                            self.logger.info('Respawning subprocess...')
+                            self.start()
+                        except Exception as respawn_error:
+                            self.logger.exception(f'Failed to restart subprocess: {respawn_error}')
+                    else:
+                        self.logger.debug('restart cancelled - node is no longer running.')
+
+            threading.Thread(target=restart, daemon=True).start()
+            # # use lock to prevent concurrent restart attempts
+            # with self._restart_lock:
+            #     # double-check status before restarting
+            #     if self.status == ComponentStatus.RUNNING and not self._stop_requested:
+            #         try:
+            #             self.logger.info(f'subprocess is respawning...')
+            #             # Don't call stop() to avoid deadlock
+            #             # Just restart the process directly
+            #             self.start()
+            #         except Exception as respawn_error:
+            #             self.logger.exception(f'failed to restart subprocess: {respawn_error}')
+            #     else:
+            #         self.logger.debug('restart cancelled - node is no longer running.')
         else:
             self.logger.debug('process termination was expected, no restart needed.')
