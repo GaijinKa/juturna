@@ -21,7 +21,7 @@ class AudioRTP(BaseNode[BytesPayload, AudioPayload]):
     def __init__(
         self,
         rec_host: str,
-        rec_port: int | str,
+        rec_port: int,
         audio_rate: int,
         block_size: int,
         channels: int,
@@ -35,8 +35,8 @@ class AudioRTP(BaseNode[BytesPayload, AudioPayload]):
         ----------
         rec_host : str
             Hostname of the remote RTP server to receive audio from.
-        rec_port : int | str
-            Port of the RTP server to receive audio from. If set to "auto",
+        rec_port : int
+            Port of the RTP server to receive audio from. If set to 0,
             the port will be assigned automatically by the resource broker.
         audio_rate : int
             Internal audio sample rate in Hz (samples per seconds).
@@ -79,8 +79,12 @@ class AudioRTP(BaseNode[BytesPayload, AudioPayload]):
         self._ffmpeg_launcher_path = None
         self._monitor_thread = None
 
+        # avoid sleep and race conditions during restart using a flag and a lock
+        self._stop_requested = False
+        self._restart_lock = threading.Lock()
+
     def configure(self):
-        if self._rec_port == 'auto':
+        if self._rec_port == 0:
             self._rec_port = rb.get('port')
 
     def warmup(self):
@@ -89,6 +93,9 @@ class AudioRTP(BaseNode[BytesPayload, AudioPayload]):
 
     def start(self):
         self.logger.debug('starting ffmpeg process...')
+
+        self._stop_requested = False
+
         self._ffmpeg_proc = subprocess.Popen(
             ['sh', self.ffmpeg_launcher],
             stdin=subprocess.PIPE,
@@ -98,7 +105,9 @@ class AudioRTP(BaseNode[BytesPayload, AudioPayload]):
 
         self.logger.debug('ffmpeg process started, launching monitor thread...')
         self._monitor_thread = threading.Thread(
-            target=self.monitor_process, args=(self._ffmpeg_proc,)
+            target=self.monitor_process, 
+            args=(self._ffmpeg_proc,),
+            daemon=True # ensure thread exits when main program exits
         )
         self._monitor_thread.start()
 
@@ -115,66 +124,78 @@ class AudioRTP(BaseNode[BytesPayload, AudioPayload]):
         super().start()
 
     def stop(self):
+        self.logger.debug('stopping node...')
+        self._stop_requested = True
+    
+        # safe stop procedure if no process exists        
+        if self._ffmpeg_proc is None:
+            self.logger.debug('ffmpeg process is already None, nothing to stop.')
+            super().stop()
+            return
+
         try:
-            assert self._ffmpeg_proc is not None
-            
+            # process is still running ?
             if self._ffmpeg_proc.poll() is None:
+                self.logger.debug('Attempting graceful shutdown of ffmpeg process...')
+                
 
-                try:
-                    assert self._ffmpeg_proc.stdin is not None
-                    if not self._ffmpeg_proc.stdin.closed:
-                        self._ffmpeg_proc.stdin.write(b'q\n')
-                        self._ffmpeg_proc.stdin.flush()
-                except (BrokenPipeError, OSError) as e:
-                    self.logger.debug(f'stdin pipe already closed: {e}')
-
-            
+                # trying to stop ffmpeg process gracefully (send 'q' to stdin)
                 try:
                     if self._ffmpeg_proc.stdin and not self._ffmpeg_proc.stdin.closed:
+                        self._ffmpeg_proc.stdin.write(b'q\n')
+                        self._ffmpeg_proc.stdin.flush()
                         self._ffmpeg_proc.stdin.close()
-                except (BrokenPipeError, OSError):
-                    pass
-            
-            
-                time.sleep(2)
+                        self.logger.debug('sent quit command to ffmpeg.')
+                except (BrokenPipeError, OSError) as termination_error:
+                    self.logger.debug(f'could not send quit command: {termination_error}')
 
-                if self._ffmpeg_proc.poll() is None:
+
+                # wait for graceful shutdown
+                try:
+                    self._ffmpeg_proc.wait(timeout=3)
+                    self.logger.debug('ffmpeg process exited gracefully.')
+                except subprocess.TimeoutExpired:
+                    self.logger.warning('ffmpeg did not exit gracefully, terminating...')
+                    
+                    # Try SIGTERM
                     self._ffmpeg_proc.terminate()
-                    self.logger.debug('ffmpeg process terminated, waiting for it to exit...')
-
-           
                     try:
                         self._ffmpeg_proc.wait(timeout=5)
+                        self.logger.debug('ffmpeg process terminated.')
                     except subprocess.TimeoutExpired:
-                        self.logger.warning(
-                            'ffmpeg process did not terminate in time, killing it.'
-                        )
+                        # Force kill as last resort
+                        self.logger.warning('ffmpeg did not terminate, forcing kill...')
+                        self._ffmpeg_proc.kill()
+                        self._ffmpeg_proc.wait()
+                        self.logger.warning('ffmpeg process killed.')        
 
+            else:
+                self.logger.debug(f'ffmpeg process already exited with code {self._ffmpeg_proc.returncode}')
+
+                
+        except Exception as stopping_error:
+            self.logger.exception(f'error while stopping ffmpeg process: {stopping_error}')
+            # try to kill as last resort
+            if self._ffmpeg_proc and self._ffmpeg_proc.poll() is None:
+                try:
                     self._ffmpeg_proc.kill()
                     self._ffmpeg_proc.wait()
-                    self.logger.debug('ffmpeg process killed.')
-
-                else:
-                    self.logger.debug('ffmpeg process already exited.')
-            else:
-                self.logger.debug('ffmpeg process already terminated.')
-                
-            self._ffmpeg_proc = None
-
-            # is it unnecessary to join the monitor thread here? It will terminate on its own when the process ends.
-            # if hasattr(self, '_monitor_thread') and self._monitor_thread:
-            #     self._monitor_thread.join()
-            #     self.logger.debug('ffmpeg monitor thread joined.')
-            
-        except Exception:
-            self.logger.exception('Error while stopping ffmpeg process.')
-            ...
+                except Exception as kill_error:
+                    self.logger.error(f'failed to kill process: {kill_error}')
 
         super().stop()
 
     def destroy(self):
+        self.logger.debug('destroying node...')
+        self._stop_requested = True
         self.stop()
-
+        
+        # monitor thread is fully stopped?
+        if self._monitor_thread:
+            if self._monitor_thread.is_alive():
+                self._monitor_thread.join(timeout=5)
+            self._monitor_thread = None
+            
     @property
     def configuration(self) -> dict:
         base_config = super().configuration
@@ -244,21 +265,43 @@ class AudioRTP(BaseNode[BytesPayload, AudioPayload]):
         )
 
     def monitor_process(self, proc: subprocess.Popen):
+
         proc.wait()
         self.clear_source()
 
+        returncode = proc.returncode
         self.logger.debug(
-            f'{self.name} subprocess terminates with code: \
-            {proc.returncode} - current node status: {self.status.name}'
+            f'subprocess terminated with code: {returncode} '
+            f'- current node status: {self.status.name}'
         )
 
-        time.sleep(5)
-
-        if self.status == ComponentStatus.RUNNING:
-            self.logger.info(
-                f'{self.name} subprocess is respawning ...'
-            )
-
-            self.stop()
-            time.sleep(1)
-            self.start()
+        # Only attempt restart if:
+        # 1. Stop was not explicitly requested
+        # 2. Node is still in RUNNING state
+        # 3. Process didn't exit cleanly (returncode != 0)
+        if not self._stop_requested and self.status == ComponentStatus.RUNNING:
+            if returncode != 0:
+                self.logger.warning(
+                    f'subprocess crashed unexpectedly. '
+                    f'Attempting restart in 5 seconds...'
+                )
+                
+                time.sleep(5)
+                
+                # Use lock to prevent concurrent restart attempts
+                with self._restart_lock:
+                    # Double-check status before restarting
+                    if self.status == ComponentStatus.RUNNING and not self._stop_requested:
+                        try:
+                            self.logger.info(f'subprocess is respawning...')
+                            # Don't call stop() to avoid deadlock
+                            # Just restart the process directly
+                            self.start()
+                        except Exception as respawn_error:
+                            self.logger.exception(f'Failed to restart subprocess: {respawn_error}')
+                    else:
+                        self.logger.debug('Restart cancelled - node is no longer running.')
+            else:
+                self.logger.info(f'subprocess exited cleanly.')
+        else:
+            self.logger.debug('Process termination was expected, no restart needed.')
