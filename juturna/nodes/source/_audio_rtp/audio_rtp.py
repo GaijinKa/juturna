@@ -104,10 +104,17 @@ class AudioRTP(BaseNode[BytesPayload, AudioPayload]):
         )
 
         self.logger.debug('ffmpeg process started, launching monitor thread...')
+        
+        # terminate monitor thread if already running
+        if self._monitor_thread and self._monitor_thread.is_alive():
+            self.logger.debug('previous monitor thread still alive, waiting for it to finish...')
+            self._monitor_thread.join(timeout=5)
+            self._monitor_thread = None
+        
         self._monitor_thread = threading.Thread(
             target=self.monitor_process, 
             args=(self._ffmpeg_proc,),
-            daemon=True # ensure thread exits when main program exits
+            daemon=True  # ensure thread exits when main program exits
         )
         self._monitor_thread.start()
 
