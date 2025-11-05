@@ -161,9 +161,10 @@ class AudioRTP(BaseNode[BytesPayload, AudioPayload]):
                 
             self._ffmpeg_proc = None
 
-            if hasattr(self, '_monitor_thread') and self._monitor_thread:
-                self._monitor_thread.join()
-                self.logger.debug('ffmpeg monitor thread joined.')
+            # is it unnecessary to join the monitor thread here? It will terminate on its own when the process ends.
+            # if hasattr(self, '_monitor_thread') and self._monitor_thread:
+            #     self._monitor_thread.join()
+            #     self.logger.debug('ffmpeg monitor thread joined.')
             
         except Exception:
             self.logger.exception('Error while stopping ffmpeg process.')
