@@ -93,41 +93,8 @@ class AudioRTP(BaseNode[BytesPayload, AudioPayload]):
 
     def start(self):
         self.logger.debug('starting ffmpeg process...')
-
         self._stop_requested = False
-
-        self._ffmpeg_proc = subprocess.Popen(
-            ['sh', self.ffmpeg_launcher],
-            stdin=subprocess.PIPE,
-            stdout=subprocess.PIPE,
-            bufsize=64536,
-        )
-
-        self.logger.debug('ffmpeg process started, launching monitor thread...')
-        
-        # terminate monitor thread if already running
-        if self._monitor_thread and self._monitor_thread.is_alive():
-            self.logger.debug('previous monitor thread still alive, waiting for it to finish...')
-            self._monitor_thread.join(timeout=5)
-            self._monitor_thread = None
-        
-        self._monitor_thread = threading.Thread(
-            target=self.monitor_process, 
-            args=(self._ffmpeg_proc,),
-            daemon=True  # ensure thread exits when main program exits
-        )
-        self._monitor_thread.start()
-
-        self.logger.debug(f'setting source with process {self._ffmpeg_proc.pid}')
-        self.set_source(
-            lambda: Message[BytesPayload](
-                creator=self.name,
-                payload=BytesPayload(
-                    cnt=self._ffmpeg_proc.stdout.read(self._rec_bytes)
-                ),
-            )
-        )
-
+        self._start_ffmpeg_process()
         super().start()
 
     def stop(self):
@@ -136,31 +103,29 @@ class AudioRTP(BaseNode[BytesPayload, AudioPayload]):
     
         # safe stop procedure if no process exists        
         if self._ffmpeg_proc is None:
-            self.logger.debug('ffmpeg process is already None, nothing to stop.')
+            self.logger.debug('ffmpeg process is already None, nothing to stop')
             super().stop()
             return
 
         try:
             # process is still running ?
             if self._ffmpeg_proc.poll() is None:
-                self.logger.debug('Attempting graceful shutdown of ffmpeg process...')
+                self.logger.debug('attempting graceful shutdown of ffmpeg process...')
                 
-
                 # trying to stop ffmpeg process gracefully (send 'q' to stdin)
                 try:
                     if self._ffmpeg_proc.stdin and not self._ffmpeg_proc.stdin.closed:
                         self._ffmpeg_proc.stdin.write(b'q\n')
                         self._ffmpeg_proc.stdin.flush()
                         self._ffmpeg_proc.stdin.close()
-                        self.logger.debug('sent quit command to ffmpeg.')
+                        self.logger.debug('sent quit command to ffmpeg')
                 except (BrokenPipeError, OSError) as termination_error:
                     self.logger.debug(f'could not send quit command: {termination_error}')
-
 
                 # wait for graceful shutdown
                 try:
                     self._ffmpeg_proc.wait(timeout=3)
-                    self.logger.debug('ffmpeg process exited gracefully.')
+                    self.logger.debug('ffmpeg process exited gracefully')
                 except subprocess.TimeoutExpired:
                     self.logger.warning('ffmpeg did not exit gracefully, terminating...')
                     
@@ -168,13 +133,13 @@ class AudioRTP(BaseNode[BytesPayload, AudioPayload]):
                     self._ffmpeg_proc.terminate()
                     try:
                         self._ffmpeg_proc.wait(timeout=5)
-                        self.logger.debug('ffmpeg process terminated.')
+                        self.logger.debug('ffmpeg process terminated')
                     except subprocess.TimeoutExpired:
                         # Force kill as last resort
                         self.logger.warning('ffmpeg did not terminate, forcing kill...')
                         self._ffmpeg_proc.kill()
                         self._ffmpeg_proc.wait()
-                        self.logger.warning('ffmpeg process killed.')        
+                        self.logger.warning('ffmpeg process killed')
 
             else:
                 self.logger.debug(f'ffmpeg process already exited with code {self._ffmpeg_proc.returncode}')
@@ -295,30 +260,55 @@ class AudioRTP(BaseNode[BytesPayload, AudioPayload]):
             
             time.sleep(2)
             
-            def restart():
-                with self._restart_lock:
-                    if self.status == ComponentStatus.RUNNING and not self._stop_requested:
-                        try:
-                            self.logger.info('Respawning subprocess...')
-                            self.start()
-                        except Exception as respawn_error:
-                            self.logger.exception(f'Failed to restart subprocess: {respawn_error}')
-                    else:
-                        self.logger.debug('restart cancelled - node is no longer running.')
-
-            threading.Thread(target=restart, daemon=True).start()
-            # # use lock to prevent concurrent restart attempts
-            # with self._restart_lock:
-            #     # double-check status before restarting
-            #     if self.status == ComponentStatus.RUNNING and not self._stop_requested:
-            #         try:
-            #             self.logger.info(f'subprocess is respawning...')
-            #             # Don't call stop() to avoid deadlock
-            #             # Just restart the process directly
-            #             self.start()
-            #         except Exception as respawn_error:
-            #             self.logger.exception(f'failed to restart subprocess: {respawn_error}')
-            #     else:
-            #         self.logger.debug('restart cancelled - node is no longer running.')
+            # use lock to prevent concurrent restart attempts
+            with self._restart_lock:
+                # double-check status before restarting
+                if self.status == ComponentStatus.RUNNING and not self._stop_requested:
+                    try:
+                        self.logger.info(f'subprocess is respawning...')
+                        # Don't call stop() to avoid deadlock
+                        # Just restart the process directly
+                        self._start_ffmpeg_process()
+                        self.logger.info(f'subprocess respawned successfully.')
+                    except Exception as respawn_error:
+                        self.logger.exception(f'failed to restart subprocess: {respawn_error}')
+                else:
+                    self.logger.debug('restart cancelled - node is no longer running')
         else:
-            self.logger.debug('process termination was expected, no restart needed.')
+            self.logger.debug('process termination was expected, no restart needed')
+            
+           
+    def _start_ffmpeg_process(self):
+
+
+        self._ffmpeg_proc = subprocess.Popen(
+            ['sh', self.ffmpeg_launcher],
+            stdin=subprocess.PIPE,
+            stdout=subprocess.PIPE,
+            bufsize=64536,
+        )
+
+        self.logger.debug('ffmpeg process started, launching monitor thread...')
+        
+        # terminate monitor thread if already running
+        # if self._monitor_thread and self._monitor_thread.is_alive():
+        #     self.logger.debug('previous monitor thread still alive, waiting for it to finish...')
+        #     self._monitor_thread.join(timeout=5)
+        #     self._monitor_thread = None
+        
+        self._monitor_thread = threading.Thread(
+            target=self.monitor_process, 
+            args=(self._ffmpeg_proc,),
+            daemon=True  # ensure thread exits when main program exits
+        )
+        self._monitor_thread.start()
+
+        self.logger.debug(f'setting source with process {self._ffmpeg_proc.pid}')
+        self.set_source(
+            lambda: Message[BytesPayload](
+                creator=self.name,
+                payload=BytesPayload(
+                    cnt=self._ffmpeg_proc.stdout.read(self._rec_bytes)
+                ),
+            )
+        )
