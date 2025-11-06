@@ -250,11 +250,6 @@ class BaseNode[T_Input, T_Output]:
             before being called again.
 
         """
-        self._logger.debug(
-            f'setting source: {source}'
-            f'currently set source: {self._bridge.source}'
-            f'is none: {self._bridge.source is None}'
-            )
         if self._bridge.source is None:
             self._bridge.set_source(source, by, mode)
 
