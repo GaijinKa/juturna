@@ -280,7 +280,6 @@ class AudioRTP(BaseNode[BytesPayload, AudioPayload]):
            
     def _start_ffmpeg_process(self):
 
-
         self._ffmpeg_proc = subprocess.Popen(
             ['sh', self.ffmpeg_launcher],
             stdin=subprocess.PIPE,
