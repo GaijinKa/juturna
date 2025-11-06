@@ -81,6 +81,7 @@ class AudioRTP(BaseNode[BytesPayload, AudioPayload]):
 
         # avoid sleep and race conditions during restart using a flag and a lock
         self._stop_requested = False
+        self._subprocess_running = False
         self._restart_lock = threading.Lock()
 
     def configure(self):
@@ -252,7 +253,8 @@ class AudioRTP(BaseNode[BytesPayload, AudioPayload]):
         # 2. node is still in RUNNING state
         # 3. process didn't exit cleanly (returncode != 0)
         if not self._stop_requested and self.status == ComponentStatus.RUNNING:
-        
+
+            self._subprocess_running = False
             self.logger.warning(
                 f'subprocess crashed unexpectedly with code {returncode} '
                 f'attempting restart in 2 seconds...'
@@ -280,7 +282,9 @@ class AudioRTP(BaseNode[BytesPayload, AudioPayload]):
            
     def _start_ffmpeg_process(self):
 
-
+        if self._subprocess_running:
+           return  # already running
+        
         self._ffmpeg_proc = subprocess.Popen(
             ['sh', self.ffmpeg_launcher],
             stdin=subprocess.PIPE,
@@ -288,6 +292,7 @@ class AudioRTP(BaseNode[BytesPayload, AudioPayload]):
             bufsize=64536,
         )
 
+        self._subprocess_running = True
         self.logger.debug('ffmpeg process started, launching monitor thread...')
         
         # terminate monitor thread if already running
