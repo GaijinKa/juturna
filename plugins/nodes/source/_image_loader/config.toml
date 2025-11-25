@@ -1,0 +1,8 @@
+[arguments]
+location = "./"
+patterns = ["*"]
+recursive = false
+ignore_updates = true
+convert_rgb = true
+
+[meta]
