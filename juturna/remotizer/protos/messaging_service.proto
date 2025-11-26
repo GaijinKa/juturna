@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+package juturna.messaging;
+
+import "payloads.proto";
+
+service MessagingService {
+  // Send a message and get acknowledgment
+  rpc SendMessage(juturna.payloads.MessageEnvelope) returns (juturna.payloads.MessageEnvelope);
+  
+  // Send a message and get a response message
+  rpc SendAndReceive(juturna.payloads.MessageEnvelope) returns (juturna.payloads.MessageEnvelope);
+  
+  // Stream messages
+  rpc StreamMessages(stream juturna.payloads.MessageEnvelope) returns (stream juturna.payloads.MessageEnvelope);
+}

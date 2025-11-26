@@ -1,17 +1,16 @@
 from juturna.components._node import Node
-from juturna.components._synchronisers import _SYNCHRONISERS
 
 
 class RemoteWrapper[T_Input, T_Output](Node(T_Input, T_Output)):
     """
     A RemoteWrapper is a special type of node that acts as a proxy for remote
-    nodes. It is responsible for managing the communication between the local
-    pipeline and the remote node, handling data transmission and reception.
+    nodes. It is responsible for managing the communication between the network
+    interface and the remote pipeline, handling data requests reception
+    and response transmission.
 
     This class extends the base Node class and overrides its methods to
     facilitate remote operations. It is designed to be used in scenarios where
-    nodes are deployed on remote systems, allowing for seamless integration
-    into the local pipeline.
+    nodes are deployed on remote systems.
 
     Parameters
     ----------
@@ -19,8 +18,6 @@ class RemoteWrapper[T_Input, T_Output](Node(T_Input, T_Output)):
         The name of the remote node.
     pipe_name : str
         The name of the pipeline.
-    synchroniser : Optional[Callable]
-        An optional synchroniser function for data synchronization.
 
     """
 
