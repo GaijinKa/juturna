@@ -1,13 +1,13 @@
 syntax = "proto3";
 
-package juturna.payloads;
+package juturna.proto.payloads;
 
 import "google/protobuf/any.proto";
 import "google/protobuf/struct.proto";
 
-// AudioPayload represents audio data with metadata
+// AudioPayloadProto represents audio data with metadata
 // Uses raw bytes for maximum efficiency instead of repeated floats
-message AudioPayload {
+message AudioPayloadProto {
   // Raw audio samples as bytes (use numpy.tobytes() for serialization)
   bytes audio_data = 1;
   
@@ -31,9 +31,9 @@ message AudioPayload {
   double end = 7;
 }
 
-// ImagePayload represents a single frame/image
+// ImagePayloadProto represents a single frame/image
 // Uses raw bytes for maximum compression efficiency
-message ImagePayload {
+message ImagePayloadProto {
   // Raw pixel data as bytes (flattened array)
   // Reshape using: image_data.reshape(height, width, depth)
   bytes image_data = 1;
@@ -57,10 +57,10 @@ message ImagePayload {
   double timestamp = 7;
 }
 
-// VideoPayload represents a sequence of frames
-message VideoPayload {
+// VideoPayloadProto represents a sequence of frames
+message VideoPayloadProto {
   // Sequence of image frames
-  repeated ImagePayload frames = 1;
+  repeated ImagePayloadProto frames = 1;
   
   // Frame rate in frames per second (fps)
   double frames_per_second = 2;
@@ -78,8 +78,8 @@ message VideoPayload {
   double duration = 6;
 }
 
-// BytesPayload for generic binary content
-message BytesPayload {
+// BytesPayloadProto for generic binary content
+message BytesPayloadProto {
   // Raw binary content
   bytes content = 1;
   
@@ -93,10 +93,10 @@ message BytesPayload {
   int64 size = 4;
 }
 
-// Batch represents a collection of messages
-message Batch {
+// BatchProto represents a collection of messages
+message BatchProto {
   // List of messages in the batch
-  repeated Message messages = 1;
+  repeated MessageProto messages = 1;
   
   // Batch metadata as key-value pairs
   map<string, string> metadata = 2;
@@ -111,9 +111,9 @@ message Batch {
   int64 total_size = 5;
 }
 
-// ObjectPayload for arbitrary key-value structures
+// ObjectPayloadProto for arbitrary key-value structures
 // Equivalent to Python dict or JSON object
-message ObjectPayload {
+message ObjectPayloadProto {
   // Arbitrary structured data using protobuf Struct
   // Supports nested objects, arrays, strings, numbers, booleans, null
   google.protobuf.Struct data = 1;
@@ -122,19 +122,19 @@ message ObjectPayload {
   string schema_version = 2;
 }
 
-// Message represents a single message in the system
+// MessageProto represents a single message in the system
 // This is the core message type that flows through nodes
-message Message {
-  // Message creation timestamp (Unix epoch in seconds)
+message MessageProto {
+  // MessageProto creation timestamp (Unix epoch in seconds)
   double created_at = 1;
   
   // Creator node name (identifies which node created this message)
   string creator = 2;
   
-  // Message version (indicates version of the data contained)
+  // MessageProto version (indicates version of the data contained)
   int32 version = 3;
   
-  // Payload can be any of the payload types (AudioPayload, ImagePayload, etc.)
+  // PayloadProto can be any of the payload types (AudioPayloadProto, ImagePayloadProto, etc.)
   google.protobuf.Any payload = 4;
   
   // Metadata as key-value pairs (flexible metadata storage)
@@ -145,14 +145,14 @@ message Message {
   map<string, double> timers = 6;
 }
 
-// MessageEnvelope is the top-level message sent over the wire
-// It wraps a Message and adds routing, correlation, and lifecycle information
-message MessageEnvelope {
+// MessageProtoEnvelope is the top-level message sent over the wire
+// It wraps a MessageProto and adds routing, correlation, and lifecycle information
+message MessageProtoEnvelope {
   // Unique envelope identifier (UUID recommended)
   string id = 1;
   
   // The actual message being transported
-  Message message = 2;
+  MessageProto message = 2;
   
   // Sender/source system identifier
   string sender = 3;
@@ -187,17 +187,17 @@ message MessageEnvelope {
   int32 priority = 11;
   
   // request type hint for faster routing/dispatching
-  // e.g., "juturna.payloads.AudioPayload"
+  // e.g., "juturna.proto.payloads.AudioPayload"
   string request_type = 12;
 
   // response type hint for faster serialization
-  // e.g., "juturna.payloads.AudioPayload"
+  // e.g., "juturna.proto.payloads.AudioPayload"
   string response_type = 13;
 
 }
 
 // Optional: Compressed payload wrapper for large data
-message CompressedPayload {
+message CompressedPayloadProto {
   // Compression algorithm used (e.g., "gzip", "zstd", "lz4")
   string compression = 1;
   

@@ -21,4 +21,4 @@ python -m grpc_tools.protoc \
 
 touch $OUT_DIR/__init__.py
 
-echo "✓ Protobuf compilation completed!"
+echo "protobuf compilation completed!"
