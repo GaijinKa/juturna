@@ -328,11 +328,11 @@ class Node[T_Input, T_Output]:
                 future = self._executor.submit(self._source_f)
                 message = future.result(timeout=1)
             except concurrent.futures.TimeoutError:
-                logging.debug('Source function timed out')
+                self._logger.debug('Source function timed out')
                 future.cancel()
                 continue
             except Exception as e:
-                logging.error(f'Source function raised an exception: {e}')
+                self._logger.error(f'Source function raised an exception: {e}')
                 continue
 
             if message is None:
