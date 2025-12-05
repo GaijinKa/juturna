@@ -5,6 +5,7 @@ import logging
 import threading
 import queue
 import time
+import concurrent.futures
 
 from collections.abc import Callable
 
@@ -81,6 +82,9 @@ class Node[T_Input, T_Output]:
 
         self._destinations: dict[str, queue.Queue] = dict()
         self._origins: list = list()
+        self._executor = concurrent.futures.ThreadPoolExecutor(
+            max_workers=1, thread_name_prefix=f'source_executor_{self._name}'
+        )
 
     def __del__(self): ...
 
@@ -319,7 +323,13 @@ class Node[T_Input, T_Output]:
             if self._source_mode == 'pre':
                 time.sleep(self._source_sleep)
 
-            message = self._source_f()
+            message = None
+            try:
+                future = self._executor.submit(self._source_f)
+                message = future.result(timeout=1)
+            except concurrent.futures.TimeoutError:
+                future.cancel()
+                continue
 
             if message is None:
                 self.put(message)
@@ -406,6 +416,7 @@ class Node[T_Input, T_Output]:
             self._queue.put(None)
 
         self._stop_source_event.set()
+        self._executor.shutdown(wait=False, cancel_futures=True)
 
         for _t in [
             self._source_thread,
