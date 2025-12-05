@@ -281,6 +281,13 @@ class Node[T_Input, T_Output]:
         self._source_sleep = by
         self._source_mode = mode
 
+        if self._status == ComponentStatus.RUNNING:
+            self._executor.shutdown(wait=False, cancel_futures=True)
+            self._executor = concurrent.futures.ThreadPoolExecutor(
+                max_workers=1,
+                thread_name_prefix=f'source_executor_{self._name}',
+            )
+
     def add_destination(self, name: str, destination: 'Node'):
         self._destinations[name] = destination
 
