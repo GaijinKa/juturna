@@ -1,5 +1,5 @@
 """
-gRPC Server endpoint that receives and deserializes MessageProtoEnvelope
+gRPC Server endpoint that receives and deserializes ProtoEnvelopes
 Supports all payload types: Audio, Image, Video, Bytes, Object, Batch
 """
 
@@ -8,289 +8,27 @@ import numpy as np
 import logging
 from concurrent import futures
 from typing import Any
-from collections.abc import Callable
-from juturna.payloads import (
-    AudioPayload,
-    ImagePayload,
-    VideoPayload,
-    BytesPayload,
-    ObjectPayload,
-    Batch,
+
+from juturna.remotizer.utils import (
+    deserialize_envelope,
+    create_envelope,
+    message_to_proto,
 )
+
 from juturna.components import Message
+from juturna.payloads import (
+    ObjectPayload,
+)
 
 # Import generated protobuf code
 from generated.payloads_pb2 import (
-    MessageProtoEnvelope,
-    MessageProto,
-    AudioPayloadProto,
-    ImagePayloadProto,
-    VideoPayloadProto,
-    BytesPayloadProto,
-    ObjectPayloadProto,
-    BatchProto,
+    ProtoEnvelope,
 )
-
-from google.protobuf.struct_pb2 import Struct
+from generated import messaging_service_pb2_grpc
 
 # Setup logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
-
-
-# ==============================================================================
-# DESERIALIZATION UTILITIES (these would typically go into the payloads classes)
-# ==============================================================================
-
-
-def deserialize_audio_payload(payload: AudioPayloadProto) -> AudioPayload:
-    """Deserialize AudioPayloadProto to AudioPayload with numpy array"""
-    audio_data = np.frombuffer(payload.audio_data, dtype=payload.dtype)
-    audio_data = audio_data.reshape(payload.shape)
-
-    return AudioPayload(
-        audio=audio_data,
-        sampling_rate=payload.sampling_rate,
-        channels=payload.channels,
-        start=payload.start,
-        end=payload.end,
-    )
-
-
-def deserialize_image_payload(payload: ImagePayloadProto) -> ImagePayload:
-    """Deserialize ImagePayloadProto to ImagePayload with numpy array"""
-    image_data = np.frombuffer(payload.image_data, dtype=payload.dtype)
-
-    if payload.depth == 1:
-        shape = (payload.height, payload.width)
-    else:
-        shape = (payload.height, payload.width, payload.depth)
-
-    image_data = image_data.reshape(shape)
-
-    return ImagePayload(
-        image=image_data,
-        width=payload.width,
-        height=payload.height,
-        depth=payload.depth,
-        pixel_format=payload.pixel_format,
-        timestamp=payload.timestamp,
-    )
-
-
-def deserialize_video_payload(payload: VideoPayloadProto) -> VideoPayload:
-    """Deserialize VideoPayloadProto to VideoPayload with list of numpy arrays"""
-    frames = [deserialize_image_payload(frame) for frame in payload.frames]
-
-    return VideoPayload(
-        video=frames,
-        frames_per_second=payload.frames_per_second,
-        start=payload.start,
-        end=payload.end,
-    )
-
-
-def deserialize_bytes_payload(payload: BytesPayloadProto) -> BytesPayload:
-    """Deserialize BytesPayloadProto to BytesPayload"""
-    return BytesPayload(
-        content=payload.content,
-        content_type=payload.content_type,
-        filename=payload.filename,
-    )
-
-
-def deserialize_object_payload(payload: ObjectPayloadProto) -> dict[str, Any]:
-    """Deserialize ObjectPayloadProto (Struct) to ObjectPayload (dict)"""
-    from google.protobuf.json_format import MessageTodict
-
-    return ObjectPayload(**MessageTodict(payload))  # ! TEST ME
-
-
-def deserialize_batch(payload: BatchProto) -> Batch:
-    """Deserialize Batch to Batch"""
-    messages = [deserialize_message(msg) for msg in payload.messages]
-
-    return Batch(messages=messages)
-
-
-def deserialize_message(message: MessageProto) -> Message:
-    """Deserialize MessageProto to Message"""
-    result = Message(
-        created_at=message.created_at,
-        creator=message.creator,
-        version=message.version,
-        meta=dict(message.meta),
-        timers=dict(message.timers),
-        payload=None,  # to be filled below
-    )
-
-    # Deserialize payload based on type
-    if message.payload.Is(AudioPayloadProto.DESCRIPTOR):
-        audio = AudioPayloadProto()
-        message.payload.Unpack(audio)
-        result.payload = deserialize_audio_payload(audio)
-
-    elif message.payload.Is(ImagePayloadProto.DESCRIPTOR):
-        image = ImagePayloadProto()
-        message.payload.Unpack(image)
-        result.payload = deserialize_image_payload(image)
-
-    elif message.payload.Is(VideoPayloadProto.DESCRIPTOR):
-        video = VideoPayloadProto()
-        message.payload.Unpack(video)
-        result.payload = deserialize_video_payload(video)
-
-    elif message.payload.Is(BytesPayloadProto.DESCRIPTOR):
-        bytes_payload = BytesPayloadProto()
-        message.payload.Unpack(bytes_payload)
-        result.payload = deserialize_bytes_payload(bytes_payload)
-
-    elif message.payload.Is(ObjectPayloadProto.DESCRIPTOR):
-        obj = ObjectPayloadProto()
-        message.payload.Unpack(obj)
-        result.payload = deserialize_object_payload(obj)
-
-    # ! actually we do not unpack Batch properly.
-    # ! the batch message is a container of messages, so we need to
-    # ! unpack each message inside it.
-    # ! probably there is an issue with the Batch design:
-    # ! it is a Payload _and_ a messages list (with their own payloads).
-    # ! probably the Batch should be removed in favor of a Messages array?
-
-    return result  # add finalize here?
-
-
-def deserialize_envelope(envelope: MessageProtoEnvelope) -> dict[str, Any]:
-    """Deserialize complete MessageProtoEnvelope to Python dict"""
-    return {
-        'id': envelope.id,
-        'sender': envelope.sender,
-        'receiver': envelope.receiver,
-        'correlation_id': envelope.correlation_id,
-        'response_to': envelope.response_to,
-        'ttl': envelope.ttl,
-        'created_at': envelope.created_at,
-        'configuration': dict(envelope.configuration),
-        'metadata': dict(envelope.metadata),
-        'priority': envelope.priority,
-        'message_type': envelope.message_type,
-        'message': deserialize_message(envelope.message),
-    }
-
-
-# ============================================================================
-# PYTHON → PROTOBUF CONVERTERS
-# ============================================================================
-
-
-def audio_to_proto(audio: AudioPayload) -> AudioPayloadProto:
-    """Convert Python AudioPayload to Protobuf AudioPayloadProto"""
-    proto = AudioPayloadProto()
-
-    # Convert numpy array to bytes
-    proto.audio_data = audio.audio.tobytes()
-    proto.dtype = str(audio.audio.dtype)
-    proto.shape.extend(audio.audio.shape)
-
-    # Copy metadata
-    proto.sampling_rate = audio.sampling_rate
-    proto.channels = audio.channels
-    proto.start = audio.start
-    proto.end = audio.end
-
-    return proto
-
-
-def image_to_proto(image: ImagePayload) -> ImagePayloadProto:
-    """Convert Python ImagePayload to Protobuf ImagePayloadProto"""
-    proto = ImagePayloadProto()
-
-    # Convert numpy array to bytes
-    proto.image_data = image.image.tobytes()
-    proto.dtype = str(image.image.dtype)
-
-    # Copy metadata
-    proto.width = image.width
-    proto.height = image.height
-    proto.depth = image.depth
-    proto.pixel_format = image.pixel_format
-    proto.timestamp = image.timestamp
-
-    return proto
-
-
-def video_to_proto(video: VideoPayload) -> VideoPayloadProto:
-    """Convert Python VideoPayload to Protobuf VideoPayloadProto"""
-    proto = VideoPayloadProto()
-
-    # Convert each frame
-    for frame in video.video:
-        frame_proto = image_to_proto(frame)
-        proto.frames.append(frame_proto)
-
-    # Copy metadata
-    proto.frames_per_second = video.frames_per_second
-    proto.start = video.start
-    proto.end = video.end
-
-    return proto
-
-
-def bytes_to_proto(bytes_payload: BytesPayload) -> BytesPayloadProto:
-    """Convert Python BytesPayload to Protobuf BytesPayloadProto"""
-    proto = BytesPayloadProto()
-    proto.content = bytes_payload.cnt
-    return proto
-
-
-def object_to_proto(obj: ObjectPayload) -> ObjectPayloadProto:
-    """Convert Python ObjectPayload (dict) to Protobuf ObjectPayloadProto"""
-    proto = ObjectPayloadProto()
-
-    # Convert dict to Struct
-    struct = Struct()
-    struct.update(dict(obj))
-    proto.data.CopyFrom(struct)
-
-    return proto
-
-
-def message_to_proto(msg: Message) -> MessageProto:
-    """Convert Python Message to Protobuf MessageProto"""
-    proto = MessageProto()
-
-    # Copy basic fields
-    proto.created_at = msg.created_at
-    proto.creator = msg.creator
-    proto.version = msg.version
-
-    # Copy metadata
-    proto.meta.update(msg.meta)
-    proto.timers.update(msg.timers)
-
-    # Convert payload based on type
-    if msg.payload is not None:
-        if isinstance(msg.payload, AudioPayload):
-            payload_proto = audio_to_proto(msg.payload)
-            proto.payload.Pack(payload_proto)
-
-        elif isinstance(msg.payload, ImagePayload):
-            payload_proto = image_to_proto(msg.payload)
-            proto.payload.Pack(payload_proto)
-
-        elif isinstance(msg.payload, VideoPayload):
-            payload_proto = video_to_proto(msg.payload)
-            proto.payload.Pack(payload_proto)
-
-        elif isinstance(msg.payload, BytesPayload):
-            payload_proto = bytes_to_proto(msg.payload)
-            proto.payload.Pack(payload_proto)
-
-        elif isinstance(msg.payload, (ObjectPayload, dict)):
-            payload_proto = object_to_proto(msg.payload)
-            proto.payload.Pack(payload_proto)
-
-    return proto
 
 
 # ============================================================================
@@ -319,9 +57,6 @@ class MessageHandler:
 # gRPC SERVICE IMPLEMENTATION
 # ============================================================================
 
-from generated import messaging_service_pb2
-from generated import messaging_service_pb2_grpc
-
 
 class MessagingServiceImpl(messaging_service_pb2_grpc.MessagingServiceServicer):
     """Implementation of the gRPC Messaging Service"""
@@ -329,10 +64,8 @@ class MessagingServiceImpl(messaging_service_pb2_grpc.MessagingServiceServicer):
     def __init__(self):
         self.handler = MessageHandler()
 
-    def SendMessage(self, request: MessageProtoEnvelope, context):
+    def SendMessage(self, request: ProtoEnvelope, context):
         """Handle incoming message and return acknowledgment"""
-        import time
-
         try:
             # Log incoming message
             logger.info(f'Received envelope {request.id} from {request.sender}')
@@ -353,34 +86,48 @@ class MessagingServiceImpl(messaging_service_pb2_grpc.MessagingServiceServicer):
         except Exception as e:
             logger.error(f'Error processing message: {e}', exc_info=True)
 
-    def SendAndReceive(self, request: MessageProtoEnvelope, context):
+    def SendAndReceive(self, request: ProtoEnvelope, context):
         """Handle request-response pattern"""
         # Process the incoming message
-        self.SendMessage(request, context)
+        # Log incoming message
+        logger.info(f'Received envelope {request.id} from {request.sender}')
 
-        # Create response envelope
-        response_envelope = MessageProtoEnvelope()
-        response_envelope.id = f'resp-{request.id}'
-        response_envelope.sender = request.receiver
-        response_envelope.receiver = request.sender
-        response_envelope.correlation_id = request.correlation_id
-        response_envelope.response_to = request.id
+        # Deserialize the envelope
+        envelope_dict = deserialize_envelope(request)
+        request_message = envelope_dict['message']
 
-        # Create response message with result
-        # (simplified - in production you'd build a proper response)
-        import time
+        # Log details
+        logger.info(f'Message type: {envelope_dict["message"]["payload_type"]}')
+        logger.info(f'Creator: {envelope_dict["message"]["creator"]}')
+        logger.info(f'Correlation ID: {envelope_dict["correlation_id"]}')
 
-        response_envelope.message.created_at = time.time()
-        response_envelope.message.creator = 'response_handler'
-        response_envelope.message.version = 1
+        #        response_message = self.handler.handle(request_message)
+        response_message = Message[ObjectPayload](
+            creator='mock-creator',
+            version=envelope_dict['message']['version'],
+            payload=ObjectPayload.from_dict({'result': 'ok'}),
+            timers_from=request_message.timers,
+        )
 
+        proto_response = message_to_proto(response_message)
+
+        response_envelope = create_envelope(
+            message=proto_response,
+            creator='response_handler',
+            request_type=envelope_dict['response_type'],
+            priority=0,
+            timeout=30,
+            response_type=envelope_dict['request_type'],
+            correlation_id=envelope_dict['id'],
+            id=envelope_dict['correlation_id'],
+        )
         return response_envelope
 
-    def StreamMessages(self, request_iterator, context):
-        """Handle streaming messages"""
-        for envelope in request_iterator:
-            response = self.SendMessage(envelope, context)
-            yield response
+    # def StreamMessages(self, request_iterator, context):
+    #     """Handle streaming messages"""
+    #     for envelope in request_iterator:
+    #         response = self.SendMessage(envelope, context)
+    #         yield response
 
 
 # ============================================================================

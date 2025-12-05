@@ -6,5 +6,5 @@ import "payloads.proto";
 
 service MessagingService {
   // Send a message and get acknowledgment
-  rpc SendMessage(juturna.proto.payloads.MessageProtoEnvelope) returns (juturna.proto.payloads.MessageProtoEnvelope);
+  rpc SendAndReceive(juturna.proto.payloads.ProtoEnvelope) returns (juturna.proto.payloads.ProtoEnvelope);
 }
