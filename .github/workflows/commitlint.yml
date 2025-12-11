@@ -3,6 +3,8 @@ name: Lint Commits
 on:
   pull_request:
     types: [opened, synchronize, reopened]
+  push:
+    branches: [test-release-please]
 
 jobs:
   commitlint:
