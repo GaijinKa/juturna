@@ -35,5 +35,5 @@ jobs:
           echo "$commits" | while read commit; do
             echo "Validating commit: $commit"
             message=$(git log -1 --format=%B $commit)
-            echo "$message" | conventional-pre-commit feat fix docs style refactor perf test build ci chore revert || exit 1
+            echo "$message" | conventional-pre-commit || exit 1
           done
