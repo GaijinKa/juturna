@@ -3,8 +3,6 @@ name: Lint Commits
 on:
   pull_request:
     types: [opened, synchronize, reopened]
-  push:
-    branches: [test-release-please]
 
 jobs:
   commitlint:
@@ -24,7 +22,14 @@ jobs:
 
       - name: Validate all commits in PR
         run: |
-          commits=$(git log --format=%H ${{ github.event.pull_request.base.sha }}..${{ github.event.pull_request.head.sha }})
+          # Per pull_request usiamo il merge base
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            base="${{ github.event.pull_request.base.sha }}"
+          else
+            base="${{ github.event.before }}"
+          fi
+
+          commits=$(git log --format=%H $base..HEAD)
           echo "$commits" | while read commit; do
             echo "Validating commit: $commit"
             message=$(git log -1 --format=%B $commit)
