@@ -13,6 +13,9 @@ on:
           - patch
           - minor
           - major
+  push:
+    branches:
+      - test-release-please
 
 permissions:
   contents: write
