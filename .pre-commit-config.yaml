@@ -1,3 +1,5 @@
+default_stages: [pre-commit]
+
 repos:
   - repo: https://github.com/compilerla/conventional-pre-commit
     rev: v3.4.0
