@@ -3,8 +3,7 @@ name: Ruff Linting
 on:
   pull_request:
     types: [opened, synchronize, reopened]
-  push:
-    branches: [test-release-please]
+    branches: [test-main]
 
 jobs:
   ruff:
