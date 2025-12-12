@@ -31,9 +31,11 @@ jobs:
             base="${{ github.event.before }}"
           fi
 
-          commits=$(git log --format=%H $base..HEAD)
           echo "$commits" | while read commit; do
             echo "Validating commit: $commit"
             message=$(git log -1 --format=%B $commit)
-            echo "$message" | conventional-pre-commit - || exit 1
+            tmpfile=$(mktemp)
+            echo "$message" > "$tmpfile"
+            conventional-pre-commit "$tmpfile" || exit 1
+            rm "$tmpfile"
           done
