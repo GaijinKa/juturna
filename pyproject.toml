@@ -101,7 +101,6 @@ sphinx-design = "^0.6.1"
 [tool.poe.tasks]
 bandit = "pre-commit run bandit --hook-stage manual"
 install-pre-commit = "pre-commit install && pre-commit install --hook-type commit-msg"
-bandit-html = "bandit --ini .bandit -f html --output tmp/cwe.html"
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
