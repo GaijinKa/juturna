@@ -11,7 +11,20 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 0
+          fetch-depth: 0          base="${{ github.event.pull_request.base.sha }}"
+          head="${{ github.event.pull_request.head.sha }}"
+
+          commits=$(git rev-list $base..$head)
+
+          echo "$commits" | while read commit; do
+            echo "Validating commit: $commit"
+            message=$(git log -1 --format=%B $commit)
+            tmpfile=$(mktemp)
+            echo "$message" > "$tmpfile"
+            conventional-pre-commit "$tmpfile" || exit 1
+            rm "$tmpfile"
+          done
+
 
       - name: Setup Python
         uses: actions/setup-python@v5
@@ -23,12 +36,10 @@ jobs:
 
       - name: Validate all commits in PR
         run: |
-          # Per pull_request usiamo il merge base
-          if [ "${{ github.event_name }}" = "pull_request" ]; then
-            base="${{ github.event.pull_request.base.sha }}"
-          else
-            base="${{ github.event.before }}"
-          fi
+          base="${{ github.event.pull_request.base.sha }}"
+          head="${{ github.event.pull_request.head.sha }}"
+
+          commits=$(git rev-list $base..$head)
 
           echo "$commits" | while read commit; do
             echo "Validating commit: $commit"
