@@ -15,7 +15,7 @@ on:
           - major
   push:
     branches:
-      - test-release-please
+      - test-main
 
 permissions:
   contents: write
