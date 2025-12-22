@@ -1,6 +1,6 @@
 import copy
 import json
-
+import dataclasses
 from typing import Self
 from typing import Any
 from dataclasses import dataclass
@@ -18,11 +18,29 @@ class BasePayload:
     def serialize(obj):
         return json.JSONEncoder.default(obj)
 
+    def __deepcopy__(self, memo) -> Self:
+        cls = self.__class__
+        kwargs = {}
+
+        # Handle dataclass fields
+        if dataclasses.is_dataclass(self):
+            for f in dataclasses.fields(self):
+                value = getattr(self, f.name)
+                kwargs[f.name] = copy.deepcopy(value, memo)
+
+        # Handle dict items (for ObjectPayload)
+        if isinstance(self, dict):
+            for k, v in self.items():
+                kwargs[k] = copy.deepcopy(v, memo)
+
+        return cls(**kwargs)
+
 
 @dataclass(frozen=True)
 class AudioPayload(BasePayload):
     audio: np.ndarray = field(default_factory=lambda: np.ndarray(0))
     sampling_rate: int = -1
+    audio_format: str = ''
     channels: int = -1
     start: float = -1.0
     end: float = -1.0
