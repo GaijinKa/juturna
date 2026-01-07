@@ -63,11 +63,6 @@ def _remote_builder(
     _node.pipe_path = node_runtime_folder
     _node.status = ComponentStatus.NEW
 
-    # attach to remote_in and remote_out pipes
-    # attach to remote_in and remote_out pipes
-    # _node.add_destination()
-    # _node.origins.append()
-
     # warmup the node
     _node.warmup()
     _node.status = ComponentStatus.CONFIGURED

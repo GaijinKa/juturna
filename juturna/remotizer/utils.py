@@ -314,6 +314,9 @@ def _deserialize_object_payload(payload: ObjectProtoPayload) -> ObjectPayload:
     return ObjectPayload.from_dict(proto_dict.get('data', {}))
 
 
+# ! FIXME: probably we should change the request_type and response_type
+# ! signature: they are meaningful only in the context of requests,
+# ! for responses they should be empty, or with a different naming
 def create_envelope(
     message: ProtoMessage,
     configuration: dict[str, Any],
