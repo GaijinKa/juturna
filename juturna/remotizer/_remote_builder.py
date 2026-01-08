@@ -8,7 +8,7 @@ REMOTE_PIPE_FOLDER = 'remote_pipes'
 REMOTE_PIPE_ID = 'remote_pipe'
 
 
-def _remote_builder(
+def _standalone_builder(
     name: str,
     node_mark: str,
     plugins_dir: str,

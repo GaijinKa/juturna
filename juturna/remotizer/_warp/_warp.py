@@ -21,12 +21,6 @@ from juturna.components import Message
 from juturna.components import Node
 
 
-from typing import TypeVar
-
-T_Input = TypeVar('T_Input')
-T_Output = TypeVar('T_Output')
-
-
 class Warp[T_Input, T_Output](Node[T_Input, T_Output]):
     """
     Type Parameters
@@ -102,13 +96,13 @@ class Warp[T_Input, T_Output](Node[T_Input, T_Output]):
 
         """
         try:
-            self.logger.debug('converting message to protobuf...')
+            self.logger.info('converting message to protobuf...')
             message_proto = message_to_proto(message)
             self.logger.debug('creating envelope...')
             envelope = create_envelope(
                 message=message_proto,
                 creator=self.name,
-                request_type=type(message.payload).__name__,
+                request_type=type(T_Input).__name__,
                 response_type=type(T_Output).__name__,
                 priority=0,
                 timeout=self._timeout,
@@ -117,11 +111,6 @@ class Warp[T_Input, T_Output](Node[T_Input, T_Output]):
             )
 
             envelope.configuration.update(self._remote_config)
-
-            awaited_correlation_id = envelope.correlation_id
-            self.logger.debug(
-                f'envelope created with correlation_id={awaited_correlation_id}'
-            )
             self.logger.info(f'sending message (envelope_id={envelope.id})...')
 
             response_envelope = self.stub.SendAndReceive(
@@ -135,15 +124,7 @@ class Warp[T_Input, T_Output](Node[T_Input, T_Output]):
                 f'response correlation_id={response_envelope.correlation_id}'
             )
 
-            assert awaited_correlation_id == response_envelope.correlation_id, (
-                'correlation_id mismatch: '
-                f'expected {awaited_correlation_id}, '
-                f'got {response_envelope.correlation_id}'
-            )
-
-            # ! FIXME: should we check the response_type too?
-
-            self.logger.debug('converting response to Message...')
+            self.logger.info('converting response to Message...')
             to_send: Message[T_Output] = deserialize_message(
                 response_envelope.message
             )

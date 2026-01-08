@@ -21,7 +21,7 @@ from juturna.remotizer.utils import (
 )
 
 from juturna.components import Message, Node
-from juturna.remotizer._remote_builder import _remote_builder
+from juturna.remotizer._remote_builder import _standalone_builder
 
 # Import generated protobuf code
 from generated.payloads_pb2 import (
@@ -39,7 +39,7 @@ logger = logging.getLogger('remote_service')
 # ============================================================================
 
 
-class ReceiverQueue:
+class DispatchingQueue:
     """
     Wrapper around a queue to act as a Node destination.
     Nodes expect destinations to have a 'put' method.
@@ -60,11 +60,28 @@ class ReceiverQueue:
 class RequestContext:
     """Context for tracking individual requests"""
 
-    def __init__(self, correlation_id: str, timeout: float):
+    def __init__(
+        self,
+        sender: str,
+        request_id: str,
+        correlation_id: str,
+        timeout: float,
+        response_type: str = None,
+    ):
+        self.sender = sender
+        self.request_id = request_id
         self.correlation_id = correlation_id
         self.future = futures.Future()
         self.timeout = timeout
+        self.response_type = response_type
         self.created_at = time.time()
+
+    def is_valid_response(self, message: Message | None) -> bool:
+        """Check if the inner payload type matches the expected response type"""
+        print(self.response_type, type(message))
+        if self.response_type is None or message is None:
+            return True
+        return type(message.payload).__name__ == self.response_type
 
     def is_expired(self) -> bool:
         """Check if request has exceeded its timeout"""
@@ -79,14 +96,15 @@ class RequestContext:
         """Check if the future is done"""
         return self.future.done()
 
-    def set_result(self, result: Any):
+    def set_result(self, result: Message | None):
         """Set the result of the future"""
-        if not self.future.done():
+        print(f'Setting result for {self.correlation_id}: {result}')
+        if not self.future.done() and self.is_valid_response(result):
             self.future.set_result(result)
 
     def result(self, timeout: float = None) -> Any:
         """Get the result of the future, blocking until available or timeout"""
-        return self.future.result(timeout=timeout)
+        return self.future.result(timeout)
 
 
 # ============================================================================
@@ -101,10 +119,13 @@ class MessagingServiceImpl(messaging_service_pb2_grpc.MessagingServiceServicer):
     MAX_TIMEOUT = 300.0
     CLEANUP_INTERVAL = 10.0  # Cleanup expired requests every 10 seconds
 
-    def __init__(self, node: Node, default_config: dict = None):
+    def __init__(self, node: Node, remote_name: str):
         self.node = node
-        self.receiver = ReceiverQueue()
-        self.node.add_destination('grpc_messaging_service', self.receiver)
+        self.remote_name = remote_name
+        self.dispatching_queue = DispatchingQueue()
+        self.node.add_destination(
+            'grpc_messaging_service', self.dispatching_queue
+        )
 
         self.pending_requests: dict[str, RequestContext] = {}
         self.requests_lock = threading.RLock()
@@ -158,7 +179,6 @@ class MessagingServiceImpl(messaging_service_pb2_grpc.MessagingServiceServicer):
                     for cid in expired:
                         ctx = self.pending_requests.pop(cid)
                         ctx.cancel(f'Request expired after {ctx.timeout}s')
-                        self._increment_stat('timeout_requests')
                         logger.warning(f'Cleaned up expired request: {cid}')
 
             except Exception as e:
@@ -171,14 +191,14 @@ class MessagingServiceImpl(messaging_service_pb2_grpc.MessagingServiceServicer):
         """
         while not self._stop_event.is_set():
             try:
-                message: Message = self.receiver.get(timeout=1.0)
+                message: Message = self.dispatching_queue.get(timeout=1.0)
                 correlation_id = message.meta.get('correlation_id')
 
                 if not correlation_id:
                     logger.warning(
-                        f'Received message from {message.creator}',
-                        'but no correlation_id found in metadata.',
-                        'skipping...',
+                        f'Received message from {message.creator} '
+                        'but no correlation_id found in metadata. '
+                        'skipping...'
                     )
                     continue
 
@@ -187,11 +207,9 @@ class MessagingServiceImpl(messaging_service_pb2_grpc.MessagingServiceServicer):
                     req_ctx = self.pending_requests.pop(correlation_id, None)
 
                 if req_ctx:
-                    req_ctx.set_result(message)  # sets only if not done
+                    req_ctx.future.set_result(message)  # sets only if not done
                 else:
-                    logger.warning(
-                        f'Received response for unknown correlation_id: {correlation_id}'  # noqa: E501
-                    )
+                    logger.warning(f'Unknown correlation_id: {correlation_id}')
 
             except queue.Empty:
                 continue
@@ -199,7 +217,7 @@ class MessagingServiceImpl(messaging_service_pb2_grpc.MessagingServiceServicer):
                 logger.error(f'Error in dispatcher loop: {e}', exc_info=True)
 
         logger.info('Dispatcher loop shutting down')
-        self._shutdown_complete.set()
+        # self._shutdown_complete.set()
 
     def SendAndReceive(self, request: ProtoEnvelope, context):
         """Handle request-response pattern asynchronously"""
@@ -210,44 +228,34 @@ class MessagingServiceImpl(messaging_service_pb2_grpc.MessagingServiceServicer):
             envelope_dict = deserialize_envelope(request)
             request_message = envelope_dict['message']
             correlation_id = envelope_dict.get('correlation_id')
+            sender = envelope_dict.get('sender')
+            request_id = envelope_dict.get('id')
 
             if not correlation_id:
-                # ! FIXME: this should only raise an exception
-                # ! and let handling below,
-                # ! but, how to pass the STATUS CODE?
-                logger.error(f'Duplicate correlation_id: {correlation_id}')
-                context.abort(
-                    grpc.StatusCode.INVALID_ARGUMENT, 'Missing correlation_id'
-                )
-                return ProtoEnvelope()
+                raise ValueError('Missing correlation_id in request envelope')
+
+            if not sender:
+                raise ValueError('Missing sender in request envelope')
 
             timeout = request.ttl if request.ttl > 0 else self.DEFAULT_TIMEOUT
             timeout = min(timeout, self.MAX_TIMEOUT)
 
             request_context = RequestContext(
-                correlation_id=correlation_id, timeout=timeout
+                correlation_id=correlation_id,
+                timeout=timeout,
+                sender=sender,
+                request_id=request_id,
+                response_type=envelope_dict.get('response_type', None),
             )
 
             with self.requests_lock:
                 if correlation_id in self.pending_requests:
-                    # ! FIXME: this should only raise an exception
-                    # ! and let handling below
-                    # ! but, how to pass the STATUS CODE?
-                    logger.error(f'Duplicate correlation_id: {correlation_id}')
-                    context.abort(
-                        grpc.StatusCode.ALREADY_EXISTS,
-                        'Duplicate correlation_id',
+                    raise ValueError(
+                        f'Duplicate correlation_id: {correlation_id}'
                     )
-                    return ProtoEnvelope()
-
                 self.pending_requests[correlation_id] = request_context
 
-            # ! FIXME: Potential breaking change here
-            # ! Any node should be able to handle this metadata key
-            # ! In order to propagate correlation_id properly
-            # ! We should: define how to update/pass metadata in nodes
-            # ! OR automatically inject correlation_id in all messages
-            # ! (maybe setting an ID field in Message class directly)
+            # Inject correlation_id into message meta
             request_message.meta['correlation_id'] = correlation_id
 
             # Inject Configuration for the Node Wrapper
@@ -255,36 +263,34 @@ class MessagingServiceImpl(messaging_service_pb2_grpc.MessagingServiceServicer):
                 _configuration_to_be_applied = envelope_dict.get(
                     'configuration', {}
                 )
-                # ! FIXME: deploy and use a CONFIGURE ControlPayloads
-                ...
 
             self.node.put(request_message)
 
             try:
-                response_message = request_context.result(timeout=timeout)
-            except futures.TimeoutError as te:
+                response_message = request_context.future.result(timeout)
+            except futures.TimeoutError as te:  # a different TimeoutError
                 raise TimeoutError(
                     f'Node processing timed out after {timeout}s'
                 ) from te
             except Exception:
+                raise
+            finally:
                 with self.requests_lock:
                     self.pending_requests.pop(correlation_id, None)
-                raise
 
             proto_response = message_to_proto(response_message)
 
             response_envelope = create_envelope(
                 message=proto_response,
-                creator='remote_service',
+                creator=self.remote_name,
                 configuration={},
                 metadata={
                     'processing_time': time.time() - request_context.created_at
                 },
-                request_type='',
+                request_type=type(response_message.payload).__name__,
                 priority=0,
+                response_to=request_id,
                 timeout=timeout,
-                # ! FIXME: should be T_Output, do we need an UnknownPayload?
-                response_type=envelope_dict.get('request_type', 'Any'),
                 correlation_id=correlation_id,
                 id=correlation_id,  # ID of this response envelope
             )
@@ -297,6 +303,11 @@ class MessagingServiceImpl(messaging_service_pb2_grpc.MessagingServiceServicer):
             self._increment_stat('timeout_requests')
             logger.error(f'Timeout for {correlation_id}: {e}')
             context.abort(grpc.StatusCode.DEADLINE_EXCEEDED, str(e))
+            return ProtoEnvelope()
+        except ValueError as ve:
+            self._increment_stat('invalid_requests')
+            logger.error(f'Invalid request: {ve}')
+            context.abort(grpc.StatusCode.INVALID_ARGUMENT, str(ve))
             return ProtoEnvelope()
         except Exception as e:
             self._increment_stat('failed_requests')
@@ -369,7 +380,9 @@ def serve():
         logger.error(f'Failed to parse default config: {e}')
         return
 
-    logger.info(f"Building node '{args.node_name}'...")
+    logger.info(
+        f"Building node '{args.node_name}' from '{args.plugins_dir}'..."
+    )
 
     # We use _remote_builder.
     # Note: _remote_builder signature:
@@ -380,7 +393,7 @@ def serve():
     # It returns (node, runtime_folder)
 
     try:
-        node_instance, _ = _remote_builder(
+        node_instance, _ = _standalone_builder(
             name=args.node_name,
             plugins_dir=args.plugins_dir,
             node_mark=args.node_mark,
@@ -399,7 +412,7 @@ def serve():
         return
 
     service_impl = MessagingServiceImpl(
-        node_instance, default_config=default_config
+        node_instance, remote_name=args.pipe_name
     )
 
     server = grpc.server(

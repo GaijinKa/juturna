@@ -326,6 +326,7 @@ def create_envelope(
     priority: int = 1,
     timeout: int = 30,
     correlation_id: str = str(uuid.uuid4()),
+    response_to: str = None,
     response_type: str = '',
     request_type: str = '',
 ) -> ProtoEnvelope:
@@ -335,13 +336,13 @@ def create_envelope(
     envelope = ProtoEnvelope()
     envelope.id = id
     envelope.sender = creator
-    envelope.receiver = creator
     envelope.correlation_id = correlation_id
     envelope.created_at = time.time()
     envelope.ttl = int(timeout)
     envelope.request_type = request_type
     envelope.response_type = response_type
     envelope.priority = priority
+    envelope.response_to = response_to if response_to is not None else ''
     envelope.configuration.update(configuration)
     envelope.metadata.update(metadata)
     envelope.message.CopyFrom(message)
@@ -355,7 +356,6 @@ def deserialize_envelope(envelope: ProtoEnvelope) -> dict[str, Any]:
     envelope_dict = {
         'id': envelope.id,
         'sender': envelope.sender,
-        'receiver': envelope.receiver,
         'correlation_id': envelope.correlation_id,
         'response_to': envelope.response_to,
         'ttl': envelope.ttl,
