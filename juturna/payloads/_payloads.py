@@ -8,6 +8,7 @@ from dataclasses import field
 
 import numpy as np
 
+from juturna.payloads._control_signal import ControlSignal
 
 @dataclass(frozen=True, slots=True)
 class BasePayload:
@@ -37,6 +38,11 @@ class BasePayload:
 
 
 @dataclass(frozen=True)
+class ControlPayload(BasePayload):
+    signal: ControlSignal = ControlSignal.STOP
+
+
+@dataclass(frozen=True)
 class AudioPayload(BasePayload):
     audio: np.ndarray = field(default_factory=lambda: np.ndarray(0))
     sampling_rate: int = -1
@@ -51,6 +57,7 @@ class AudioPayload(BasePayload):
             'audio': obj.audio.tolist(),
             'sampling_rate': obj.sampling_rate,
             'channels': obj.channels,
+            'audio_format': obj.audio_format,
             'start': obj.start,
             'end': obj.end,
         }
@@ -109,7 +116,7 @@ class Batch(BasePayload):
 
     @staticmethod
     def serialize(obj) -> list:
-        return [msg.serialize() for msg in obj.messages]
+        return [msg.to_dict() for msg in obj.messages]
 
 
 @dataclass(frozen=True)

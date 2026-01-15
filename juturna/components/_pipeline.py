@@ -6,11 +6,14 @@ import gc
 import typing
 
 from juturna.components import _component_builder
-from juturna.components._node import Node
+from juturna.components import Node
+from juturna.components._dag import DAG
 from juturna.utils.log_utils import jt_logger
 
 from juturna.names import ComponentStatus
 from juturna.names import PipelineStatus
+
+from juturna.payloads import ControlSignal
 
 
 class Pipeline:
@@ -38,6 +41,7 @@ class Pipeline:
 
         self._nodes: dict[str, Node] = dict()
         self._links: list = list()
+        self._dag: DAG = DAG()
 
         self._status = PipelineStatus.NEW
         self.created_at = time.time()
@@ -90,6 +94,10 @@ class Pipeline:
             else dict(),
         }
 
+    @property
+    def DAG(self) -> DAG:
+        return self._dag
+
     def warmup(self):
         """
         Prepare the pipeline and all its nodes.
@@ -124,6 +132,7 @@ class Pipeline:
             _node.status = ComponentStatus.NEW
 
             self._nodes[node_name] = _node
+            self._dag.add_node(node_name)
 
         for link in links:
             from_node = link['from']
@@ -136,6 +145,7 @@ class Pipeline:
             self._nodes[to_node].origins.append(from_node)
 
             self._links.append(copy.copy(link))
+            self._dag.add_edge(from_node, to_node)
 
         for node_name, node in self._nodes.items():
             node.warmup()
@@ -171,10 +181,11 @@ class Pipeline:
         if not self._nodes:
             raise RuntimeError(f'pipeline {self.name} is not configured')
 
-        for node_name in list(self._nodes.keys())[::-1]:
-            self._logger.info(f'starting node {node_name}')
+        for layer in self._dag.BFS()[::-1]:
+            for node_name in layer:
+                self._logger.info(f'starting node {node_name}')
 
-            self._nodes[node_name].start()
+                self._nodes[node_name].start()
 
         self._status = PipelineStatus.RUNNING
 
@@ -201,6 +212,24 @@ class Pipeline:
             node.stop()
 
         self._status = PipelineStatus.READY
+
+    def suspend_node(self, node_name: str):
+        """
+        Suspend a node in the pipeline.
+        A pipeline node can be suspended, so it won't process any data until it
+        is resumed. A suspended node will keep forwarding received messages to
+        its destinations.
+        """
+        if node := self._nodes.get(node_name):
+            node.put(ControlSignal.SUSPEND)
+
+    def resume_node(self, node_name: str):
+        """
+        Resume a node in the pipeline.
+        A suspended node can be resumed, so it will start processing data again.
+        """
+        if node := self._nodes.get(node_name):
+            node.put(ControlSignal.RESUME)
 
     def destroy(self):
         """
