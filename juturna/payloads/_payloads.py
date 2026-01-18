@@ -1,6 +1,6 @@
 import copy
 import json
-
+import dataclasses
 from typing import Self
 from typing import Any
 from dataclasses import dataclass
@@ -10,7 +10,6 @@ import numpy as np
 
 from juturna.payloads._control_signal import ControlSignal
 
-
 @dataclass(frozen=True, slots=True)
 class BasePayload:
     def clone(self) -> Self:
@@ -19,6 +18,23 @@ class BasePayload:
     @staticmethod
     def serialize(obj):
         return json.JSONEncoder.default(obj)
+
+    def __deepcopy__(self, memo) -> Self:
+        cls = self.__class__
+        kwargs = {}
+
+        # Handle dataclass fields
+        if dataclasses.is_dataclass(self):
+            for f in dataclasses.fields(self):
+                value = getattr(self, f.name)
+                kwargs[f.name] = copy.deepcopy(value, memo)
+
+        # Handle dict items (for ObjectPayload)
+        if isinstance(self, dict):
+            for k, v in self.items():
+                kwargs[k] = copy.deepcopy(v, memo)
+
+        return cls(**kwargs)
 
 
 @dataclass(frozen=True)
