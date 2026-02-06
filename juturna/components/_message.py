@@ -113,15 +113,19 @@ class Message[T_Input]:
             A dictionary representation of the message.
 
         """
-        return {
+        result = {
             'created_at': self.created_at,
             'creator': self.creator,
             'version': self.version,
             'payload': self.payload,
-            'feedback': self.feedback,
             'meta': dict(self.meta),
             'timers': dict(self.timers),
         }
+
+        if self.feedback is not None:
+            result['feedback'] = self.feedback
+
+        return result
 
     def to_json(
         self, encoder: typing.Callable | None = None, indent: int | None = None
