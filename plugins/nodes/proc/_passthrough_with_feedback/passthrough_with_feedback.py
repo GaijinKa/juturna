@@ -51,21 +51,20 @@ class PassthroughWithFeedback(Node[BasePayload, BasePayload]):
         with the incoming payload plus the feedback from the same source,
         and stores the last message only
         """
-        augumented_message = message.payload.messages
-
-        self.logger.info(f'received {len(augumented_message)} messages')
+        self.logger.info(f'received {len(message.payload.messages)} messages')
 
         self.logger.info(
             f'message {message.version} received from: {message.creator}'
         )
 
-        for msg in augumented_message:
+        for msg in message.payload.messages:
             self.logger.info(f'message payload: {msg.payload}')
 
         to_send = Message[Batch](
             creator=self.name,
             version=message.version,
-            payload=Batch(messages=tuple(augumented_message)),
+            payload=message.payload.messages,
+            feedback=(message.payload.messages[0], message.creator),
             timers_from=message,
         )
 
@@ -76,9 +75,7 @@ class PassthroughWithFeedback(Node[BasePayload, BasePayload]):
         with to_send.timeit(f'{self.name}_delay'):
             time.sleep(self._delay)
 
-        self.transmit(
-            to_send, feedback=(to_send.payload.messages[0], message.creator)
-        )
+        self.transmit(to_send)
 
     def next_batch(self, sources: dict) -> dict:
         """Synchronisation policy"""

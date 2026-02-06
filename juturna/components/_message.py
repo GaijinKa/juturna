@@ -6,7 +6,7 @@ import itertools
 from contextlib import contextmanager
 from types import MappingProxyType
 
-from juturna.payloads import Draft
+from juturna.payloads import Draft, Batch
 
 
 class Message[T_Input]:
@@ -22,6 +22,7 @@ class Message[T_Input]:
         'version',
         'meta',
         'timers',
+        'feedback',
         '_payload',
         '_is_frozen',
         '_data_source_id',
@@ -34,6 +35,7 @@ class Message[T_Input]:
         creator: str | None = None,
         version: int = -1,
         payload: T_Input = None,
+        feedback: tuple[Batch, str] | None = None,
         timers_from: 'Message' = None,
     ):
         """
@@ -48,6 +50,11 @@ class Message[T_Input]:
         payload : Any, optional
             The payload of the message. This is the actual data contained in the
             message. The default is None.
+        feedback : tuple[Batch, str], optional
+            A tuple containing the payload and the source of the feedback.
+            Used to send feedback to same source's next incoming message.
+            It will be deleted on freeze.
+            The default is None.
         timers_from : Message
             When provided, timers will be copied from it into the new message.
 
@@ -56,6 +63,7 @@ class Message[T_Input]:
         self.created_at = time.time()
         self.creator = creator
         self.version = version
+        self.feedback = feedback
         self.meta = dict()
         self.timers = (
             dict() if timers_from is None else timers_from.timers.copy()
@@ -91,6 +99,7 @@ class Message[T_Input]:
 
         self.meta = MappingProxyType(self.meta)
         self.timers = MappingProxyType(self.timers)
+        self.feedback = None
 
         object.__setattr__(self, '_is_frozen', True)
 
@@ -109,6 +118,7 @@ class Message[T_Input]:
             'creator': self.creator,
             'version': self.version,
             'payload': self.payload,
+            'feedback': getattr(self, 'feedback', None),
             'meta': dict(self.meta),
             'timers': dict(self.timers),
         }

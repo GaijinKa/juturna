@@ -308,7 +308,6 @@ class Node[T_Input, T_Output]:
     def transmit(
         self,
         message: Message[T_Output] | ControlSignal,
-        feedback: tuple[BasePayload, str] | None = None,
     ):
         """
         Transmit a message. This method is used to send data from the node to
@@ -317,28 +316,23 @@ class Node[T_Input, T_Output]:
 
         Parameters
         ----------
-        message : Message | None
+        message : Message | ControlSignal
             The message to be transmitted.
-        feedback : tuple[BasePayload, str] | None
-            Optional feedback to be sent back to the source. This should be a
-            tuple of the form (payload, source), where payload is the feedback
-            data to be sent back, and source is the name of the source to send
-            the feedback to.
 
         """
-        object.__setattr__(
-            message, '_data_source_id', self._last_data_source_evt_id
-        )
-        _ = message._freeze() if isinstance(message, Message) else None
-
-        if feedback is not None:
-            payload, source = feedback
+        if message.feedback is not None:
+            payload, source = message.feedback
             batch = (
                 payload
                 if isinstance(payload, Batch)
                 else Batch(messages=(payload,))
             )
             self.feedback(batch, source)
+
+        object.__setattr__(
+            message, '_data_source_id', self._last_data_source_evt_id
+        )
+        _ = message._freeze() if isinstance(message, Message) else None
 
         for node_name in self._destinations:
             self._destinations[node_name].put(message)
