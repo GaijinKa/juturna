@@ -11,7 +11,7 @@ from collections.abc import Callable
 from typing import Any
 
 from juturna.components import Message
-from juturna.payloads import ControlPayload, BasePayload
+from juturna.payloads import ControlPayload, BasePayload, Batch
 from juturna.payloads import ControlSignal
 
 from juturna.names import ComponentStatus
@@ -333,7 +333,12 @@ class Node[T_Input, T_Output]:
 
         if feedback is not None:
             payload, source = feedback
-            self.feedback(payload, source)
+            batch = (
+                payload
+                if isinstance(payload, Batch)
+                else Batch(messages=(payload,))
+            )
+            self.feedback(batch, source)
 
         for node_name in self._destinations:
             self._destinations[node_name].put(message)

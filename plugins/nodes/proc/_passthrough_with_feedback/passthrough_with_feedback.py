@@ -36,21 +36,36 @@ class PassthroughWithFeedback(Node[BasePayload, BasePayload]):
     def augument_message(self, message):
         """Augument the message with feedback from the same source"""
         feedbacks = self.pick_feedback(message.creator)
-        with_feedback = Batch[BasePayload](
-            messages=(message.payload, *feedbacks)
+        self.logger.info(f'feedbacks: {feedbacks}')
+        with_feedback = Message[Batch](
+            creator=message.creator,
+            version=message.version,
+            payload=Batch(messages=(message, *feedbacks)),
+            timers_from=message,
         )
         return with_feedback
 
     def update(self, message: Message[BasePayload]):
-        """Receive a message from downstream, transmit a message upstream"""
+        """
+        Receive a message from downstream, transmit a message upstream
+        with the incoming payload plus the feedback from the same source,
+        and stores the last message only
+        """
+        augumented_message = message.payload.messages
+
+        self.logger.info(f'received {len(augumented_message)} messages')
+
         self.logger.info(
             f'message {message.version} received from: {message.creator}'
         )
 
-        to_send = Message[BasePayload](
+        for msg in augumented_message:
+            self.logger.info(f'message payload: {msg.payload}')
+
+        to_send = Message[Batch](
             creator=self.name,
             version=message.version,
-            payload=message.payload.clone(),
+            payload=Batch(messages=tuple(augumented_message)),
             timers_from=message,
         )
 
@@ -61,7 +76,9 @@ class PassthroughWithFeedback(Node[BasePayload, BasePayload]):
         with to_send.timeit(f'{self.name}_delay'):
             time.sleep(self._delay)
 
-        self.transmit(to_send, feedback=(to_send.payload, message.creator))
+        self.transmit(
+            to_send, feedback=(to_send.payload.messages[0], message.creator)
+        )
 
     def next_batch(self, sources: dict) -> dict:
         """Synchronisation policy"""
