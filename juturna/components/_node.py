@@ -11,7 +11,7 @@ from collections.abc import Callable
 from typing import Any
 
 from juturna.components import Message
-from juturna.payloads import ControlPayload, BasePayload, Batch
+from juturna.payloads import ControlPayload, Batch
 from juturna.payloads import ControlSignal
 
 from juturna.names import ComponentStatus
@@ -321,11 +321,11 @@ class Node[T_Input, T_Output]:
 
         """
         if message.feedback is not None:
-            payload, source = message.feedback
+            message_to_store, source = message.feedback
             batch = (
-                payload
-                if isinstance(payload, Batch)
-                else Batch(messages=(payload,))
+                message_to_store
+                if isinstance(message_to_store, Batch)
+                else Batch(messages=(message_to_store,))
             )
             self.logger.info(f'setting feedback for source {source}: {batch}')
             self.feedback(batch, source)
@@ -431,7 +431,7 @@ class Node[T_Input, T_Output]:
         feedback_batch = self._feedback_by_source.get(source)
         return list(feedback_batch.messages) if feedback_batch else []
 
-    def feedback(self, payload: BasePayload, source: str):
+    def feedback(self, payload: Batch, source: str):
         self._feedback_by_source[source] = payload
 
     def _worker(self):
