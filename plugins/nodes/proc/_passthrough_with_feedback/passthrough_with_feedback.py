@@ -63,7 +63,7 @@ class PassthroughWithFeedback(Node[BasePayload, BasePayload]):
         to_send = Message[Batch](
             creator=self.name,
             version=message.version,
-            payload=message.payload.messages,
+            payload=message.payload,
             feedback=(message.payload.messages[0], message.creator),
             timers_from=message,
         )
