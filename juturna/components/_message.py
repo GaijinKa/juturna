@@ -118,7 +118,7 @@ class Message[T_Input]:
             'creator': self.creator,
             'version': self.version,
             'payload': self.payload,
-            'feedback': getattr(self, 'feedback', None),
+            'feedback': self.feedback,
             'meta': dict(self.meta),
             'timers': dict(self.timers),
         }
