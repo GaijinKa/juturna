@@ -99,7 +99,7 @@ class Message[T_Input]:
 
         self.meta = MappingProxyType(self.meta)
         self.timers = MappingProxyType(self.timers)
-        self.feedback = None
+        del self.feedback
 
         object.__setattr__(self, '_is_frozen', True)
 
