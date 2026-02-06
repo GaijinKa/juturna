@@ -11,7 +11,7 @@ from collections.abc import Callable
 from typing import Any
 
 from juturna.components import Message
-from juturna.payloads import ControlPayload
+from juturna.payloads import ControlPayload, BasePayload
 from juturna.payloads import ControlSignal
 
 from juturna.names import ComponentStatus
@@ -68,6 +68,8 @@ class Node[T_Input, T_Output]:
         self._stop_worker_event = threading.Event()
         self._stop_source_event = threading.Event()
         self._stop_update_event = threading.Event()
+
+        self._feedback_by_source: dict[str, Any] = dict()
 
         self._suspended = False
 
@@ -303,7 +305,11 @@ class Node[T_Input, T_Output]:
     def clear_buffer(self):
         self._buffer.flush()
 
-    def transmit(self, message: Message[T_Output] | ControlSignal):
+    def transmit(
+        self,
+        message: Message[T_Output] | ControlSignal,
+        feedback: tuple[BasePayload, str] | None = None,
+    ):
         """
         Transmit a message. This method is used to send data from the node to
         its destinations. Messages are frozen before transmission, so that
@@ -313,12 +319,21 @@ class Node[T_Input, T_Output]:
         ----------
         message : Message | None
             The message to be transmitted.
+        feedback : tuple[BasePayload, str] | None
+            Optional feedback to be sent back to the source. This should be a
+            tuple of the form (payload, source), where payload is the feedback
+            data to be sent back, and source is the name of the source to send
+            the feedback to.
 
         """
         object.__setattr__(
             message, '_data_source_id', self._last_data_source_evt_id
         )
         _ = message._freeze() if isinstance(message, Message) else None
+
+        if feedback is not None:
+            payload, source = feedback
+            self.feedback(payload, source)
 
         for node_name in self._destinations:
             self._destinations[node_name].put(message)
@@ -408,6 +423,17 @@ class Node[T_Input, T_Output]:
 
     def destroy(self): ...
 
+    def augument_message(self, message: Message) -> Message:
+        logging.info(f'augumenting message {message.creator} with feedback')
+        return message
+
+    def pick_feedback(self, source: str) -> list[Message]:
+        feedback_batch = self._feedback_by_source.get(source)
+        return list(feedback_batch.messages) if feedback_batch else []
+
+    def feedback(self, payload: BasePayload, source: str):
+        self._feedback_by_source[source] = payload
+
     def _worker(self):
         while not self._stop_worker_event.is_set():
             message = self._queue.get()
@@ -445,6 +471,7 @@ class Node[T_Input, T_Output]:
                 continue
 
             self._last_data_source_evt_id = batch.id
+            batch = self.augument_message(batch)
             self.update(batch)
 
     def _source(self):

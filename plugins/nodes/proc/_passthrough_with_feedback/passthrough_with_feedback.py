@@ -1,0 +1,74 @@
+"""
+PassthroughWithFeedback
+
+@ Author: Antonio Bevilacqua, Paolo Saviano
+@ Email: abevilacqua@meetecho.com, psaviano@meetecho.com
+
+Test node: return input messages and a feedback after a delay.
+"""
+
+import time
+
+from juturna.components import Node
+from juturna.components import Message
+
+from juturna.payloads import BasePayload, Batch
+
+
+class PassthroughWithFeedback(Node[BasePayload, BasePayload]):
+    """Node implementation class"""
+
+    def __init__(self, delay: int, feedback_size: int = 1, **kwargs):
+        """
+        Parameters
+        ----------
+        delay : int
+            Wait time before returning input messages to the output.
+        feedback_size : int
+            Number of messages to keep in the feedback history for each source.
+        kwargs : dict
+            Supernode arguments.
+
+        """
+        super().__init__(**kwargs)
+
+        self._delay = delay
+        self._feedback_size = feedback_size
+        self._transmitted = 0
+
+    def augument_message(self, message):
+        """Augument the message with feedback from the same source"""
+        feedbacks = self.pick_feedback(message.creator)
+        with_feedback = Batch[BasePayload](
+            messages=(message.payload, *feedbacks)
+        )
+        return with_feedback
+
+    def update(self, message: Message[BasePayload]):
+        """Receive a message from downstream, transmit a message upstream"""
+        self.logger.info(
+            f'message {message.version} received from: {message.creator}'
+        )
+
+        to_send = Message[BasePayload](
+            creator=self.name,
+            version=message.version,
+            payload=message.payload.clone(),
+            timers_from=message,
+        )
+
+        to_send.meta = dict(message.meta)
+
+        self._transmitted += 1
+
+        with to_send.timeit(f'{self.name}_delay'):
+            time.sleep(self._delay)
+
+        self.transmit(to_send, feedback=(to_send.payload, message.creator))
+
+    def next_batch(self, sources: dict) -> dict:
+        """Synchronisation policy"""
+        self.logger.info('using custom policy')
+        self.logger.info(f'expected sources: {self.origins}')
+
+        return {source: list(range(len(sources[source]))) for source in sources}
