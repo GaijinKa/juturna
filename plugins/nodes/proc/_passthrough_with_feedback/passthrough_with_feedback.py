@@ -18,14 +18,12 @@ from juturna.payloads import BasePayload, Batch
 class PassthroughWithFeedback(Node[BasePayload, BasePayload]):
     """Node implementation class"""
 
-    def __init__(self, delay: int, feedback_size: int = 1, **kwargs):
+    def __init__(self, delay: int, **kwargs):
         """
         Parameters
         ----------
         delay : int
             Wait time before returning input messages to the output.
-        feedback_size : int
-            Number of messages to keep in the feedback history for each source.
         kwargs : dict
             Supernode arguments.
 
@@ -33,7 +31,6 @@ class PassthroughWithFeedback(Node[BasePayload, BasePayload]):
         super().__init__(**kwargs)
 
         self._delay = delay
-        self._feedback_size = feedback_size
         self._transmitted = 0
 
     def augument_message(self, message):
