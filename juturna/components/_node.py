@@ -327,6 +327,7 @@ class Node[T_Input, T_Output]:
                 if isinstance(payload, Batch)
                 else Batch(messages=(payload,))
             )
+            self.logger.info(f'setting feedback for source {source}: {batch}')
             self.feedback(batch, source)
 
         object.__setattr__(
