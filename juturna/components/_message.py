@@ -118,7 +118,6 @@ class Message[T_Input]:
             'creator': self.creator,
             'version': self.version,
             'payload': self.payload,
-            'feedback': self.feedback if hasattr(self, 'feedback') else None,
             'meta': dict(self.meta),
             'timers': dict(self.timers),
         }
