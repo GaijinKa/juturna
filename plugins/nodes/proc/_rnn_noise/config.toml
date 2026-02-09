@@ -1,0 +1,4 @@
+[arguments]
+lib_path = "./rnnoise"
+
+[meta]
