@@ -1,5 +1,5 @@
 [arguments]
-lib_path = "./rnnoise"
-keep_original_sr = True
+lib_path = "./rnnoise/lib/librnnoise.so"
+keep_original_sr = true
 
 [meta]

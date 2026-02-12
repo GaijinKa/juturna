@@ -1,0 +1,11 @@
+[arguments]
+  dictionary_path = "./dictionaries/it-100k.txt"
+  min_frequency_threshold = 1000,
+  min_edit_distance = 1,
+  max_edit_distance = 2
+  min_confidence_threshold = 0.3
+  frequency_ratio_threshold = 5
+  custom_dictionary = []
+  whitelist = []
+
+[meta]

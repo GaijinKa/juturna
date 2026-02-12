@@ -69,7 +69,7 @@ class RnnNoise(Node[AudioPayload, AudioPayload]):
 
         resampled_frame = self._resample_audio(
             audio_frame,
-            from_sr=message.payload.sample_rate,
+            from_sr=message.payload.sampling_rate,
             to_sr=RNNoiseWrapper.SAMPLE_RATE,
             channels=message.payload.channels,
         ).astype(np.float32)
@@ -97,17 +97,17 @@ class RnnNoise(Node[AudioPayload, AudioPayload]):
 
         if (
             self._keep_original_sr
-            and message.payload.sample_rate != RNNoiseWrapper.SAMPLE_RATE
+            and message.payload.sampling_rate != RNNoiseWrapper.SAMPLE_RATE
         ):
             filtered_audio = self._resample_audio(
                 filtered_audio,
                 from_sr=RNNoiseWrapper.SAMPLE_RATE,
-                to_sr=message.payload.sample_rate,
+                to_sr=message.payload.sampling_rate,
                 channels=filtered_audio.shape[0]
                 if filtered_audio.ndim > 1
                 else 1,
             ).astype(np.float32)
-            cleaned_sampling_rate = message.payload.sample_rate
+            cleaned_sampling_rate = message.payload.sampling_rate
 
         to_send = Message[AudioPayload](
             creator=self.name,
