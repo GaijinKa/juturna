@@ -11,7 +11,6 @@ This nodes implement symspell spell correction algorithm.
 import typing
 import re
 from symspellpy import SymSpell, Verbosity
-import pkg_resources
 
 from juturna.components import Node
 from juturna.components import Message
@@ -73,10 +72,9 @@ class Symspell(Node[ObjectPayload, ObjectPayload]):
             max_dictionary_edit_distance=self._max_edit_distance,
             prefix_length=7,
         )
-        self._dictionary_path = pkg_resources.resource_filename(
-            __name__, self._dictionary_path
+        self._sym_spell.create_dictionary(
+            self._dictionary_path,
         )
-        self._sym_spell.load_dictionary(self._dictionary_path, 0, 1)
 
         for term, freq in self._custom_dictionary:
             self._sym_spell.create_dictionary_entry(term, freq)
