@@ -1,0 +1,8 @@
+[arguments]
+  model_name = "dbmdz/bert-base-italian-cased"
+  device = "cuda"
+  whitelist = []
+  top_k = 5
+  confidence_threshold = 0.3
+
+[meta]
