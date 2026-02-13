@@ -1,0 +1,8 @@
+[arguments]
+  model_name = "bert"
+  context_window = 2
+  device = "cuda"
+  whitelist = []
+  confidence_threshold = 0.5
+
+[meta]

@@ -8,9 +8,9 @@ Symspell
 This nodes implement symspell spell correction algorithm.
 """
 
-import typing
 import re
 from symspellpy import SymSpell, Verbosity
+from pathlib import Path
 
 from juturna.components import Node
 from juturna.components import Message
@@ -72,30 +72,14 @@ class Symspell(Node[ObjectPayload, ObjectPayload]):
             max_dictionary_edit_distance=self._max_edit_distance,
             prefix_length=7,
         )
-        self._sym_spell.create_dictionary(
-            self._dictionary_path,
+        self._sym_spell.load_dictionary(
+            Path(self._dictionary_path),
+            term_index=0,
+            count_index=1,
         )
 
         for term, freq in self._custom_dictionary:
             self._sym_spell.create_dictionary_entry(term, freq)
-
-    def set_on_config(self, prop: str, value: typing.Any):
-        """Hot-swap node properties"""
-        ...
-
-    def start(self):
-        """Start the node"""
-        # after custom start code, invoke base node start
-        super().start()
-
-    def stop(self):
-        """Stop the node"""
-        # after custom stop code, invoke base node stop
-        super().stop()
-
-    def destroy(self):
-        """Destroy the node"""
-        ...
 
     def update(self, message: Message[ObjectPayload]):
         """Receive data from upstream, transmit data downstream"""
@@ -118,7 +102,7 @@ class Symspell(Node[ObjectPayload, ObjectPayload]):
 
         to_send.meta = dict(message.meta)
 
-        if suggestion is not None:
+        if suggestion:
             words = suggestion.split()
             corrected_words = []
 
@@ -136,7 +120,7 @@ class Symspell(Node[ObjectPayload, ObjectPayload]):
                     continue
 
                 corrected, confidence, orig_freq, corr_freq = (
-                    self.find_best_correction(core)
+                    self._propose_corrections(core)
                 )
 
                 if confidence > self._min_confidence_threshold:
