@@ -3,6 +3,6 @@
   device = "cuda"
   whitelist = []
   top_k = 5
-  confidence_threshold = 0.3
+  confidence_threshold = 0.7
 
 [meta]

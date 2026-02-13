@@ -15,7 +15,7 @@ from juturna.components import Message
 
 from juturna.payloads import ObjectPayload, Draft
 
-from transformers import pipeline
+from transformers import pipeline, BertTokenizer
 
 
 class BertSpellcheck(Node[ObjectPayload, ObjectPayload]):
@@ -65,6 +65,7 @@ class BertSpellcheck(Node[ObjectPayload, ObjectPayload]):
             model=self._model_name,
             device=0 if self._device == 'cuda' else -1,
         )
+        self._tokenizer = BertTokenizer.from_pretrained(self._model_name)
 
     def update(self, message: Message[ObjectPayload]):
         """Receive data from upstream, transmit data downstream"""
@@ -98,14 +99,19 @@ class BertSpellcheck(Node[ObjectPayload, ObjectPayload]):
         corrected_words = list(words)
 
         for i, word in enumerate(words):
-            word_clean = re.sub(r'[^\w\s]', '', word)
-            if word_clean in self._whitelist:
+            match = re.match(r'(\W*)(\w+)(\W*)', word)
+            if not match:
+                corrected_words.append(word)
+                continue
+
+            prefix, core, suffix = match.groups()
+            if core in self._whitelist:
                 self.logger.debug(
                     f'Word "{word}" is whitelisted, skipping correction.'
                 )
                 continue
 
-            if not word_clean.isalpha() or len(word_clean) <= 2:
+            if not core.isalpha() or len(core) <= 3:
                 self.logger.debug(
                     f'Word "{word}" is not a candidate for correction, skipping'
                 )
@@ -121,7 +127,7 @@ class BertSpellcheck(Node[ObjectPayload, ObjectPayload]):
                     f'Replacing with "{best_alternative}" '
                     f'(confidence: {confidence:.4f}).'
                 )
-                corrected_words[i] = best_alternative
+                corrected_words[i] = f'{prefix}{best_alternative}{suffix}'
 
         corrected_suggestion = ' '.join(corrected_words)
         to_send.payload['suggestion'] = corrected_suggestion
@@ -138,7 +144,7 @@ class BertSpellcheck(Node[ObjectPayload, ObjectPayload]):
         target_word = words[word_position]
 
         masked_words = words.copy()
-        masked_words[word_position] = '<mask>'
+        masked_words[word_position] = self._tokenizer.mask_token
         masked_text = ' '.join(masked_words)
 
         predictions = self._pipe(masked_text, top_k=self._top_k)
