@@ -7,6 +7,9 @@ Vllm
 
 """
 
+import logging
+import os
+
 from juturna.components import Node
 from juturna.components import Message
 
@@ -16,34 +19,33 @@ from juturna.payloads import ObjectPayload, Draft
 
 from vllm import LLM, SamplingParams
 
+os.environ['VLLM_WORKER_MULTIPROC_METHOD'] = 'spawn'
+
 
 class Vllm(Node[ObjectPayload, ObjectPayload]):
     """Node implementation class"""
 
-    def __init__(self, model_name: str, **kwargs):
+    def __init__(self, model_name: str, prompt: str, **kwargs):
         """
         Parameters
         ----------
         model_name : str
             Name of the model to use.
+        prompt : str
+            System prompt to use.
         kwargs : dict
             Supernode arguments.
 
         """
         self._model_name = model_name
+        self._system_prompt = prompt
+        self._context_window = 3
         self._options = SamplingParams(
             temperature=0,
             max_tokens=512,
             stop=['\n'],
         )
-        self._system_prompt = (
-            'You are a helpful assistant for correcting ASR '
-            'transcription errors. '
-            'You receive an ASR transcription and you correct any error in it, '
-            'without changing the meaning of the text. You only reply with the '
-            'corrected text, without any explanation.'
-            'Preserve ABSOLUTELY all named entities and technical terms'
-        )
+        self._history = []
         super().__init__(**kwargs)
 
     def warmup(self):
@@ -51,9 +53,11 @@ class Vllm(Node[ObjectPayload, ObjectPayload]):
         self._model = LLM(
             model=self._model_name,
             trust_remote_code=True,
-            max_model_len=512,  # I chunk sono brevi, non serve 4096
-            dtype='float16',  # Standard per velocità su GPU consumer
-            gpu_memory_utilization=0.5,
+            max_model_len=512,
+            tensor_parallel_size=1,
+            dtype='float16',
+            gpu_memory_utilization=0.75,
+            enforce_eager=True,
         )
 
     def update(self, message: Message[ObjectPayload]):
@@ -78,9 +82,31 @@ class Vllm(Node[ObjectPayload, ObjectPayload]):
         to_send.meta = dict(message.meta)
 
         if suggestion:
-            full_prompt = f'<|system|>\n{self._system_prompt}<|end|>\n'
+            context_suggestions = [
+                msg.payload['suggestion'] for msg in self._history
+            ]
+
+            adhoc_prompt = self._system_prompt
+
+            if len(context_suggestions) > 0:
+                adhoc_prompt = (
+                    self._system_prompt
+                    + '\nQueste sono parti del discorso precedente:'
+                    + ' '.join(context_suggestions)
+                )
+
+            logging.info(
+                f'Full prompt:\n{adhoc_prompt}\nUser input:\n{suggestion}'
+            )
+
+            full_prompt = f'<|system|>\n{adhoc_prompt}<|end|>\n'
             full_prompt += f'<|user|>\n{suggestion}<|end|>\n<|assistant|>\n'
-            output = self._model._generate(full_prompt, self._options)
+            output = self._model.generate(full_prompt, self._options)
             to_send.payload['suggestion'] = output[0].outputs[0].text.strip()
+
+        if len(self._history) >= self._context_window:
+            self._history.pop(0)
+
+        self._history.append(to_send)
 
         self.transmit(to_send)

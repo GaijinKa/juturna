@@ -1,3 +1,4 @@
 [arguments]
   model_name = "microsoft/Phi-3-mini-4k-instruct"
+  prompt = "Correggi errori ortografici nella trascrizione vocale. Rispondi solo con il testo corretto. Mantieni invariati nomi propri e termini tecnici."
 [meta]
