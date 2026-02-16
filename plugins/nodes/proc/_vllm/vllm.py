@@ -7,7 +7,6 @@ Vllm
 
 """
 
-import logging
 import os
 
 from juturna.components import Node
@@ -18,6 +17,7 @@ from juturna.components import Message
 from juturna.payloads import ObjectPayload, Draft
 
 from vllm import LLM, SamplingParams
+from transformers import AutoTokenizer
 
 os.environ['VLLM_WORKER_MULTIPROC_METHOD'] = 'spawn'
 
@@ -46,6 +46,10 @@ class Vllm(Node[ObjectPayload, ObjectPayload]):
             stop=['\n'],
         )
         self._history = []
+        self._tokenizer = AutoTokenizer.from_pretrained(
+            self._model_name, trust_remote_code=True
+        )
+
         super().__init__(**kwargs)
 
     def warmup(self):
@@ -95,12 +99,21 @@ class Vllm(Node[ObjectPayload, ObjectPayload]):
                     + ' '.join(context_suggestions)
                 )
 
-            logging.info(
+            self.logger.debug(
                 f'Full prompt:\n{adhoc_prompt}\nUser input:\n{suggestion}'
             )
 
-            full_prompt = f'<|system|>\n{adhoc_prompt}<|end|>\n'
-            full_prompt += f'<|user|>\n{suggestion}<|end|>\n<|assistant|>\n'
+            messages = [
+                {'role': 'system', 'content': self.adhoc_prompt},
+                {'role': 'user', 'content': f'Correggi: {suggestion}'},
+            ]
+
+            full_prompt = self._tokenizer(
+                messages, add_generation_prompt=True, tokenize=False
+            )
+
+            self.logger.debug(f'Full prompt after tokenization:\n{full_prompt}')
+
             output = self._model.generate(full_prompt, self._options)
             to_send.payload['suggestion'] = output[0].outputs[0].text.strip()
 
