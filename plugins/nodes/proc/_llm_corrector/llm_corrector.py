@@ -118,7 +118,7 @@ class LLMCorrector(Node[ObjectPayload, ObjectPayload]):
             )
 
             messages = [
-                {'role': 'system', 'content': self.adhoc_prompt},
+                {'role': 'system', 'content': adhoc_prompt},
                 {'role': 'user', 'content': f'Correggi: {suggestion}'},
             ]
 
