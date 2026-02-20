@@ -12,7 +12,7 @@ from juturna.components import Message
 
 from juturna.payloads import ObjectPayload, Draft
 
-from transformers import AutoTokenizer, AutoModelForCausalLM
+from transformers import AutoTokenizer, AutoModelForCausalLM, GenerationConfig
 import torch
 
 
@@ -60,10 +60,8 @@ class LLMCorrector(Node[ObjectPayload, ObjectPayload]):
 
     def warmup(self):
         """Warmup the node"""
-        self._tokenizer = AutoTokenizer.from_pretrained(
-            self._model_name, trust_remote_code=True
-        )
-        self._options = dict(
+        self._tokenizer = AutoTokenizer.from_pretrained(self._model_name)
+        self._options = GenerationConfig(
             temperature=self._temperature,
             max_new_tokens=self._max_new_tokens,
             do_sample=False,
@@ -72,9 +70,8 @@ class LLMCorrector(Node[ObjectPayload, ObjectPayload]):
         )
         self._model = AutoModelForCausalLM.from_pretrained(
             self._model_name,
-            torch_dtype=torch.float16,
-            device_map=self._device,
-            trust_remote_code=True,
+            dtype=torch.float16,
+            device_map='auto',
             attn_implementation='eager',  # Più stabile
         )
 
@@ -122,20 +119,30 @@ class LLMCorrector(Node[ObjectPayload, ObjectPayload]):
                 {'role': 'user', 'content': f'Correggi: {suggestion}'},
             ]
 
-            full_prompt = self._tokenizer(
+            full_prompt = self._tokenizer.apply_chat_template(
                 messages, add_generation_prompt=True, tokenize=False
             )
 
             self.logger.debug(f'Full prompt after tokenization:\n{full_prompt}')
 
             inputs = self._tokenizer(
-                full_prompt, return_tensors='pt', padding=True
+                full_prompt,
+                return_tensors='pt',
+                padding='max_length',
+                max_length=256,
+                truncation=True,
             ).to(self._model.device)
 
+            attention_mask = inputs['attention_mask']
             input_length = inputs['input_ids'].shape[1]
 
             with torch.no_grad():
-                output = self._model.generate(**inputs, **self._options)
+                output = self._model.generate(
+                    input_ids=inputs['input_ids'],
+                    attention_mask=attention_mask,
+                    generation_config=self._options,
+                    use_cache=False,
+                )
 
             generated_response = output[0][input_length:]
 
@@ -147,9 +154,9 @@ class LLMCorrector(Node[ObjectPayload, ObjectPayload]):
 
             to_send.payload['suggestion'] = full_output.strip()
 
-        if len(self._history) >= self._context_window:
-            self._history.pop(0)
-
-        self._history.append(to_send)
+        if self._context_window > 0:
+            if len(self._history) > self._context_window:
+                self._history.pop(0)
+            self._history.append(to_send)
 
         self.transmit(to_send)
