@@ -32,8 +32,9 @@ class AudioFile(Node[AudioPayload, AudioPayload]):
         self,
         file_source: str,
         block_size: int,
-        audio_rate: int,
+        out_rate: int,
         interval_rate: int,
+        resampler_format: str,
         **kwargs,
     ):
         """
@@ -43,10 +44,12 @@ class AudioFile(Node[AudioPayload, AudioPayload]):
             The path of the file to source into the pipeline.
         block_size : int
             Time length of each produced audio chunk.
-        audio_rate : int
-            Sampling rate of the audio file.
+        out_rate : int
+            Sampling rate of the output chunks.
         interval_rate: int
             Time interval at which to produce audio chunks.
+        resampler_format: str
+            Format to use for the audio resampler.
         kwargs : dict
             Superclass arguments.
 
@@ -55,8 +58,9 @@ class AudioFile(Node[AudioPayload, AudioPayload]):
 
         self._file_source = file_source
         self._block_size = block_size
-        self._rate = audio_rate
+        self._rate = out_rate
         self._interval_rate = interval_rate
+        self._resampler_format = resampler_format
 
         self._audio = None
         self._audio_chunks = list()
@@ -65,7 +69,7 @@ class AudioFile(Node[AudioPayload, AudioPayload]):
 
     def warmup(self):  # noqa: D102
         resampler = av.audio.resampler.AudioResampler(
-            format='s16', layout='mono', rate=self._rate
+            format=self._resampler_format, layout='mono', rate=self._rate
         )
 
         raw_buffer = io.BytesIO()
