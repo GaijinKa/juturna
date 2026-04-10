@@ -2,5 +2,6 @@
 file_source = ""
 block_size = 3
 audio_rate = 16000
+interval_rate = 3
 
 [meta]

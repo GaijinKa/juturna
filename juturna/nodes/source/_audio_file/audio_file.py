@@ -29,7 +29,12 @@ class AudioFile(Node[AudioPayload, AudioPayload]):
     """
 
     def __init__(
-        self, file_source: str, block_size: int, audio_rate: int, **kwargs
+        self,
+        file_source: str,
+        block_size: int,
+        audio_rate: int,
+        interval_rate: int,
+        **kwargs,
     ):
         """
         Parameter
@@ -40,6 +45,8 @@ class AudioFile(Node[AudioPayload, AudioPayload]):
             Time length of each produced audio chunk.
         audio_rate : int
             Sampling rate of the audio file.
+        interval_rate: int
+            Time interval at which to produce audio chunks.
         kwargs : dict
             Superclass arguments.
 
@@ -49,9 +56,11 @@ class AudioFile(Node[AudioPayload, AudioPayload]):
         self._file_source = file_source
         self._block_size = block_size
         self._rate = audio_rate
+        self._interval_rate = interval_rate
 
         self._audio = None
         self._audio_chunks = list()
+
         self._transmitted = 0
 
     def warmup(self):  # noqa: D102
@@ -81,7 +90,9 @@ class AudioFile(Node[AudioPayload, AudioPayload]):
         self._audio = audio
         self._audio_chunks = self._get_audio_chunks()
 
-        self.set_source(self._generate_chunks, by=self._block_size, mode='pre')
+        self.set_source(
+            self._generate_chunks, by=self._interval_rate, mode='pre'
+        )
 
         self.logger.info('audio loaded')
         self.logger.info(f'duration: {len(audio) / self._rate}')
@@ -100,7 +111,6 @@ class AudioFile(Node[AudioPayload, AudioPayload]):
             )
         except IndexError:
             self.logger.info('sending None')
-
             return None
 
     def _get_audio_chunks(self) -> list:
