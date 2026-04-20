@@ -11,7 +11,7 @@ from collections.abc import Callable
 from typing import Any
 
 from juturna.components import Message
-from juturna.payloads import ControlPayload
+from juturna.payloads import ControlPayload, Batch
 from juturna.payloads import ControlSignal
 
 from juturna.names import ComponentStatus
@@ -75,6 +75,7 @@ class Node[T_Input, T_Output]:
 
         self._pending_updates = 0
         self._pending_condition = threading.Condition()
+        self._feedback_by_source: dict[str, Any] = dict()
 
         self._suspended = False
         self._auto_dump = False
@@ -313,7 +314,10 @@ class Node[T_Input, T_Output]:
     def clear_buffer(self):
         self._buffer.flush()
 
-    def transmit(self, message: Message[T_Output] | ControlSignal):
+    def transmit(
+        self,
+        message: Message[T_Output] | ControlSignal,
+    ):
         """
         Transmit a message. This method is used to send data from the node to
         its destinations. Messages are frozen before transmission, so that
@@ -321,10 +325,20 @@ class Node[T_Input, T_Output]:
 
         Parameters
         ----------
-        message : Message | None
+        message : Message | ControlSignal
             The message to be transmitted.
 
         """
+        if message.feedback is not None:
+            message_to_store, source = message.feedback
+            batch = (
+                message_to_store
+                if isinstance(message_to_store, Batch)
+                else Batch(messages=(message_to_store,))
+            )
+            self.logger.info(f'setting feedback for source {source}: {batch}')
+            self.feedback(batch, source)
+
         object.__setattr__(
             message, '_data_source_id', self._last_data_source_evt_id
         )
@@ -438,6 +452,16 @@ class Node[T_Input, T_Output]:
             target=self._control, args=(message,), daemon=True
         )
         _control_thread.start()
+    def augument_message(self, message: Message) -> Message:
+        logging.info(f'augumenting message {message.creator} with feedback')
+        return message
+
+    def pick_feedback(self, source: str) -> list[Message]:
+        feedback_batch = self._feedback_by_source.get(source)
+        return list(feedback_batch.messages) if feedback_batch else []
+
+    def feedback(self, payload: Batch, source: str):
+        self._feedback_by_source[source] = payload
 
     def _worker(self):
         while not self._stop_worker_event.is_set():
@@ -476,6 +500,7 @@ class Node[T_Input, T_Output]:
             with self._pending_condition:
                 self._pending_updates += 1
             try:
+                batch = self.augument_message(batch)
                 self.update(batch)
             finally:
                 with self._pending_condition:
