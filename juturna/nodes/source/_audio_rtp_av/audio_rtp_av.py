@@ -140,7 +140,12 @@ class AudioRtpAv(Node[AudioPayload, AudioPayload]):
 
             graph = av.filter.Graph()
 
-            src = graph.add_buffer(template=self._stream)
+            src = graph.add(
+                'abuffer',
+                args=f'sample_rate={self._stream.rate}:'
+                f'sample_fmt={self._stream.format.name}:'
+                f'channel_layout={self._stream.layout.name}',
+            )
             highpass = graph.add('highpass', 'f=300')
             lowpass = graph.add('lowpass', 'f=3400')
             agc = graph.add('dynaudnorm', 'p=0.9:m=10')
@@ -165,8 +170,16 @@ class AudioRtpAv(Node[AudioPayload, AudioPayload]):
                     break
 
                 for raw_frame in packet.decode():
-                    for frame in self._resampler.resample(raw_frame):
-                        yield frame.to_ndarray()[0]
+                    graph.push(raw_frame)
+
+                    try:
+                        while True:
+                            filtered_frame = graph.pull()
+                            # Whisper richiede float32 mono.
+                            # Se out_channels è 1, to_ndarray()[0] è corretto.
+                            yield filtered_frame.to_ndarray()[0]
+                    except (av.error.BlockingIOError, av.error.EOFError):
+                        continue
 
         except OSError:
             raise
