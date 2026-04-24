@@ -137,11 +137,28 @@ class AudioRtpAv(Node[AudioPayload, AudioPayload]):
                 timeout=(None, JUTURNA_THREAD_JOIN_TIMEOUT),
             )
             self._stream = self._container.streams.audio[0]
-            self._resampler = av.AudioResampler(
-                format=self._resampler_format,
-                layout='mono' if self._out_channels == 1 else 'stereo',
-                rate=self._out_rate,
-            )
+
+            graph = av.filter.Graph()
+
+            src = graph.add_buffer(template=self._stream)
+            highpass = graph.add('highpass', 'f=300')
+            lowpass = graph.add('lowpass', 'f=3400')
+            agc = graph.add('dynaudnorm', 'p=0.9:m=10')
+            layout = 'mono' if self._out_channels == 1 else 'stereo'
+            aformat_array = [
+                f'sample_rates={self._out_rate}',
+                f'channel_layouts={layout}',
+                f'sample_fmts={self._resampler_format}',
+            ]
+            aformat = graph.add('aformat', ':'.join(aformat_array))
+            sink = graph.add('abuffersink')
+
+            src.link_to(highpass)
+            highpass.link_to(lowpass)
+            lowpass.link_to(agc)
+            agc.link_to(aformat)
+            aformat.link_to(sink)
+            graph.configure()
 
             for packet in self._container.demux(self._stream):
                 if self._stop_event.is_set():
