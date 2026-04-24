@@ -1,0 +1,49 @@
+body {
+    font-family: ui-sans-serif, system-ui, sans-serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol, Noto Color Emoji;
+    color: gray;
+}
+
+html {
+  font-size: 1em;
+}
+
+.content {
+    width: 40em;
+    padding-left: 10em;
+    padding-top: 3em;
+}
+
+h1 {
+    font-size: 1.7rem;
+    line-height: 1.1;
+}
+
+h2 {
+    font-size: 1.6rem;
+    line-height: 1;
+}
+
+.sd-card:hover {
+    opacity: 1;
+    transition: 0.3s;
+}
+
+.sd-card:hover .sd-card-title {
+    color: #65aaffff;
+    transition: 0.3s;
+}
+
+.sd-card-title .fa-meetecho {
+    width: 2em;
+    height: 2em;
+}
+
+.fa-meetecho {
+    width: 2em;
+    height: 2em;
+}
+
+.sd-card:hover .fa-meetecho {
+    color: #65aaffff;
+    transition: 0.3s;
+}
