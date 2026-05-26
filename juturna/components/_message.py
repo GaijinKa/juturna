@@ -117,6 +117,7 @@ class Message[T_Input]:
             'created_at': self.created_at,
             'creator': self.creator,
             'version': self.version,
+            'id': self.id,
             'payload': self.payload,
             'feedback': self.feedback if hasattr(self, 'feedback') else None,
             'meta': dict(self.meta),
