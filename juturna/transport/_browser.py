@@ -1,21 +1,40 @@
 """
 Browser transport backend (Pyodide), based on `SharedArrayBuffer` +
-`Atomics`.
+`Atomics`, made concurrent by JSPI (JavaScript Promise Integration /
+stack switching).
 
-STATUS: PARTIAL, see the "open architectural question" note below before
-touching `_BrowserLock`/`_BrowserCondition`/`spawn`/`is_current`.
+## Deployment requirement
+
+This backend only works under all of the following:
+
+- Pyodide **>= v314.0.0**, loaded in a **module-type** Worker
+  (`new Worker(url, { type: 'module' })`) via a **dynamic** `import()` of
+  `pyodide.mjs` (not `pyodide.js` - classic `importScripts()` loading was
+  dropped in this Pyodide line). Older builds (validated down to
+  `v0.27.7`) crash on nested `callPromising()` with `RuntimeError: memory
+  access out of bounds` - a genuine Pyodide bug (changelog #6260), fixed
+  in 314.0.0; a related contextvars-isolation fix landed in 314.0.5. Do
+  not deploy against anything older than 314.0.0.
+- The Python entry point that ultimately drives a node (`Node.start()`
+  and everything it transitively calls) must be invoked from JS via
+  `.callPromising()`, never a plain call/`runPython`. Every blocking
+  primitive in this module (`_BrowserQueue`, `_BrowserLock`,
+  `_BrowserCondition`, `_BrowserWorker.join()`) requires this and raises
+  a clear `RuntimeError` (via `_require_stack_switching()`) if it isn't
+  met, rather than surfacing a raw pyodide stack-switching error.
 
 This module is meant to be imported unconditionally by
 `juturna.transport._registry` even outside a Pyodide runtime (e.g. on a
 normal desktop Python interpreter, where `import juturna` must keep
-working). Every `js`/`pyodide` import is therefore deferred to inside the
-methods that actually need it, never at module scope - importing this
-module, or defining `BrowserTransport`, must never require `js` to exist.
-Only *instantiating* the not-yet-implemented pieces raises.
+working). Every `js`/`pyodide.ffi` import is therefore deferred to inside
+the methods that actually need it, never at module scope - importing this
+module, or defining/instantiating `BrowserTransport`, must never require
+`js` to exist. `contextvars` (stdlib) is the only exception and sits at
+module scope.
 
 Design and validation trail: `design/browser-transport/` (local, not
 tracked by git). What is implemented here follows, unmodified in its
-mechanics, three validated spikes:
+mechanics, these validated spikes:
 
 - `spike/getbuffer/`: bulk bytes numpy/bytes -> SharedArrayBuffer write via
   `PyProxy.getBuffer()` + a JS-to-JS `TypedArray.set()` (never a `bytes`
@@ -31,39 +50,46 @@ mechanics, three validated spikes:
 - `spike/pyfunction/`: the `getBuffer()`+`.set()` JS helper can be built
   entirely from Python via `from js import Function; Function.new(...)`,
   so this module needs no separate `.js` asset file to ship.
+- `spike/jspi/worker3-new.js`, `worker5-new.js`: nested `callPromising()`
+  (a spawned task itself blocking on another primitive while other
+  spawned tasks are live) on Pyodide 314.0.6 - no crash, real
+  cooperative concurrency confirmed, 3 independent reproductions.
+- `spike/jspi/worker6-lockcond.js`: `_BrowserLock`/`_BrowserCondition`
+  under real contention (Lock: exact mutual exclusion over 60 contested
+  increments; Condition: wait/notify_all within ~2ms of the expected
+  delay).
+- `spike/jspi/worker7-iscurrent.js`: the `contextvars.ContextVar`-based
+  `is_current()` mechanism - identity survives a real stack-switch
+  suspend/resume and stays correctly isolated between two concurrently
+  spawned tasks.
 
-## Open architectural question (not resolved by any spike so far)
+## Why `Atomics.wait` (synchronous) must never appear in this module
 
-`Node.start()` calls `transport.spawn()` up to four times per node
-(`_worker`, `_update`, `_source`, and `_handle_control` for control
-messages), expecting the spawned callables to run concurrently with each
-other. Pyodide in the pinned build (`v0.26.4`) has confirmed **no real
-thread support at all** (`RuntimeError: can't start new thread`, §3.4 of
-the design doc), including inside a dedicated Worker. This means:
+Every blocking wait here uses `run_sync(Atomics.waitAsync(...))`, never
+the synchronous `Atomics.wait(...)`. Under JSPI, a node's `_worker`,
+`_update`, `_source` and `_handle_control` loops all run cooperatively in
+the *same* interpreter/event loop (there is no real OS thread per
+`spawn()` - Pyodide confirmed **no real thread support at all**,
+`RuntimeError: can't start new thread`). A synchronous `Atomics.wait`
+freezes that entire event loop, starving every other spawned task in the
+node - not a slowdown, a deadlock (e.g. `Node.join()` waiting on a
+`Condition` that only `_update`, sharing the same frozen loop, could ever
+notify). `run_sync(Atomics.waitAsync(...))` suspends only the current
+stack-switched task and lets the others keep running - this is the
+mechanism every JSPI spike above validated and the reason `spawn()`
+works at all under a single Pyodide instance per node.
 
-- A literal "one real `new Worker()` per `spawn()` call" implementation
-  (as originally sketched for `_BrowserWorker` in the design doc) would
-  create ~4 separate Pyodide instances per node, not the "one Pyodide
-  instance per node" the design intended - and `Node`/`Buffer` state
-  (the buffer dict, its `Lock`, the synchroniser closure, `Node.update()`'s
-  live state) cannot be transparently shared across genuinely separate
-  Pyodide interpreters the way it is across real OS threads.
-- `Node.join()`'s `self._pending_condition.wait_for(...)` blocking while
-  `_update` - in the same interpreter - is what notifies it, would
-  deadlock under naive cooperative single-interpreter scheduling.
-- A promising newer option (Pyodide >= 0.27.7 with JSPI/stack-switching,
-  `pyodide.ffi.run_sync`) may let synchronous-looking blocking calls
-  cooperatively yield without rewriting `Node`'s loop bodies as
-  generators - but this is unverified, requires Chrome 137+, and is a
-  different Pyodide version than every spike so far.
+## `is_current()` and worker identity
 
-`_BrowserLock`, `_BrowserCondition`, `spawn()` and `is_current()` are left
-unimplemented (raise `NotImplementedError`) until this is resolved -
-implementing them against a guess would mean throwing the work away.
-`_BrowserQueue`/`_BrowserSignal` do not depend on this question: they are
-correct, independently testable units usable today (and are exactly what
-`spike/getbuffer/` and `spike/message/` already validated end-to-end,
-across two real separate Workers).
+There is no OS thread identity to compare against under JSPI, so
+`_BrowserWorker` identity is tracked with a module-level
+`contextvars.ContextVar`, set at the start of the wrapped target and read
+back by `BrowserTransport.is_current()`. Validated
+(`spike/jspi/worker7-iscurrent.js`) to survive a real stack-switch
+suspend/resume mid-target and to stay isolated between two concurrently
+running spawned targets - this exercises the Pyodide 314.0.5 fix ("A
+Python entry point invoked with stack switching enabled now runs with a
+copy of the contextvars context").
 
 ## Known simplifications / open items in `_BrowserQueue`
 
@@ -87,11 +113,13 @@ across two real separate Workers).
   `Node.__init__` (receives messages that, under a real multi-Worker
   deployment, would cross from another node's Worker) and `Buffer.__init__`
   (`_out_queue`, purely intra-node, `_worker` -> `_update` in the same
-  interpreter). Both currently get the same `SharedArrayBuffer`-backed
-  implementation; for the intra-node case this is unnecessary overhead
-  (no real cross-Worker boundary to cross) but not incorrect. Revisit once
-  the spawn()/threading question above is settled and it's clear whether
-  `Buffer` ever actually lives in a different Worker than its `Node`.
+  interpreter). Now that `spawn()` is JSPI-backed (one Pyodide instance
+  per node, no per-`spawn()` Worker), `Buffer` never actually crosses a
+  real Worker boundary from its `Node` - `_out_queue`'s
+  `SharedArrayBuffer` backing is unnecessary overhead there, but not
+  incorrect. Left as-is (both call sites share one implementation);
+  worth a plain-Python-object fast path for the intra-node case if queue
+  overhead ever shows up in profiling, not before.
 - `JUTURNA_MAX_QUEUE_SIZE` (999) is `ThreadingTransport`'s default
   `maxsize` and is NOT reused as the ring buffer capacity here: at typical
   video-frame slot sizes that would pre-allocate hundreds of MB per queue.
@@ -100,6 +128,7 @@ across two real separate Workers).
   from `ThreadingTransport`'s semantics, not an oversight.
 """
 
+import contextvars
 import json
 import pickle
 
@@ -108,6 +137,63 @@ from typing import Any
 
 from juturna.transport._base import Empty
 from juturna.transport._base import WorkerHandle
+
+
+# Tracks "which spawned target is currently running" for is_current() -
+# see the "is_current() and worker identity" section of the module
+# docstring. No `js`/`pyodide.ffi` dependency, safe at module scope.
+_current_worker: contextvars.ContextVar = contextvars.ContextVar(
+    '_current_worker', default=None
+)
+
+
+def _require_stack_switching(op: str) -> None:
+    """
+    Raises a clear error instead of letting a raw pyodide stack-switching
+    error surface from deep inside a wait loop, when `op` is about to
+    suspend the current task but the call isn't running inside a
+    stack-switching-enabled entry point (i.e. not ultimately invoked via
+    `.callPromising()`) - see the module docstring's deployment
+    requirement.
+    """
+    from pyodide.ffi import can_run_sync
+
+    if not can_run_sync():
+        raise RuntimeError(
+            f'{op} would block, but the current call is not running '
+            'inside a stack-switching-enabled entry point. Every code '
+            'path that can reach a BrowserTransport Queue/Lock/Condition '
+            'wait must ultimately be invoked via '
+            '`<callable>.callPromising()` on Pyodide >= v314.0.0, never '
+            'via a plain call/`runPython` - see the _browser.py module '
+            'docstring.'
+        )
+
+
+def _atomics_wait_async(
+    cell, index: int, expected: int, timeout_ms=None
+) -> None:
+    """
+    Cooperative equivalent of the synchronous `Atomics.wait()`: suspends
+    only the current stack-switched task via
+    `run_sync(Atomics.waitAsync(...))`, never the whole worker/event
+    loop. See the module docstring's "Why `Atomics.wait` (synchronous)
+    must never appear in this module" section - every blocking wait in
+    `_BrowserQueue`, `_BrowserLock` and `_BrowserCondition` goes through
+    this helper.
+    """
+    from js import Atomics
+    from pyodide.ffi import run_sync
+
+    result = (
+        Atomics.waitAsync(cell, index, expected)
+        if timeout_ms is None
+        else Atomics.waitAsync(cell, index, expected, timeout_ms)
+    )
+
+    if result.async_:
+        _require_stack_switching('a BrowserTransport wait')
+        run_sync(result.value)
 
 
 # --- wire format -----------------------------------------------------------
@@ -531,7 +617,7 @@ class _BrowserQueue:
 
             # Blocks indefinitely, matching queue.Queue.put()'s default
             # (block=True, timeout=None) semantics used by ThreadingTransport.
-            Atomics.wait(self._header, _COUNT, count)
+            _atomics_wait_async(self._header, _COUNT, count)
 
     def _publish_write(self, slot: int) -> None:
         from js import Atomics
@@ -559,9 +645,9 @@ class _BrowserQueue:
                 remaining_ms = deadline - _now_ms()
                 if remaining_ms <= 0:
                     return -1
-                Atomics.wait(self._header, _COUNT, count, remaining_ms)
+                _atomics_wait_async(self._header, _COUNT, count, remaining_ms)
             else:
-                Atomics.wait(self._header, _COUNT, count)
+                _atomics_wait_async(self._header, _COUNT, count)
 
     def _release_read(self) -> None:
         from js import Atomics
@@ -580,56 +666,198 @@ def _now_ms() -> float:
 
 class _BrowserLock:
     """
-    NOT IMPLEMENTED. Depends on the spawn()/threading-model question in
-    the module docstring: `Buffer.__init__` calls `transport.new_lock()`
-    unconditionally, so this blocks `Buffer` (and therefore `Node`) from
-    working at all under `BrowserTransport`, not just `Node.join()`.
+    Mutual-exclusion primitive: a single Int32 cell in a SharedArrayBuffer,
+    `Atomics.compareExchange` for the uncontended fast path,
+    `_atomics_wait_async` (cooperative, JSPI-backed) for the contended
+    path. NOT reentrant, unlike the `RLock` behind `threading.Condition` -
+    `Node`/`Buffer` never nest lock acquisition, so this is a deliberate
+    simplification, not a gap.
+
+    Validated in `design/browser-transport/spike/jspi/worker6-lockcond.js`
+    (exact mutual exclusion over 60 contested increments).
     """
 
+    _CELL = 0
+
     def __init__(self):
-        raise NotImplementedError(
-            '_BrowserLock is not implemented yet - see the "open '
-            'architectural question" note in juturna/transport/_browser.py'
-        )
+        from js import Int32Array
+        from js import SharedArrayBuffer
+
+        sab = SharedArrayBuffer.new(4)
+        self._cell = Int32Array.new(sab)
+
+    def __enter__(self):
+        from js import Atomics
+
+        while True:
+            prev = int(Atomics.compareExchange(self._cell, self._CELL, 0, 1))
+
+            if prev == 0:
+                return self
+
+            _atomics_wait_async(self._cell, self._CELL, 1)
+
+    def __exit__(self, *exc_info) -> None:
+        from js import Atomics
+
+        Atomics.store(self._cell, self._CELL, 0)
+        Atomics.notify(self._cell, self._CELL, 1)
 
 
 class _BrowserCondition:
-    """NOT IMPLEMENTED. Same open question as `_BrowserLock`."""
+    """
+    Condition variable: a generation-counter Int32 cell plus an associated
+    `_BrowserLock`, mirroring `threading.Condition` (`__enter__`/
+    `__exit__` delegate to the lock; `wait_for`/`notify_all` use the
+    counter).
+
+    Validated in `design/browser-transport/spike/jspi/worker6-lockcond.js`
+    (waiter woke within ~2ms of the notifier's delay).
+    """
+
+    _GEN = 0
 
     def __init__(self):
-        raise NotImplementedError(
-            '_BrowserCondition is not implemented yet - see the "open '
-            'architectural question" note in juturna/transport/_browser.py'
-        )
+        from js import Int32Array
+        from js import SharedArrayBuffer
+
+        sab = SharedArrayBuffer.new(4)
+        self._gen_cell = Int32Array.new(sab)
+        self._lock = _BrowserLock()
+
+    def __enter__(self):
+        self._lock.__enter__()
+        return self
+
+    def __exit__(self, *exc_info) -> None:
+        self._lock.__exit__(*exc_info)
+
+    def wait_for(self, predicate: Callable[[], bool]) -> None:
+        from js import Atomics
+
+        while not predicate():
+            # The generation MUST be read before releasing the lock: if a
+            # notifier bumps it in the window between release and the
+            # wait call, waitAsync returns immediately (value mismatch)
+            # and the loop just rechecks the predicate instead of missing
+            # the wakeup. This closes the lost-wakeup race - not
+            # redundant bookkeeping.
+            gen = int(Atomics.load(self._gen_cell, self._GEN))
+            self._lock.__exit__(None, None, None)
+            _atomics_wait_async(self._gen_cell, self._GEN, gen)
+            self._lock.__enter__()
+
+    def notify_all(self) -> None:
+        from js import Atomics
+
+        Atomics.add(self._gen_cell, self._GEN, 1)
+        Atomics.notify(self._gen_cell, self._GEN)
+
+
+def _get_js_spawn_fn():
+    """
+    Builds, from Python, the JS helper that starts a JSPI stack-switching
+    task from a proxied Python callable: `pyCallableProxy.callPromising()`
+    must be invoked from JS (not called directly from Python) for the
+    target to actually run with stack switching enabled - see
+    `design/browser-transport/spike/jspi/worker7-iscurrent.js`.
+    """
+    from js import Function
+
+    return Function.new(
+        'pyCallableProxy',
+        'return pyCallableProxy.callPromising();',
+    )
 
 
 class _BrowserWorker:
-    """NOT IMPLEMENTED. Same open question as `_BrowserLock`."""
+    """
+    `WorkerHandle` for `BrowserTransport.spawn()`. There is no real OS
+    thread under Pyodide (confirmed: `RuntimeError: can't start new
+    thread`) - concurrency between a node's `_worker`/`_update`/
+    `_source`/`_control` loops is cooperative, provided by JSPI: `start()`
+    invokes a proxied `target` via `.callPromising()`, which lets it
+    suspend on `run_sync(...)` (inside `_BrowserQueue`/`_BrowserLock`/
+    `_BrowserCondition`) without blocking the other spawned targets
+    sharing the same interpreter/event loop.
+
+    A target raising is caught and logged (mirrors
+    `threading.Thread`'s default excepthook behaviour: the exception
+    terminates the target but never re-raises into `join()`).
+    """
 
     def __init__(
         self, target: Callable[[], None], name: str, daemon: bool = True
     ):
-        raise NotImplementedError(
-            '_BrowserWorker/spawn() is not implemented yet - see the '
-            '"open architectural question" note in '
-            'juturna/transport/_browser.py'
+        self._target = target
+        self.name = name
+        self.daemon = daemon
+        self._done = False
+        self._proxy = None
+        self._promise = None
+
+    def start(self) -> None:
+        from pyodide.ffi import create_proxy
+
+        handle = self
+
+        def wrapped():
+            token = _current_worker.set(handle)
+            try:
+                handle._target()
+            except BaseException:
+                import traceback
+
+                traceback.print_exc()
+            finally:
+                _current_worker.reset(token)
+                handle._done = True
+                # Safe to destroy here: JS only needs the proxy to
+                # *initiate* the call (already happened by this point),
+                # not to hold the already-returned Promise.
+                handle._proxy.destroy()
+
+        self._proxy = create_proxy(wrapped)
+        js_spawn = _get_js_spawn_fn()
+        self._promise = js_spawn(self._proxy)
+
+    def join(self, timeout: float | None = None) -> None:
+        from pyodide.ffi import run_sync
+
+        if self._promise is None or self._done:
+            return
+
+        _require_stack_switching('_BrowserWorker.join()')
+
+        if timeout is None:
+            run_sync(self._promise)
+            return
+
+        from js import Function
+
+        # Promise.race against a timer: matches threading.Thread.join()
+        # semantics - a timed-out join returns without raising, the
+        # caller checks is_alive() afterwards.
+        race = Function.new(
+            'promise',
+            'timeoutMs',
+            'return Promise.race(['
+            'promise, '
+            'new Promise((resolve) => setTimeout(resolve, timeoutMs)),'
+            ']);',
         )
+        run_sync(race(self._promise, timeout * 1000))
 
-    def start(self) -> None: ...
-
-    def join(self, timeout: float | None = None) -> None: ...
-
-    def is_alive(self) -> bool: ...
+    def is_alive(self) -> bool:
+        return self._promise is not None and not self._done
 
 
 class BrowserTransport:
     """
-    Browser transport backend (Pyodide + `SharedArrayBuffer`/`Atomics`).
-
-    PARTIAL: `new_queue()`/`new_signal()` are implemented and validated
-    (see module docstring). `new_lock()`/`new_condition()`/`spawn()`/
-    `is_current()` raise `NotImplementedError` pending the open
-    architectural question documented at the top of this module.
+    Browser transport backend (Pyodide + `SharedArrayBuffer`/`Atomics`,
+    made concurrent by JSPI). See the module docstring for the deployment
+    requirement (Pyodide >= v314.0.0, module-type Worker, entry point
+    invoked via `.callPromising()`).
     """
 
     def __init__(
@@ -676,8 +904,4 @@ class BrowserTransport:
         return _BrowserWorker(target, name, daemon)
 
     def is_current(self, handle: WorkerHandle) -> bool:
-        raise NotImplementedError(
-            'BrowserTransport.is_current() is not implemented yet - see '
-            'the "open architectural question" note in '
-            'juturna/transport/_browser.py'
-        )
+        return _current_worker.get() is handle
