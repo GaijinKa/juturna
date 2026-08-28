@@ -735,6 +735,16 @@ class _BrowserCondition:
     def wait_for(self, predicate: Callable[[], bool]) -> None:
         from js import Atomics
 
+        if predicate():
+            return
+
+        # Guarded here, before the lock is ever released: a raise from
+        # inside _atomics_wait_async (the guard lives there too) would
+        # otherwise leave the lock released but not reacquired, and the
+        # enclosing `with condition:` would then release/notify a lock
+        # it no longer holds on the way out.
+        _require_stack_switching('_BrowserCondition.wait_for()')
+
         while not predicate():
             # The generation MUST be read before releasing the lock: if a
             # notifier bumps it in the window between release and the
