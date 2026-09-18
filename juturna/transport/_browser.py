@@ -93,6 +93,32 @@ with a copy of the contextvars context").
   `BrowserTransport` uses its own, much smaller, capped default instead
   (see `DEFAULT_QUEUE_CAPACITY` below) - this is a deliberate deviation
   from `ThreadingTransport`'s semantics, not an oversight.
+
+## Aligned to the current `TransportBackend` contract (`_base.py`)
+
+This module was written against an earlier version of the protocol.
+`full()`/`qsize()`/`put(timeout=...)` on `Queue`, `wait(timeout=...)` on
+`Event`, and `timeout` on `Condition.wait_for()` were added to `_base.py`
+by `dd4185a` (node draining fix) without a matching update here. The
+boolean flag is `Event`/`new_event()` in the protocol, as in
+`ThreadingTransport`.
+Brought in line with `_base.py` as follows:
+
+- `_BrowserQueue.put(item, timeout=...)` reuses the same deadline-loop
+  shape already used by `_reserve_read()`; on timeout it raises stdlib
+  `queue.Full`, mirroring `_ThreadQueue.put()` (which lets `queue.Full`
+  leak through from `queue.Queue.put()` unwrapped - `_base.py` declares
+  no backend-agnostic `Full` type, unlike `Empty`, so matching the
+  reference backend's actual behaviour is the correct alignment here,
+  not inventing a new exception type).
+- `_BrowserQueue.full()`/`qsize()` read the existing `_COUNT` cell -  no
+  new state, same one `_reserve_write()`/`_reserve_read()` already use.
+- `_BrowserEvent.wait()` required a real fix, not just an addition:
+  `set()` never called `Atomics.notify()`, harmless while nothing waited
+  on the cell, but a `wait()` built on `_atomics_wait_async()` would
+  otherwise block until its timeout even when `set()` had already run.
+  `set()` now notifies, matching `_BrowserLock`/`_BrowserCondition`'s
+  existing store-then-notify pattern.
 """
 
 import contextvars
@@ -100,6 +126,7 @@ import json
 import pickle
 
 from collections.abc import Callable
+from queue import Full
 from typing import Any
 
 from juturna.transport._base import Empty
@@ -242,6 +269,7 @@ class _BrowserEvent:
         from js import Atomics
 
         Atomics.store(self._cell, self._CELL, 1)
+        Atomics.notify(self._cell, self._CELL)
 
     def clear(self) -> None:
         from js import Atomics
@@ -252,6 +280,21 @@ class _BrowserEvent:
         from js import Atomics
 
         return bool(Atomics.load(self._cell, self._CELL))
+
+    def wait(self, timeout: float | None = None) -> bool:
+        deadline = None if timeout is None else _now_ms() + timeout * 1000
+
+        while True:
+            if self.is_set():
+                return True
+
+            if deadline is not None:
+                remaining_ms = deadline - _now_ms()
+                if remaining_ms <= 0:
+                    return False
+                _atomics_wait_async(self._cell, self._CELL, 0, remaining_ms)
+            else:
+                _atomics_wait_async(self._cell, self._CELL, 0)
 
 
 def _serialize_message(msg) -> tuple[bytes, int, int, tuple[int, ...], Any]:
@@ -475,7 +518,7 @@ class _BrowserQueue:
 
         self._write_bulk = _get_buffer_write_fn()
 
-    def put(self, item: Any) -> None:
+    def put(self, item: Any, timeout: float | None = None) -> None:
         from juturna.components._message import Message
 
         if not isinstance(item, Message):
@@ -509,7 +552,10 @@ class _BrowserQueue:
                 'max_payload_bytes on BrowserTransport'
             )
 
-        slot = self._reserve_write()
+        slot = self._reserve_write(timeout)
+        if slot == -1:
+            raise Full
+
         shape_padded = (list(shape) + [0, 0, 0, 0])[:4]
 
         meta_view = self._meta_views[slot]
@@ -547,6 +593,16 @@ class _BrowserQueue:
 
         return int(Atomics.load(self._header, _COUNT)) == 0
 
+    def full(self) -> bool:
+        from js import Atomics
+
+        return int(Atomics.load(self._header, _COUNT)) >= self._capacity
+
+    def qsize(self) -> int:
+        from js import Atomics
+
+        return int(Atomics.load(self._header, _COUNT))
+
     def close(self) -> None:
         from js import Atomics
 
@@ -572,8 +628,14 @@ class _BrowserQueue:
 
         return _deserialize_message(header, meta_json_raw, bytes(payload_raw))
 
-    def _reserve_write(self) -> int:
+    def _reserve_write(self, timeout: float | None = None) -> int:
         from js import Atomics
+
+        # Blocks indefinitely when timeout is None, matching
+        # queue.Queue.put()'s default (block=True, timeout=None) semantics
+        # used by ThreadingTransport. Returns -1 on timeout, mirroring
+        # _reserve_read()'s sentinel - put() turns it into Full.
+        deadline = None if timeout is None else _now_ms() + timeout * 1000
 
         while True:
             count = int(Atomics.load(self._header, _COUNT))
@@ -581,9 +643,13 @@ class _BrowserQueue:
             if count < self._capacity:
                 return int(Atomics.load(self._header, _HEAD))
 
-            # Blocks indefinitely, matching queue.Queue.put()'s default
-            # (block=True, timeout=None) semantics used by ThreadingTransport.
-            _atomics_wait_async(self._header, _COUNT, count)
+            if timeout is not None:
+                remaining_ms = deadline - _now_ms()
+                if remaining_ms <= 0:
+                    return -1
+                _atomics_wait_async(self._header, _COUNT, count, remaining_ms)
+            else:
+                _atomics_wait_async(self._header, _COUNT, count)
 
     def _publish_write(self, slot: int) -> None:
         from js import Atomics
@@ -698,7 +764,9 @@ class _BrowserCondition:
     def __exit__(self, *exc_info) -> None:
         self._lock.__exit__(*exc_info)
 
-    def wait_for(self, predicate: Callable[[], bool]) -> None:
+    def wait_for(
+        self, predicate: Callable[[], bool], timeout: float | None = None
+    ) -> None:
         from js import Atomics
 
         if predicate():
@@ -711,7 +779,17 @@ class _BrowserCondition:
         # it no longer holds on the way out.
         _require_stack_switching('_BrowserCondition.wait_for()')
 
+        # One deadline for the whole call, matching
+        # threading.Condition.wait_for() - not reset per iteration.
+        deadline = None if timeout is None else _now_ms() + timeout * 1000
+
         while not predicate():
+            remaining_ms = None
+            if deadline is not None:
+                remaining_ms = deadline - _now_ms()
+                if remaining_ms <= 0:
+                    return
+
             # The generation MUST be read before releasing the lock: if a
             # notifier bumps it in the window between release and the
             # wait call, waitAsync returns immediately (value mismatch)
@@ -720,7 +798,7 @@ class _BrowserCondition:
             # redundant bookkeeping.
             gen = int(Atomics.load(self._gen_cell, self._GEN))
             self._lock.__exit__(None, None, None)
-            _atomics_wait_async(self._gen_cell, self._GEN, gen)
+            _atomics_wait_async(self._gen_cell, self._GEN, gen, remaining_ms)
             self._lock.__enter__()
 
     def notify_all(self) -> None:
