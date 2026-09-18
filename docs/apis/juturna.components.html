@@ -724,6 +724,9 @@ destroys the nodes, and removes them from the pipeline. This is
 important to ensure that all resources are properly released and that
 there are no memory leaks. The pipeline is set to None, and garbage
 collection is triggered to free up any remaining resources.</p>
+<p>destroy() is legal from every status except DESTROYED itself, on
+which it is a semi-idempotent no-op: repeated cleanup calls (e.g.
+from a caller’s try/finally) do not raise.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -814,6 +817,52 @@ their required resources. If a node is flagged as to be deployed
 remotely, that node will be replaced with a proc warp node.</p>
 </dd></dl>
 
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="juturna.components.PipelineAlreadyRunningError">
+<em class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">juturna.components.</span></span><span class="sig-name descname"><span class="pre">PipelineAlreadyRunningError</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pipeline_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">message</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#juturna.components.PipelineAlreadyRunningError" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#juturna.components.PipelineStateError" title="juturna.components._exceptions.PipelineStateError"><code class="xref py py-class docutils literal notranslate"><span class="pre">PipelineStateError</span></code></a></p>
+<p>Raised when warmup() is called on a pipeline that is running.</p>
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="juturna.components.PipelineDestroyedError">
+<em class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">juturna.components.</span></span><span class="sig-name descname"><span class="pre">PipelineDestroyedError</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pipeline_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">message</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#juturna.components.PipelineDestroyedError" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#juturna.components.PipelineStateError" title="juturna.components._exceptions.PipelineStateError"><code class="xref py py-class docutils literal notranslate"><span class="pre">PipelineStateError</span></code></a></p>
+<p>Raised when a lifecycle operation is called on a destroyed pipeline.</p>
+<p>destroy() itself is exempted: calling it on an already destroyed
+pipeline is a no-op.</p>
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="juturna.components.PipelineNotReadyError">
+<em class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">juturna.components.</span></span><span class="sig-name descname"><span class="pre">PipelineNotReadyError</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pipeline_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">message</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#juturna.components.PipelineNotReadyError" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#juturna.components.PipelineStateError" title="juturna.components._exceptions.PipelineStateError"><code class="xref py py-class docutils literal notranslate"><span class="pre">PipelineStateError</span></code></a></p>
+<p>Raised when start() is called before the pipeline was warmed up.</p>
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="juturna.components.PipelineNotRunningError">
+<em class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">juturna.components.</span></span><span class="sig-name descname"><span class="pre">PipelineNotRunningError</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pipeline_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">message</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#juturna.components.PipelineNotRunningError" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#juturna.components.PipelineStateError" title="juturna.components._exceptions.PipelineStateError"><code class="xref py py-class docutils literal notranslate"><span class="pre">PipelineStateError</span></code></a></p>
+<p>Raised when stop() is called on a pipeline that is not running.</p>
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="juturna.components.PipelineStateError">
+<em class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">juturna.components.</span></span><span class="sig-name descname"><span class="pre">PipelineStateError</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pipeline_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">message</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#juturna.components.PipelineStateError" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">RuntimeError</span></code></p>
+<p>Base exception for illegal Pipeline lifecycle transitions.</p>
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="juturna.components.PipelineStoppedError">
+<em class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">juturna.components.</span></span><span class="sig-name descname"><span class="pre">PipelineStoppedError</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pipeline_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">message</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#juturna.components.PipelineStoppedError" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#juturna.components.PipelineStateError" title="juturna.components._exceptions.PipelineStateError"><code class="xref py py-class docutils literal notranslate"><span class="pre">PipelineStateError</span></code></a></p>
+<p>Raised when warmup() or start() is called on a stopped pipeline.</p>
+<p>A stopped pipeline cannot be resumed: it must be destroyed and a new
+pipeline created in its place.</p>
 </dd></dl>
 
 <dl class="py class">
@@ -957,6 +1006,12 @@ remotely, that node will be replaced with a proc warp node.</p>
 <li><a class="reference internal" href="#juturna.components.Pipeline.warmup"><code class="docutils literal notranslate"><span class="pre">Pipeline.warmup()</span></code></a></li>
 </ul>
 </li>
+<li><a class="reference internal" href="#juturna.components.PipelineAlreadyRunningError"><code class="docutils literal notranslate"><span class="pre">PipelineAlreadyRunningError</span></code></a></li>
+<li><a class="reference internal" href="#juturna.components.PipelineDestroyedError"><code class="docutils literal notranslate"><span class="pre">PipelineDestroyedError</span></code></a></li>
+<li><a class="reference internal" href="#juturna.components.PipelineNotReadyError"><code class="docutils literal notranslate"><span class="pre">PipelineNotReadyError</span></code></a></li>
+<li><a class="reference internal" href="#juturna.components.PipelineNotRunningError"><code class="docutils literal notranslate"><span class="pre">PipelineNotRunningError</span></code></a></li>
+<li><a class="reference internal" href="#juturna.components.PipelineStateError"><code class="docutils literal notranslate"><span class="pre">PipelineStateError</span></code></a></li>
+<li><a class="reference internal" href="#juturna.components.PipelineStoppedError"><code class="docutils literal notranslate"><span class="pre">PipelineStoppedError</span></code></a></li>
 <li><a class="reference internal" href="#juturna.components.State"><code class="docutils literal notranslate"><span class="pre">State</span></code></a></li>
 </ul>
 </li>
