@@ -413,7 +413,7 @@ actual pipeline object.</p>
 <p>Instantiating a pipeline object doesn’t really do much. An empty pipeline
 container is created, with all the instructions required to build the actual
 nodes and linking them.</p>
-<p>A pipeline object can be in one of five states:</p>
+<p>A pipeline object can be in only three states:</p>
 <ul class="simple">
 <li><p>a <code class="docutils literal notranslate"><span class="pre">NEW</span></code> pipeline is freshly created, but the nodes within the graph still
 need to be instantiated;</p></li>
@@ -421,11 +421,7 @@ need to be instantiated;</p></li>
 system and external resources required for its functioning - as the state
 name says, this pipeline is ready to go;</p></li>
 <li><p>a <code class="docutils literal notranslate"><span class="pre">RUNNING</span></code> pipeline is consuming data sources, processing and sending them,
-so it working (hepefully) just how it is supposed to;</p></li>
-<li><p>a <code class="docutils literal notranslate"><span class="pre">STOPPED</span></code> pipeline was previously running and has been stopped. This is
-a terminal state: a stopped pipeline <strong>cannot</strong> go back to <code class="docutils literal notranslate"><span class="pre">RUNNING</span></code>, it
-can only be destroyed;</p></li>
-<li><p>a <code class="docutils literal notranslate"><span class="pre">DESTROYED</span></code> pipeline released all its resources and is no longer usable.</p></li>
+so it working (hepefully) just how it is supposed to.</p></li>
 </ul>
 <a class="reference internal image-reference" href="../_images/pipeline_lifecycle.svg"><img alt="pipeline" class="align-center" src="../_images/pipeline_lifecycle.svg" style="width: 80%;" />
 </a>
@@ -439,34 +435,16 @@ be time-consuming.</p>
 from <code class="docutils literal notranslate"><span class="pre">READY</span></code> to <code class="docutils literal notranslate"><span class="pre">RUNNING</span></code>. Internally, this calls the start method on every
 node in the pipeline.</p>
 <p><code class="docutils literal notranslate"><span class="pre">stop()</span></code> interrupts the pipeline execution, moving it from <code class="docutils literal notranslate"><span class="pre">RUNNING</span></code> to
-<code class="docutils literal notranslate"><span class="pre">STOPPED</span></code>. Again, this call is propagated to every node in the pipe.</p>
-<p><code class="docutils literal notranslate"><span class="pre">destroy()</span></code> releases every resource held by the pipeline and its nodes,
-moving it to <code class="docutils literal notranslate"><span class="pre">DESTROYED</span></code> from any other state (stopping it first if it was
-still <code class="docutils literal notranslate"><span class="pre">RUNNING</span></code>).</p>
-<p>Pipeline is the sole owner of this validation: whichever layer calls these
-methods (directly, through <code class="xref py py-class docutils literal notranslate"><span class="pre">PipelineManager</span></code>, or through the HTTP
-wrapper) observes the same, deterministic behaviour, and the same exception
-hierarchy (<a class="reference internal" href="../apis/juturna.components.html#module-juturna.components" title="juturna.components"><code class="xref py py-mod docutils literal notranslate"><span class="pre">juturna.components</span></code></a>) for illegal calls.</p>
-<p>Loopback calls - a method invoked while the pipeline is already in the state
-it targets - are <strong>semi-idempotent</strong>: they are a no-op, logged as a warning,
-rather than an error. This only applies to the exact target state; every other
-call that cannot legally reach that state raises an explicit exception. The
-full behaviour, per current state:</p>
-<ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">NEW</span></code>: <code class="docutils literal notranslate"><span class="pre">warmup()</span></code> moves to <code class="docutils literal notranslate"><span class="pre">READY</span></code>; <code class="docutils literal notranslate"><span class="pre">start()</span></code> and <code class="docutils literal notranslate"><span class="pre">stop()</span></code> raise
-(<code class="docutils literal notranslate"><span class="pre">PipelineNotReadyError</span></code> / <code class="docutils literal notranslate"><span class="pre">PipelineNotRunningError</span></code>); <code class="docutils literal notranslate"><span class="pre">destroy()</span></code>
-moves to <code class="docutils literal notranslate"><span class="pre">DESTROYED</span></code>.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">READY</span></code>: <code class="docutils literal notranslate"><span class="pre">warmup()</span></code> is a no-op; <code class="docutils literal notranslate"><span class="pre">start()</span></code> moves to <code class="docutils literal notranslate"><span class="pre">RUNNING</span></code>;
-<code class="docutils literal notranslate"><span class="pre">stop()</span></code> raises <code class="docutils literal notranslate"><span class="pre">PipelineNotRunningError</span></code>; <code class="docutils literal notranslate"><span class="pre">destroy()</span></code> moves to
-<code class="docutils literal notranslate"><span class="pre">DESTROYED</span></code>.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">RUNNING</span></code>: <code class="docutils literal notranslate"><span class="pre">warmup()</span></code> raises <code class="docutils literal notranslate"><span class="pre">PipelineAlreadyRunningError</span></code>;
-<code class="docutils literal notranslate"><span class="pre">start()</span></code> is a no-op; <code class="docutils literal notranslate"><span class="pre">stop()</span></code> moves to <code class="docutils literal notranslate"><span class="pre">STOPPED</span></code>; <code class="docutils literal notranslate"><span class="pre">destroy()</span></code>
-stops the pipeline first, then moves to <code class="docutils literal notranslate"><span class="pre">DESTROYED</span></code>.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">STOPPED</span></code>: <code class="docutils literal notranslate"><span class="pre">warmup()</span></code> and <code class="docutils literal notranslate"><span class="pre">start()</span></code> raise <code class="docutils literal notranslate"><span class="pre">PipelineStoppedError</span></code>;
-<code class="docutils literal notranslate"><span class="pre">stop()</span></code> is a no-op; <code class="docutils literal notranslate"><span class="pre">destroy()</span></code> moves to <code class="docutils literal notranslate"><span class="pre">DESTROYED</span></code>.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">DESTROYED</span></code>: <code class="docutils literal notranslate"><span class="pre">warmup()</span></code>, <code class="docutils literal notranslate"><span class="pre">start()</span></code> and <code class="docutils literal notranslate"><span class="pre">stop()</span></code> raise
-<code class="docutils literal notranslate"><span class="pre">PipelineDestroyedError</span></code>; <code class="docutils literal notranslate"><span class="pre">destroy()</span></code> is a no-op.</p></li>
-</ul>
+<code class="docutils literal notranslate"><span class="pre">READY</span></code>. Again, this call is propagated to every node in the pipe.</p>
+<p><code class="docutils literal notranslate"><span class="pre">destroy()</span></code> can be invoked if any kind of custom memory management should be
+performed by any of its composing nodes.</p>
+<p>Any call sequence that does not respect the state transitions here discussed
+will generate an exception:</p>
+<ol class="arabic simple">
+<li><p>only a new pipe can be warmed up;</p></li>
+<li><p>only a ready pipe can be started;</p></li>
+<li><p>a running pipeline cannot be destroyed.</p></li>
+</ol>
 <div class="note admonition">
 <p class="admonition-title">Warming up and configuring</p>
 <p>A node defines 2 separate methods to get up and running: <code class="docutils literal notranslate"><span class="pre">warmup</span></code> and
@@ -476,11 +454,12 @@ node implementation (ports, connections), and the <code class="docutils literal 
 node internal status for execution.</p>
 </div>
 <div class="attention admonition">
-<p class="admonition-title">Restarting a pipeline is not supported</p>
-<p>A pipeline that has been stopped moves to the <code class="docutils literal notranslate"><span class="pre">STOPPED</span></code> state and
-<strong>cannot</strong> be started again: calling <code class="docutils literal notranslate"><span class="pre">start()</span></code> or <code class="docutils literal notranslate"><span class="pre">warmup()</span></code> on it
-raises <code class="docutils literal notranslate"><span class="pre">PipelineStoppedError</span></code>. If you need to stop a pipeline and later
-restart the same workflow, destroy it and create a new pipe instead.</p>
+<p class="admonition-title">Restarting a pipeline might catch fire (1.0.1-beta)</p>
+<p>Please be aware that the pipeline lifecycle and state transitions do not
+currently support restarting a stopped pipeline. When designing your
+workflow, please assume <strong>pipelines cannot be restarted once stopped, only
+destroyed</strong>. If you need to stop a pipeline and later restart it, destroy it
+and create a new pipe instead.</p>
 </div>
 </section>
 </section>
