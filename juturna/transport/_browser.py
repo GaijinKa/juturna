@@ -163,6 +163,7 @@ of this writing). Brought in line with `_base.py` as follows:
 
 import contextvars
 import json
+import logging
 import pickle
 
 from collections.abc import Callable
@@ -520,6 +521,10 @@ def _deserialize_message(header, meta_json_bytes: bytes, payload_bytes):
     return msg
 
 
+class QueueClosed(RuntimeError):
+    """Raised by a `put()` on a queue that was closed."""
+
+
 class _BrowserQueue:
     """
     Queue primitive backed by a `SharedArrayBuffer` ring buffer.
@@ -540,7 +545,14 @@ class _BrowserQueue:
     sequence to `t + 1`; the consumer reads slot `t % capacity` once its
     sequence is `t + 1` and frees it for the next lap with `t + capacity`.
     A producer that finds the ring full claims nothing, so a `put()` that
-    times out leaves no hole behind. Tickets are 32-bit: the ring stays
+    times out leaves no hole behind. A closed queue refuses writes with
+    `QueueClosed`, waking the producers that were waiting for room, and keeps
+    serving what it holds to its consumer. The page closes the queues of a
+    Worker it lost (see `poisonRing` in the web api), so that nobody stays
+    blocked on a Worker that will never read. A producer that dies between
+    claiming a slot and publishing it leaves that slot unreadable: the
+    consumer never gets past it, and the queue stays unusable.
+    Tickets are 32-bit: the ring stays
     correct for 2**31 messages, and past that only if `capacity` divides
     2**32 (a power of two).
     """
@@ -758,11 +770,10 @@ class _BrowserQueue:
 
         Atomics.store(self._header, _CLOSED, 1)
 
-        # a consumer waits on the sequence of the slot it reads next
-        tail = int(Atomics.load(self._header, _TAIL))
-        Atomics.notify(
-            self._meta_views[_slot_of(tail, self._capacity)], _SLOT_SEQ
-        )
+        # a consumer waits on the sequence of the slot it reads next, a
+        # producer on that of the slot it wants to write: wake them all
+        for view in self._meta_views:
+            Atomics.notify(view, _SLOT_SEQ)
 
     # -- internals ------------------------------------------------------
 
@@ -804,6 +815,9 @@ class _BrowserQueue:
         deadline = None if timeout is None else _now_ms() + timeout * 1000
 
         while True:
+            if int(Atomics.load(self._header, _CLOSED)):
+                raise QueueClosed('the queue was closed')
+
             ticket = int(Atomics.load(self._header, _HEAD))
             slot = _slot_of(ticket, self._capacity)
             cell = self._meta_views[slot]
@@ -1120,12 +1134,24 @@ class _BrowserRemoteDestination:
         self._transport = transport
         self._node_name = node_name
         self._queue: _BrowserQueue | None = None
+        self.dropped = 0
 
     def put(self, message) -> None:
         if self._queue is None:
             self._queue = self._transport._attach_remote(self._node_name)
 
-        self._queue.put(message)
+        try:
+            self._queue.put(message)
+        except QueueClosed:
+            # the node is gone: drop the message, so that the other
+            # destinations of the sender still get it
+            self.dropped += 1
+
+            if self.dropped == 1:
+                logging.getLogger('jt.transport').warning(
+                    f'node {self._node_name} of another Worker is gone, '
+                    'dropping its messages'
+                )
 
 
 class BrowserTransport:
