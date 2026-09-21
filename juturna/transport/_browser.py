@@ -769,12 +769,20 @@ class _BrowserQueue:
 
         header = np.asarray(self._meta_views[slot].to_py())
         meta_json_len = int(header[0])
-        meta_json_raw = bytes(
-            np.asarray(self._meta_json_views[slot].to_py())[:meta_json_len]
-        )
         payload_len = int(header[7])
+
+        # to_py() copies what it is given, so a view over the whole slot area
+        # would make every read cost as much as a maximum-size message, however
+        # small the message is: cut the view to the bytes in use first
+        meta_json_raw = bytes(
+            np.asarray(
+                self._meta_json_views[slot].subarray(0, meta_json_len).to_py()
+            )
+        )
         payload_raw = (
-            np.asarray(self._payload_views[slot].to_py())[:payload_len]
+            np.asarray(
+                self._payload_views[slot].subarray(0, payload_len).to_py()
+            )
             if payload_len > 0
             else np.asarray([], dtype='uint8')
         )
