@@ -246,8 +246,12 @@ def _atomics_wait_async(
 #
 # Global (queue-level) header, 4x int32: HEAD, TAIL, COUNT, CLOSED.
 
-_HEADER_INT32_LENGTH = 4
+_HEADER_INT32_LENGTH = 7
 _HEAD, _TAIL, _COUNT, _CLOSED = 0, 1, 2, 3
+# The slot geometry is written in the header so that a queue attached from
+# another Worker can check it agrees with the creator's: a mismatch would
+# otherwise read mid-slot, silently.
+_GEOM_CAPACITY, _GEOM_META_BYTES, _GEOM_PAYLOAD_BYTES = 4, 5, 6
 _SLOT_META_INT32_LENGTH = 8
 
 _DTYPE_CODES = {
@@ -521,6 +525,13 @@ class _BrowserQueue:
     `PyProxy.getBuffer()` + JS `TypedArray.set()`, read via a fresh
     `.to_py()` call every time (never cached). Only `Message` items are
     supported.
+
+    A queue can be shared with another Worker: `handle()` gives what has to
+    be posted to it, and passing that `sab` to a new `_BrowserQueue` there
+    attaches to the same ring. The ring has a single producer and a single
+    consumer: `put()` reserves the head slot without a compare-and-swap, so
+    it is safe for any number of producers only while they all run in the
+    same Worker (cooperative scheduling), never from two Workers at once.
     """
 
     def __init__(
@@ -528,7 +539,28 @@ class _BrowserQueue:
         capacity: int = DEFAULT_QUEUE_CAPACITY,
         max_meta_json_bytes: int = DEFAULT_MAX_META_JSON_BYTES,
         max_payload_bytes: int = DEFAULT_MAX_PAYLOAD_BYTES,
+        sab=None,
     ):
+        """
+        Parameters
+        ----------
+        capacity : int
+            Number of slots.
+        max_meta_json_bytes : int
+            Room for the JSON metadata of each slot.
+        max_payload_bytes : int
+            Room for the payload of each slot.
+        sab : SharedArrayBuffer, optional
+            The buffer of a queue created elsewhere, to attach to it. The
+            three sizes above must be those the creator used.
+
+        Raises
+        ------
+        ValueError
+            If ``sab`` was not created with the same geometry.
+
+        """
+        from js import Atomics
         from js import Int32Array
         from js import SharedArrayBuffer
         from js import Uint8Array
@@ -542,11 +574,39 @@ class _BrowserQueue:
             + max_payload_bytes
         )
 
-        sab = SharedArrayBuffer.new(
-            _HEADER_INT32_LENGTH * 4 + capacity * self._slot_bytes
-        )
+        size = _HEADER_INT32_LENGTH * 4 + capacity * self._slot_bytes
+        geometry = (capacity, max_meta_json_bytes, max_payload_bytes)
+
+        if sab is None:
+            sab = SharedArrayBuffer.new(size)
+            header = Int32Array.new(sab, 0, _HEADER_INT32_LENGTH)
+
+            for index, value in zip(
+                (_GEOM_CAPACITY, _GEOM_META_BYTES, _GEOM_PAYLOAD_BYTES),
+                geometry,
+                strict=True,
+            ):
+                Atomics.store(header, index, value)
+        else:
+            header = Int32Array.new(sab, 0, _HEADER_INT32_LENGTH)
+            found = tuple(
+                int(Atomics.load(header, index))
+                for index in (
+                    _GEOM_CAPACITY,
+                    _GEOM_META_BYTES,
+                    _GEOM_PAYLOAD_BYTES,
+                )
+            )
+
+            if sab.byteLength != size or found != geometry:
+                raise ValueError(
+                    'cannot attach to the queue: it was created with '
+                    f'(capacity, max_meta_json_bytes, max_payload_bytes) = '
+                    f'{found}, not {geometry}'
+                )
+
         self._sab = sab
-        self._header = Int32Array.new(sab, 0, _HEADER_INT32_LENGTH)
+        self._header = header
 
         slots_base = _HEADER_INT32_LENGTH * 4
         self._meta_views = []
@@ -569,6 +629,25 @@ class _BrowserQueue:
             )
 
         self._write_bulk = _get_buffer_write_fn()
+
+    def handle(self):
+        """
+        What another Worker needs to attach to this queue: a JS object
+        ``{sab, capacity, max_meta_json_bytes, max_payload_bytes}``, meant to
+        be posted to it (the buffer is shared, not copied).
+        """
+        from js import Object
+        from pyodide.ffi import to_js
+
+        return to_js(
+            {
+                'sab': self._sab,
+                'capacity': self._capacity,
+                'max_meta_json_bytes': self._max_meta_json_bytes,
+                'max_payload_bytes': self._max_payload_bytes,
+            },
+            dict_converter=Object.fromEntries,
+        )
 
     def put(self, item: Any, timeout: float | None = None) -> None:
         from juturna.components._message import Message
@@ -993,6 +1072,29 @@ class BrowserTransport:
             capacity=capacity,
             max_meta_json_bytes=self._max_meta_json_bytes,
             max_payload_bytes=self._max_payload_bytes,
+        )
+
+    def queue_handle(self, queue: _BrowserQueue):
+        """What to post to another Worker so it can `attach_queue()`."""
+        return queue.handle()
+
+    def attach_queue(self, handle) -> _BrowserQueue:
+        """
+        Attach to a queue created in another Worker, from the ``handle`` it
+        posted. The ring has a single producer and a single consumer: attach
+        from one Worker only if nothing else in another Worker writes to it.
+
+        Raises
+        ------
+        ValueError
+            If the queue geometry does not match the handle.
+
+        """
+        return _BrowserQueue(
+            capacity=handle.capacity,
+            max_meta_json_bytes=handle.max_meta_json_bytes,
+            max_payload_bytes=handle.max_payload_bytes,
+            sab=handle.sab,
         )
 
     def new_signal(self) -> _BrowserSignal:
