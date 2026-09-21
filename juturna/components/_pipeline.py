@@ -24,13 +24,16 @@ from juturna.transport import TransportBackend
 from juturna.transport import get_transport
 
 
+DEFAULT_WORKER = 'main'
+
+
 class Pipeline:
     """
     A pipeline aggregates nodes to create a data workflow from a source node to
     destination nodes.
     """
 
-    def __init__(self, config: dict):
+    def __init__(self, config: dict, worker: str = DEFAULT_WORKER):
         """
         Parameters
         ----------
@@ -38,8 +41,14 @@ class Pipeline:
             The pipeline configuration. This is a dictionary that contains the
             pipeline configuration, including the pipeline name, ID, folder,
             nodes, and links.
+        worker : str
+            The worker this pipeline instance runs in. A node runs in the
+            worker named by its optional ``worker`` key (``main`` when
+            missing); the nodes of other workers are not built here, and the
+            links towards them go through the transport, see `warmup`.
 
         """
+        self._worker = worker
         self._raw_config = copy.deepcopy(config)
         self._name = self._raw_config['pipeline']['name']
         self._pipe_id = self._raw_config['pipeline']['id']
@@ -132,6 +141,13 @@ class Pipeline:
         This method creates all the concrete nodes in the pipe, allocating
         their required resources. If a node is flagged as to be deployed
         remotely, that node will be replaced with a proc warp node.
+
+        Only the nodes of this pipeline's worker are built. A link from one of
+        them to a node of another worker delivers messages to the object
+        returned by the transport's ``remote_destination(node_name)``, so the
+        transport must provide it; a link from another worker's node only
+        adds that node to the origins of the local one. Cycles are checked
+        on the local graph only.
         """
         if self._status != PipelineStatus.NEW:
             raise RuntimeError(f'pipeline {self.name} cannot be warmed up')
@@ -158,7 +174,15 @@ class Pipeline:
                 'your configuration includes both local and installed plugins'
             )
 
-        for node in nodes:
+        local_nodes = [
+            node
+            for node in nodes
+            if node.get('worker', DEFAULT_WORKER) == self._worker
+        ]
+        local_names = {node['name'] for node in local_nodes}
+        remote_names = {node['name'] for node in nodes} - local_names
+
+        for node in local_nodes:
             node_name = node['name']
             node_folder = pathlib.Path(self.pipe_path, node_name)
             node_folder.mkdir(exist_ok=True)
@@ -195,14 +219,23 @@ class Pipeline:
             from_node = link['from']
             to_node = link['to']
 
-            self._nodes[from_node].add_destination(
-                to_node, self._nodes[to_node]
-            )
+            if from_node in remote_names and to_node in remote_names:
+                continue
 
-            self._nodes[to_node].origins.append(from_node)
+            if to_node in remote_names:
+                self._nodes[from_node].add_destination(
+                    to_node, self._remote_destination(to_node)
+                )
+            else:
+                if from_node not in remote_names:
+                    self._nodes[from_node].add_destination(
+                        to_node, self._nodes[to_node]
+                    )
+                    self._dag.add_edge(from_node, to_node)
+
+                self._nodes[to_node].origins.append(from_node)
 
             self._links.append(copy.copy(link))
-            self._dag.add_edge(from_node, to_node)
 
         if self._dag.has_cycle():
             raise ValueError(
@@ -223,6 +256,18 @@ class Pipeline:
         self._logger.info('pipe warmed up!')
 
         return
+
+    def _remote_destination(self, node_name: str):
+        factory = getattr(self._transport, 'remote_destination', None)
+
+        if factory is None:
+            raise ValueError(
+                f'node {node_name} runs in another worker, which the '
+                f'{type(self._transport).__name__} transport of pipeline '
+                f'{self.name} cannot reach'
+            )
+
+        return factory(node_name)
 
     def update_node(
         self, node_name: str, property_name: str, property_value: typing.Any
