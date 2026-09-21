@@ -521,6 +521,11 @@ def _deserialize_message(header, meta_json_bytes: bytes, payload_bytes):
     return msg
 
 
+# What the page publishes in a slot claimed by a producer that died (see
+# `repairRing` in the web api): a slot with no metadata, which no message has.
+_TOMBSTONE = object()
+
+
 class QueueClosed(RuntimeError):
     """Raised by a `put()` on a queue that was closed."""
 
@@ -550,11 +555,11 @@ class _BrowserQueue:
     serving what it holds to its consumer. The page closes the queues of a
     Worker it lost (see `poisonRing` in the web api), so that nobody stays
     blocked on a Worker that will never read. A producer that dies between
-    claiming a slot and publishing it leaves that slot unreadable: the
-    consumer never gets past it, and the queue stays unusable.
-    Tickets are 32-bit: the ring stays
-    correct for 2**31 messages, and past that only if `capacity` divides
-    2**32 (a power of two).
+    claiming a slot and publishing it leaves that slot unpublished: the
+    consumer would never get past it, so the page publishes an empty slot in
+    its place (`repairRing`), which `get()` skips.
+    Tickets are 32-bit: the ring stays correct for 2**31 messages, and past
+    that only if `capacity` divides 2**32 (a power of two).
     """
 
     def __init__(
@@ -737,15 +742,25 @@ class _BrowserQueue:
         self._publish_write(slot, ticket)
 
     def get(self, timeout: float | None = None) -> Any:
-        slot = self._reserve_read(timeout)
+        deadline = None if timeout is None else _now_ms() + timeout * 1000
 
-        if slot == -1:
-            raise Empty
+        while True:
+            remaining = (
+                None
+                if deadline is None
+                else max(0.0, deadline - _now_ms()) / 1000
+            )
+            slot = self._reserve_read(remaining)
 
-        msg = self._read_slot(slot)
-        self._release_read(slot)
+            if slot == -1:
+                raise Empty
 
-        return msg
+            msg = self._read_slot(slot)
+            self._release_read(slot)
+
+            # a slot the page filled in for a producer that died: nothing there
+            if msg is not _TOMBSTONE:
+                return msg
 
     def get_nowait(self) -> Any:
         return self.get(timeout=0)
@@ -783,6 +798,9 @@ class _BrowserQueue:
         header = np.asarray(self._meta_views[slot].to_py())
         meta_json_len = int(header[0])
         payload_len = int(header[7])
+
+        if meta_json_len == 0:
+            return _TOMBSTONE
 
         # to_py() copies what it is given, so a view over the whole slot area
         # would make every read cost as much as a maximum-size message, however
@@ -1136,6 +1154,10 @@ class _BrowserRemoteDestination:
         self._queue: _BrowserQueue | None = None
         self.dropped = 0
 
+    def reset(self) -> None:
+        """Forget the queue: the next write attaches to the current one."""
+        self._queue = None
+
     def put(self, message) -> None:
         if self._queue is None:
             self._queue = self._transport._attach_remote(self._node_name)
@@ -1249,9 +1271,15 @@ class BrowserTransport:
         """
         Register the handle of the inbound queue of a node of another Worker,
         as returned by its `queue_handle()`. Writes to that node's
-        destination wait for it.
+        destination wait for it. Calling it again for the same node, with the
+        handle of a rebuilt node, makes the destination write to the new queue.
         """
         self._remote_handles[node_name] = handle
+
+        # a node that was rebuilt has a new queue: writes must go there
+        if node_name in self._remote_destinations:
+            self._remote_destinations[node_name].reset()
+
         self._remote_event(node_name).set()
 
     def _remote_event(self, node_name: str):
