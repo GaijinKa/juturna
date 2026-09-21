@@ -80,8 +80,9 @@ with a copy of the contextvars context").
   `Node.__init__` (receives messages that, under a real multi-Worker
   deployment, would cross from another node's Worker) and `Buffer.__init__`
   (`_out_queue`, purely intra-node, `_worker` -> `_update` in the same
-  interpreter). Now that `spawn()` is JSPI-backed (one Pyodide instance
-  per node, no per-`spawn()` Worker), `Buffer` never actually crosses a
+  interpreter). Since `spawn()` is JSPI-backed (each spawned target is a
+  cooperative task of the Worker that runs the node, not a Worker of its
+  own), `Buffer` never actually crosses a
   real Worker boundary from its `Node` - `_out_queue`'s
   `SharedArrayBuffer` backing is unnecessary overhead there, but not
   incorrect. Left as-is (both call sites share one implementation);
@@ -200,19 +201,26 @@ def _atomics_wait_async(
 
 # --- wire format -----------------------------------------------------------
 #
-# Per-slot layout inside a queue's SharedArrayBuffer (the web api closes and
-# repairs queues from JavaScript, see ring.js there: keep the two in step):
+# Layout of a queue's SharedArrayBuffer (the web api closes and repairs queues
+# from JavaScript, see ring.js there: keep the two in step):
 #
-#   [0..32)                          8x int32 header:
+#   queue header, 7 x int32:
+#       HEAD, TAIL, COUNT, CLOSED, then the geometry (capacity,
+#       max_meta_json_bytes, max_payload_bytes)
+#
+#   then `capacity` slots of the same size, each made of:
+#
+#   [0..36)                          9 x int32:
 #                                       metaJsonLen, dtypeCode, ndim,
 #                                       shape0, shape1, shape2, shape3,
-#                                       payloadLen
-#   [32..32+max_meta_json_bytes)     UTF-8 JSON metadata blob
-#   [32+max_meta_json_bytes..end)    raw payload bytes (uint8
+#                                       payloadLen, SEQ
+#   [36..36+max_meta_json_bytes)     UTF-8 JSON metadata blob
+#   [36+max_meta_json_bytes..end)    raw payload bytes (uint8
 #                                    byte-reinterpretation of the array,
 #                                    or pickled bytes for the fallback path)
 #
-# Global (queue-level) header, 4x int32: HEAD, TAIL, COUNT, CLOSED.
+# A slot with metaJsonLen 0 holds no message: the page fills one in for a
+# producer that died (see `_TOMBSTONE`), and `get()` skips it.
 
 _HEADER_INT32_LENGTH = 7
 _HEAD, _TAIL, _COUNT, _CLOSED = 0, 1, 2, 3
