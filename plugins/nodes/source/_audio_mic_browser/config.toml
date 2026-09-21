@@ -1,0 +1,6 @@
+[arguments]
+ring_name = "juturna_mic_ring"
+block_size = 1
+audio_rate = 16000
+
+[meta]
