@@ -1328,8 +1328,8 @@ class BrowserTransport:
     def attach_queue(self, handle) -> _BrowserQueue:
         """
         Attach to a queue created in another Worker, from the ``handle`` it
-        posted. The ring has a single producer and a single consumer: attach
-        from one Worker only if nothing else in another Worker writes to it.
+        posted. Any number of Workers may write to the ring, but it has a
+        single consumer: only the node that owns the queue reads from it.
 
         Raises
         ------
