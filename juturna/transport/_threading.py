@@ -123,7 +123,8 @@ class ThreadingTransport:
     are backed by `queue.Queue`.
     """
 
-    def new_queue(self, maxsize: int = 0) -> _ThreadQueue:
+    def new_queue(self, maxsize: int = 0, local: bool = False) -> _ThreadQueue:
+        # threads share memory: every queue is local already
         return _ThreadQueue(maxsize)
 
     def new_signal(self) -> _ThreadSignal:

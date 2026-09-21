@@ -76,18 +76,15 @@ with a copy of the contextvars context").
   serialized message does not fit, rather than truncating or blocking
   forever - this is a real behavioural difference from
   `ThreadingTransport` that callers need to be aware of.
-- `new_queue(maxsize=...)` cannot tell apart the two real call sites:
-  `Node.__init__` (receives messages that, under a real multi-Worker
-  deployment, would cross from another node's Worker) and `Buffer.__init__`
-  (`_out_queue`, purely intra-node, `_worker` -> `_update` in the same
-  interpreter). Since `spawn()` is JSPI-backed (each spawned target is a
-  cooperative task of the Worker that runs the node, not a Worker of its
-  own), `Buffer` never actually crosses a
-  real Worker boundary from its `Node` - `_out_queue`'s
-  `SharedArrayBuffer` backing is unnecessary overhead there, but not
-  incorrect. Left as-is (both call sites share one implementation);
-  worth a plain-Python-object fast path for the intra-node case if queue
-  overhead ever shows up in profiling, not before.
+- A queue is a `SharedArrayBuffer` ring only when its messages can reach
+  another Worker. Every ring costs a serialization and a copy on each side of
+  a message, about 1 ms for a 640x480 RGBA frame, and a node has two queues.
+  Those that never leave the Worker - `Buffer._out_queue`, which asks for
+  `local=True`, and the inbound queue of a node that nothing in another Worker
+  writes to (`BrowserTransport.node_scope()`, set by `Pipeline`) - are
+  `_BrowserLocalQueue`: the messages stay Python objects. The inbound queue
+  of a node written to from another Worker is a ring, as is any queue built
+  outside a `node_scope()` without `local=True`.
 - `JUTURNA_MAX_QUEUE_SIZE` (999) is `ThreadingTransport`'s default
   `maxsize` and is NOT reused as the ring buffer capacity here: at typical
   video-frame slot sizes that would pre-allocate hundreds of MB per queue.
@@ -129,6 +126,8 @@ of this writing). Brought in line with `_base.py` as follows:
   duplication for no behavioural difference.
 """
 
+import collections
+import contextlib
 import contextvars
 import json
 import logging
@@ -901,6 +900,100 @@ def _slot_of(ticket: int, capacity: int) -> int:
     return (ticket & 0xFFFFFFFF) % capacity
 
 
+class _BrowserLocalQueue:
+    """
+    Queue for messages that never leave the Worker: they stay Python objects
+    in a `deque`, with no serialization and no copy, and the same capacity as
+    a ring would have, so a full queue makes `put()` wait just the same.
+
+    Waiting is cooperative: nothing else runs between a check and the wait
+    that follows it, so a counter cell that changes with every `put()` and
+    `get()` is all it takes to wake a waiter (the mechanism of the ring).
+    """
+
+    def __init__(self, capacity: int):
+        from js import Int32Array
+        from js import SharedArrayBuffer
+
+        self._items = collections.deque()
+        self._capacity = capacity
+        self._closed = False
+        self._cell = Int32Array.new(SharedArrayBuffer.new(4))
+
+    def put(self, item: Any, timeout: float | None = None) -> None:
+        if self._closed:
+            raise QueueClosed('the queue was closed')
+
+        deadline = None if timeout is None else _now_ms() + timeout * 1000
+
+        while len(self._items) >= self._capacity:
+            if not self._wait(deadline):
+                raise Full
+
+            if self._closed:
+                raise QueueClosed('the queue was closed')
+
+        self._items.append(item)
+        self._changed()
+
+    def get(self, timeout: float | None = None) -> Any:
+        deadline = None if timeout is None else _now_ms() + timeout * 1000
+
+        while not self._items:
+            if self._closed or not self._wait(deadline):
+                raise Empty
+
+        item = self._items.popleft()
+        self._changed()
+
+        return item
+
+    def get_nowait(self) -> Any:
+        return self.get(timeout=0)
+
+    def empty(self) -> bool:
+        return not self._items
+
+    def full(self) -> bool:
+        return len(self._items) >= self._capacity
+
+    def qsize(self) -> int:
+        return len(self._items)
+
+    def close(self) -> None:
+        self._closed = True
+        self._changed()
+
+    def handle(self):
+        raise RuntimeError('a local queue cannot be shared with another Worker')
+
+    def _changed(self) -> None:
+        from js import Atomics
+
+        Atomics.add(self._cell, 0, 1)
+        Atomics.notify(self._cell, 0)
+
+    def _wait(self, deadline: float | None) -> bool:
+        """Wait for a change; False when the deadline has passed."""
+        from js import Atomics
+
+        seen = int(Atomics.load(self._cell, 0))
+
+        if deadline is None:
+            _atomics_wait_async(self._cell, 0, seen)
+
+            return True
+
+        remaining_ms = deadline - _now_ms()
+
+        if remaining_ms <= 0:
+            return False
+
+        _atomics_wait_async(self._cell, 0, seen, remaining_ms)
+
+        return True
+
+
 def _now_ms() -> float:
     import time
 
@@ -1183,11 +1276,30 @@ class BrowserTransport:
         self._max_payload_bytes = max_payload_bytes
         self._remote_timeout = remote_timeout
 
+        self._scope_shared: bool | None = None
         self._remote_handles: dict = {}
         self._remote_events: dict = {}
         self._remote_destinations: dict = {}
 
-    def new_queue(self, maxsize: int = 0) -> _BrowserQueue:
+    @contextlib.contextmanager
+    def node_scope(self, shared: bool):
+        """
+        Declare, for the queues built inside the block, whether the node they
+        belong to is written to from another Worker. When it is not, a queue is
+        local (see `_BrowserLocalQueue`); outside a block, or with ``shared``
+        true, it is a ring.
+        """
+        previous = self._scope_shared
+        self._scope_shared = shared
+
+        try:
+            yield
+        finally:
+            self._scope_shared = previous
+
+    def new_queue(
+        self, maxsize: int = 0, local: bool = False
+    ) -> _BrowserQueue | _BrowserLocalQueue:
         # maxsize=0 (unbounded, queue.Queue convention) has no equivalent
         # for a pre-allocated SharedArrayBuffer ring buffer - falls back
         # to this transport's configured capacity. A positive maxsize
@@ -1199,6 +1311,9 @@ class BrowserTransport:
             if not maxsize
             else min(maxsize, self._queue_capacity)
         )
+
+        if local or self._scope_shared is False:
+            return _BrowserLocalQueue(capacity)
 
         return _BrowserQueue(
             capacity=capacity,

@@ -88,7 +88,14 @@ class TransportBackend(Protocol):
     buffers only depend on this interface, never on the concrete primitives.
     """
 
-    def new_queue(self, maxsize: int = 0) -> Queue: ...
+    def new_queue(self, maxsize: int = 0, local: bool = False) -> Queue:
+        """
+        Build a queue. ``local`` is a hint: the queue is only used within the
+        execution context that creates it (the messages never go to another
+        worker), so a backend may use a cheaper implementation. A backend whose
+        queues are all local anyway ignores it.
+        """
+        ...
 
     def new_signal(self) -> Signal: ...
 
