@@ -1,4 +1,3 @@
-import contextlib
 import time
 import copy
 import json
@@ -198,15 +197,12 @@ class Pipeline:
                 self._logger.info(node)
 
             # a node nothing of another worker writes to keeps its queue local
-            scope = getattr(self._transport, 'node_scope', None)
             written_from_afar = any(
                 link['to'] == node_name and link['from'] in remote_names
                 for link in links
             )
 
-            with (
-                scope(written_from_afar) if scope else contextlib.nullcontext()
-            ):
+            with self._transport.node_scope(written_from_afar):
                 _node: Node = _builder._get_node(
                     node,
                     pipe_name=self.name,
@@ -235,7 +231,7 @@ class Pipeline:
 
             if to_node in remote_names:
                 self._nodes[from_node].add_destination(
-                    to_node, self._remote_destination(to_node)
+                    to_node, self._transport.remote_destination(to_node)
                 )
             else:
                 if from_node not in remote_names:
@@ -267,18 +263,6 @@ class Pipeline:
         self._logger.info('pipe warmed up!')
 
         return
-
-    def _remote_destination(self, node_name: str):
-        factory = getattr(self._transport, 'remote_destination', None)
-
-        if factory is None:
-            raise ValueError(
-                f'node {node_name} runs in another worker, which the '
-                f'{type(self._transport).__name__} transport of pipeline '
-                f'{self.name} cannot reach'
-            )
-
-        return factory(node_name)
 
     def update_node(
         self, node_name: str, property_name: str, property_value: typing.Any
