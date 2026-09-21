@@ -1,3 +1,4 @@
+import contextlib
 import time
 import copy
 import json
@@ -196,12 +197,22 @@ class Pipeline:
                 self._logger.info(f'{node_name} warped')
                 self._logger.info(node)
 
-            _node: Node = _builder._get_node(
-                node,
-                pipe_name=self.name,
-                plugin_dirs=self._raw_config.get('plugins', list()),
-                transport=self._transport,
+            # a node nothing of another worker writes to keeps its queue local
+            scope = getattr(self._transport, 'node_scope', None)
+            written_from_afar = any(
+                link['to'] == node_name and link['from'] in remote_names
+                for link in links
             )
+
+            with (
+                scope(written_from_afar) if scope else contextlib.nullcontext()
+            ):
+                _node: Node = _builder._get_node(
+                    node,
+                    pipe_name=self.name,
+                    plugin_dirs=self._raw_config.get('plugins', list()),
+                    transport=self._transport,
+                )
 
             _node.pipe_id = copy.deepcopy(self._pipe_id)
             _node.pipe_path = node_folder
