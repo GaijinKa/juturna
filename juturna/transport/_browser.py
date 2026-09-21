@@ -32,37 +32,6 @@ module, or defining/instantiating `BrowserTransport`, must never require
 `js` to exist. `contextvars` (stdlib) is the only exception and sits at
 module scope.
 
-Design and validation trail: `design/browser-transport/` (local, not
-tracked by git). What is implemented here follows, unmodified in its
-mechanics, these validated spikes:
-
-- `spike/getbuffer/`: bulk bytes numpy/bytes -> SharedArrayBuffer write via
-  `PyProxy.getBuffer()` + a JS-to-JS `TypedArray.set()` (never a `bytes`
-  argument crossing `pyodide.ffi`, which measured ~125ms/frame - too slow);
-  read via a FRESH `.to_py()` call every time, never cached (a cached
-  `to_py()` view does not alias real shared memory - confirmed broken,
-  see `spike/zerocopy/`).
-- `spike/message/`: the same mechanism extended to a real
-  `juturna.components.Message` with `ImagePayload`/`AudioPayload` (JSON
-  metadata blob + dtype-agnostic byte-reinterpretation of the array, so a
-  `float32` audio payload isn't silently corrupted by a `uint8`
-  destination view).
-- `spike/pyfunction/`: the `getBuffer()`+`.set()` JS helper can be built
-  entirely from Python via `from js import Function; Function.new(...)`,
-  so this module needs no separate `.js` asset file to ship.
-- `spike/jspi/worker3-new.js`, `worker5-new.js`: nested `callPromising()`
-  (a spawned task itself blocking on another primitive while other
-  spawned tasks are live) on Pyodide 314.0.6 - no crash, real
-  cooperative concurrency confirmed, 3 independent reproductions.
-- `spike/jspi/worker6-lockcond.js`: `_BrowserLock`/`_BrowserCondition`
-  under real contention (Lock: exact mutual exclusion over 60 contested
-  increments; Condition: wait/notify_all within ~2ms of the expected
-  delay).
-- `spike/jspi/worker7-iscurrent.js`: the `contextvars.ContextVar`-based
-  `is_current()` mechanism - identity survives a real stack-switch
-  suspend/resume and stays correctly isolated between two concurrently
-  spawned tasks.
-
 ## Why `Atomics.wait` (synchronous) must never appear in this module
 
 Every blocking wait here uses `run_sync(Atomics.waitAsync(...))`, never
@@ -76,20 +45,18 @@ node - not a slowdown, a deadlock (e.g. `Node.join()` waiting on a
 `Condition` that only `_update`, sharing the same frozen loop, could ever
 notify). `run_sync(Atomics.waitAsync(...))` suspends only the current
 stack-switched task and lets the others keep running - this is the
-mechanism every JSPI spike above validated and the reason `spawn()`
-works at all under a single Pyodide instance per node.
+mechanism that makes `spawn()` work at all in a single Pyodide instance.
 
 ## `is_current()` and worker identity
 
 There is no OS thread identity to compare against under JSPI, so
 `_BrowserWorker` identity is tracked with a module-level
 `contextvars.ContextVar`, set at the start of the wrapped target and read
-back by `BrowserTransport.is_current()`. Validated
-(`spike/jspi/worker7-iscurrent.js`) to survive a real stack-switch
-suspend/resume mid-target and to stay isolated between two concurrently
-running spawned targets - this exercises the Pyodide 314.0.5 fix ("A
-Python entry point invoked with stack switching enabled now runs with a
-copy of the contextvars context").
+back by `BrowserTransport.is_current()`. The identity survives a real
+stack-switch suspend/resume mid-target and stays isolated between two
+concurrently running spawned targets - this relies on the Pyodide 314.0.5
+fix ("A Python entry point invoked with stack switching enabled now runs
+with a copy of the contextvars context").
 
 ## Known simplifications / open items in `_BrowserQueue`
 
@@ -99,8 +66,8 @@ copy of the contextvars context").
   `Message(payload=ControlPayload(...))`.
 - Fast binary path: `ControlPayload`, `ImagePayload`, `AudioPayload`,
   `BytesPayload`. Everything else (`VideoPayload`, `Batch`,
-  `ObjectPayload`, custom payload types) falls back to `pickle`, exactly
-  as planned in the original design doc (§5.1) - correct, not optimized.
+  `ObjectPayload`, custom payload types) falls back to `pickle` - correct, not
+  optimized.
   `Buffer._consume()` does emit `Batch` payloads for multi-input nodes, so
   this fallback is on a real, exercised path, not just a hypothetical.
 - A `SharedArrayBuffer`-backed slot has a fixed maximum size
@@ -233,8 +200,8 @@ def _atomics_wait_async(
 
 # --- wire format -----------------------------------------------------------
 #
-# Per-slot layout inside a queue's SharedArrayBuffer (mirrors
-# design/browser-transport/spike/message/message_ring_buffer.js exactly):
+# Per-slot layout inside a queue's SharedArrayBuffer (the web api closes and
+# repairs queues from JavaScript, see ring.js there: keep the two in step):
 #
 #   [0..32)                          8x int32 header:
 #                                       metaJsonLen, dtypeCode, ndim,
@@ -282,14 +249,14 @@ DEFAULT_MAX_PAYLOAD_BYTES = (
 
 def _get_buffer_write_fn():
     """
-    Builds, from Python, the JS helper that does the validated fast write:
+    Builds, from Python, the JS helper that does the fast write:
     `npProxy.getBuffer('u8')` (Python->JS zero-copy) + a JS-to-JS
     `TypedArray.set()` (never a `bytes` argument crossing `pyodide.ffi`,
-    which is what made `BinaryRingBuffer` slow - see module docstring).
+    which measured ~125 ms per frame, far too slow).
 
     Constructed via the standard JS `Function` constructor
-    (`from js import Function; Function.new(...)`), validated in
-    `design/browser-transport/spike/pyfunction/`. No separate `.js` file.
+    (`from js import Function; Function.new(...)`), so this module needs no
+    separate `.js` file to ship.
     """
     from js import Function
 
@@ -941,8 +908,8 @@ class _BrowserLock:
     `Node`/`Buffer` never nest lock acquisition, so this is a deliberate
     simplification, not a gap.
 
-    Validated in `design/browser-transport/spike/jspi/worker6-lockcond.js`
-    (exact mutual exclusion over 60 contested increments).
+    Verified in a browser: exact mutual exclusion over 60 contested
+    increments.
     """
 
     _CELL = 0
@@ -979,8 +946,8 @@ class _BrowserCondition:
     `__exit__` delegate to the lock; `wait_for`/`notify_all` use the
     counter).
 
-    Validated in `design/browser-transport/spike/jspi/worker6-lockcond.js`
-    (waiter woke within ~2ms of the notifier's delay).
+    Verified in a browser: a waiter woke within ~2 ms of the notifier's
+    delay.
     """
 
     _GEN = 0
@@ -1049,8 +1016,7 @@ def _get_js_spawn_fn():
     Builds, from Python, the JS helper that starts a JSPI stack-switching
     task from a proxied Python callable: `pyCallableProxy.callPromising()`
     must be invoked from JS (not called directly from Python) for the
-    target to actually run with stack switching enabled - see
-    `design/browser-transport/spike/jspi/worker7-iscurrent.js`.
+    target to actually run with stack switching enabled.
     """
     from js import Function
 
