@@ -72,7 +72,7 @@ def encode_message(message: Message) -> dict:
     return {
         'kind': kind,
         'payload': fields,
-        'meta': json.loads(json.dumps(message.meta, default=str)),
+        'meta': json.loads(json.dumps(dict(message.meta), default=str)),
         'creator': message.creator,
         'id': message.id,
         'created_at': message.created_at,

@@ -89,3 +89,18 @@ def test_invalid_messages_are_rejected():
 
     with pytest.raises(TypeError, match='unsupported payload'):
         encode_message(Message(creator='s', payload=object()))
+
+
+def test_frozen_message_keeps_its_meta():
+    message = Message(
+        creator='s',
+        payload=AudioPayload(audio=np.zeros(4, dtype=np.float32)),
+    )
+    message.meta['i'] = 3
+    message._freeze()
+
+    encoded = encode_message(message)
+
+    assert encoded['meta'] == {'i': 3}, (
+        f'Expected the meta of the message, got {encoded["meta"]!r}'
+    )
