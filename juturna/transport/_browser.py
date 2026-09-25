@@ -97,10 +97,12 @@ with a copy of the contextvars context").
 This module was written against an earlier version of the protocol.
 `full()`/`qsize()`/`put(timeout=...)` on `Queue`, `wait(timeout=...)` on
 `Signal`, and `timeout` on `Condition.wait_for()` were added to `_base.py`
-by `dd4185a` (node draining fix) without a matching update here; `Event`/
-`new_event()` were added by `19fe90a`, also without an implementation in
-either backend (`ThreadingTransport` does not implement `Event` either as
-of this writing). Brought in line with `_base.py` as follows:
+by `dd4185a` (node draining fix) without a matching update here. `Event`/
+`new_event()`, added by `19fe90a` without an implementation in either
+backend, were later removed outright: `Event` duplicated `Signal`
+exactly (`set`/`clear`/`is_set`/`wait`, differing only in `wait()`'s
+declared return annotation) and had no caller in either backend.
+Brought in line with `_base.py` as follows:
 
 - `_BrowserQueue.put(item, timeout=...)` reuses the same deadline-loop
   shape already used by `_reserve_read()`; on timeout it raises stdlib
@@ -117,13 +119,6 @@ of this writing). Brought in line with `_base.py` as follows:
   otherwise block until its timeout even when `set()` had already run.
   `set()` now notifies, matching `_BrowserLock`/`_BrowserCondition`'s
   existing store-then-notify pattern.
-- `_BrowserEvent` is a plain subclass of `_BrowserSignal` with no
-  overrides: the two protocols in `_base.py` are structurally identical
-  (`set`/`clear`/`is_set`/`wait`), differing only in `wait()`'s declared
-  return annotation (`bool` for `Signal`, `None` for `Event`), which
-  Python does not enforce at runtime. A second independent
-  implementation of the same Atomics-cell mechanism would be pure
-  duplication for no behavioural difference.
 """
 
 import collections
@@ -317,17 +312,6 @@ class _BrowserSignal:
                 _atomics_wait_async(self._cell, self._CELL, 0, remaining_ms)
             else:
                 _atomics_wait_async(self._cell, self._CELL, 0)
-
-
-class _BrowserEvent(_BrowserSignal):
-    """
-    Event primitive required by `TransportBackend.new_event()`. No
-    overrides: `Signal` and `Event` in `_base.py` are structurally
-    identical (`set`/`clear`/`is_set`/`wait`), differing only in
-    `wait()`'s declared return annotation, which Python does not enforce
-    at runtime - see the module docstring's "Aligned to the current
-    `TransportBackend` contract" section.
-    """
 
 
 def _serialize_message(msg) -> tuple[bytes, int, int, tuple[int, ...], Any]:
@@ -1401,9 +1385,6 @@ class BrowserTransport:
 
     def new_signal(self) -> _BrowserSignal:
         return _BrowserSignal()
-
-    def new_event(self) -> _BrowserEvent:
-        return _BrowserEvent()
 
     def new_lock(self) -> _BrowserLock:
         return _BrowserLock()

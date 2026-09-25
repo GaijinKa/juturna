@@ -58,18 +58,6 @@ class Condition(Protocol):
     def notify_all(self) -> None: ...
 
 
-class Event(Protocol):
-    """An event that can be set/unset"""
-
-    def set(self) -> None: ...
-
-    def wait(self, timeout: float | None = None) -> None: ...
-
-    def clear(self) -> None: ...
-
-    def is_set(self) -> bool: ...
-
-
 class WorkerHandle(Protocol):
     """A handle to a unit of concurrent execution spawned by a backend."""
 
@@ -121,8 +109,6 @@ class TransportBackend(Protocol):
     def new_lock(self) -> Lock: ...
 
     def new_condition(self) -> Condition: ...
-
-    def new_event(self) -> Event: ...
 
     def spawn(
         self, target: Callable[[], None], name: str, daemon: bool = True

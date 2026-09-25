@@ -1,7 +1,6 @@
 # noqa: D104
 from juturna.transport._base import Condition
 from juturna.transport._base import Empty
-from juturna.transport._base import Event
 from juturna.transport._base import Lock
 from juturna.transport._base import Queue
 from juturna.transport._base import Signal
@@ -16,7 +15,6 @@ __all__ = [
     'BrowserTransport',
     'Condition',
     'Empty',
-    'Event',
     'Lock',
     'Queue',
     'Signal',
