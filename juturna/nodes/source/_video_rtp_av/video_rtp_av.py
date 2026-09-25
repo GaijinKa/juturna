@@ -16,6 +16,7 @@ from juturna.components import Node
 from juturna.components import Message
 
 from juturna.components import _resource_broker as rb
+from juturna.meta import JUTURNA_THREAD_JOIN_TIMEOUT
 from juturna.names import PixelFormat
 from juturna.payloads import BytesPayload, ImagePayload
 from juturna.transport import Signal
@@ -129,7 +130,9 @@ class VideoRtpAv(Node[BytesPayload, ImagePayload]):
 
         try:
             self._container = av.open(
-                str(self.sdp_descriptor), options=self._OPTIONS
+                str(self.sdp_descriptor),
+                options=self._OPTIONS,
+                timeout=(None, JUTURNA_THREAD_JOIN_TIMEOUT),
             )
             self._stream = self._container.streams.video[0]
             self._stream.thread_type = 'AUTO'
@@ -146,6 +149,8 @@ class VideoRtpAv(Node[BytesPayload, ImagePayload]):
                 except Exception as e:
                     self.logger.warning(f'error decoding packet: {e}')
                     continue
+        except av.error.ExitError:
+            raise
         except Exception as e:
             self.logger.error(f'stream error: {e}')
 
@@ -175,6 +180,10 @@ class VideoRtpAv(Node[BytesPayload, ImagePayload]):
                     )
 
                     self.put(to_send)
+            except av.error.ExitError:
+                self.logger.debug(
+                    f'demux terminate while reading {self._stop_event.is_set()}'
+                )
             except Exception as e:
                 if not self._stop_event.is_set():
                     self.logger.info(f'source unavailable ({e}), retrying...')
