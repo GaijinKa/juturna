@@ -40,8 +40,8 @@ class _ThreadQueue:
         return self._queue.qsize()
 
 
-class _ThreadSignal:
-    """Signal primitive backed by threading.Event."""
+class _ThreadEvent:
+    """Event primitive backed by threading.Event."""
 
     def __init__(self):
         self._event = threading.Event()
@@ -128,6 +128,9 @@ class ThreadingTransport:
         # threads share memory: every queue is local already
         return _ThreadQueue(maxsize)
 
+    def new_event(self) -> _ThreadEvent:
+        return _ThreadEvent()
+
     def node_scope(self, shared: bool) -> contextlib.AbstractContextManager:
         return contextlib.nullcontext()
 
@@ -136,9 +139,6 @@ class ThreadingTransport:
             f'node {node_name} runs in another worker, which the '
             f'{type(self).__name__} transport cannot reach'
         )
-
-    def new_signal(self) -> _ThreadSignal:
-        return _ThreadSignal()
 
     def new_lock(self) -> _ThreadLock:
         return _ThreadLock()
