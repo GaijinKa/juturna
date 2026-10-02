@@ -341,6 +341,90 @@
 <section id="module-juturna.transport">
 <span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-juturna.transport" title="Link to this heading">¶</a></h2>
 <dl class="py class">
+<dt class="sig sig-object py" id="juturna.transport.BrowserTransport">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">juturna.transport.</span></span><span class="sig-name descname"><span class="pre">BrowserTransport</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">queue_capacity</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">8</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_meta_json_bytes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">4096</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_payload_bytes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">2000000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">remote_timeout</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">30.0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#juturna.transport.BrowserTransport" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Browser transport backend (Pyodide + <cite>SharedArrayBuffer</cite>/<cite>Atomics</cite>,
+made concurrent by JSPI). See the module docstring for the deployment
+requirement (Pyodide &gt;= v314.0.0, module-type Worker, entry point
+invoked via <cite>.callPromising()</cite>).</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="juturna.transport.BrowserTransport.attach_queue">
+<span class="sig-name descname"><span class="pre">attach_queue</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">handle</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">_BrowserQueue</span></span></span><a class="headerlink" href="#juturna.transport.BrowserTransport.attach_queue" title="Link to this definition">¶</a></dt>
+<dd><p>Attach to a queue created in another Worker, from the <code class="docutils literal notranslate"><span class="pre">handle</span></code> it
+posted. Any number of Workers may write to the ring, but it has a
+single consumer: only the node that owns the queue reads from it.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>ValueError</strong> – If the queue geometry does not match the handle.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="juturna.transport.BrowserTransport.connect">
+<span class="sig-name descname"><span class="pre">connect</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">handle</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#juturna.transport.BrowserTransport.connect" title="Link to this definition">¶</a></dt>
+<dd><p>Register the handle of the inbound queue of a node of another Worker,
+as returned by its <cite>queue_handle()</cite>. Writes to that node’s
+destination wait for it. Calling it again for the same node, with the
+handle of a rebuilt node, makes the destination write to the new queue.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="juturna.transport.BrowserTransport.is_current">
+<span class="sig-name descname"><span class="pre">is_current</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">handle</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#juturna.transport.WorkerHandle" title="juturna.transport._base.WorkerHandle"><span class="pre">WorkerHandle</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#juturna.transport.BrowserTransport.is_current" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="juturna.transport.BrowserTransport.new_condition">
+<span class="sig-name descname"><span class="pre">new_condition</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">_BrowserCondition</span></span></span><a class="headerlink" href="#juturna.transport.BrowserTransport.new_condition" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="juturna.transport.BrowserTransport.new_lock">
+<span class="sig-name descname"><span class="pre">new_lock</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">_BrowserLock</span></span></span><a class="headerlink" href="#juturna.transport.BrowserTransport.new_lock" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="juturna.transport.BrowserTransport.new_queue">
+<span class="sig-name descname"><span class="pre">new_queue</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">maxsize</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">local</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">_BrowserQueue</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">_BrowserLocalQueue</span></span></span><a class="headerlink" href="#juturna.transport.BrowserTransport.new_queue" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="juturna.transport.BrowserTransport.new_signal">
+<span class="sig-name descname"><span class="pre">new_signal</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">_BrowserSignal</span></span></span><a class="headerlink" href="#juturna.transport.BrowserTransport.new_signal" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="juturna.transport.BrowserTransport.node_scope">
+<span class="sig-name descname"><span class="pre">node_scope</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">shared</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#juturna.transport.BrowserTransport.node_scope" title="Link to this definition">¶</a></dt>
+<dd><p>Declare, for the queues built inside the block, whether the node they
+belong to is written to from another Worker. When it is not, a queue is
+local (see <cite>_BrowserLocalQueue</cite>); outside a block, or with <code class="docutils literal notranslate"><span class="pre">shared</span></code>
+true, it is a ring.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="juturna.transport.BrowserTransport.queue_handle">
+<span class="sig-name descname"><span class="pre">queue_handle</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">queue</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">_BrowserQueue</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#juturna.transport.BrowserTransport.queue_handle" title="Link to this definition">¶</a></dt>
+<dd><p>What to post to another Worker so it can <cite>attach_queue()</cite>.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="juturna.transport.BrowserTransport.remote_destination">
+<span class="sig-name descname"><span class="pre">remote_destination</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">_BrowserRemoteDestination</span></span></span><a class="headerlink" href="#juturna.transport.BrowserTransport.remote_destination" title="Link to this definition">¶</a></dt>
+<dd><p>The destination standing for a node of another Worker, to be linked
+as if it were the node itself (see <cite>Pipeline.warmup</cite>).</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="juturna.transport.BrowserTransport.spawn">
+<span class="sig-name descname"><span class="pre">spawn</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">target</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">daemon</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">_BrowserWorker</span></span></span><a class="headerlink" href="#juturna.transport.BrowserTransport.spawn" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
 <dt class="sig sig-object py" id="juturna.transport.Condition">
 <em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">juturna.transport.</span></span><span class="sig-name descname"><span class="pre">Condition</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#juturna.transport.Condition" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Protocol</span></code></p>
@@ -465,7 +549,17 @@ are backed by <cite>queue.Queue</cite>.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="juturna.transport.ThreadingTransport.new_queue">
-<span class="sig-name descname"><span class="pre">new_queue</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">maxsize</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">_ThreadQueue</span></span></span><a class="headerlink" href="#juturna.transport.ThreadingTransport.new_queue" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">new_queue</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">maxsize</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">local</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">_ThreadQueue</span></span></span><a class="headerlink" href="#juturna.transport.ThreadingTransport.new_queue" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="juturna.transport.ThreadingTransport.node_scope">
+<span class="sig-name descname"><span class="pre">node_scope</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">shared</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">AbstractContextManager</span></span></span><a class="headerlink" href="#juturna.transport.ThreadingTransport.node_scope" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="juturna.transport.ThreadingTransport.remote_destination">
+<span class="sig-name descname"><span class="pre">remote_destination</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Any</span></span></span><a class="headerlink" href="#juturna.transport.ThreadingTransport.remote_destination" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
@@ -505,8 +599,30 @@ buffers only depend on this interface, never on the concrete primitives.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="juturna.transport.TransportBackend.new_queue">
-<span class="sig-name descname"><span class="pre">new_queue</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">maxsize</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#juturna.transport.Queue" title="juturna.transport._base.Queue"><span class="pre">Queue</span></a></span></span><a class="headerlink" href="#juturna.transport.TransportBackend.new_queue" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<span class="sig-name descname"><span class="pre">new_queue</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">maxsize</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">local</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#juturna.transport.Queue" title="juturna.transport._base.Queue"><span class="pre">Queue</span></a></span></span><a class="headerlink" href="#juturna.transport.TransportBackend.new_queue" title="Link to this definition">¶</a></dt>
+<dd><p>Build a queue. <code class="docutils literal notranslate"><span class="pre">local</span></code> is a hint: the queue is only used within the
+execution context that creates it (the messages never go to another
+worker), so a backend may use a cheaper implementation. A backend whose
+queues are all local anyway ignores it.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="juturna.transport.TransportBackend.node_scope">
+<span class="sig-name descname"><span class="pre">node_scope</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">shared</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">AbstractContextManager</span></span></span><a class="headerlink" href="#juturna.transport.TransportBackend.node_scope" title="Link to this definition">¶</a></dt>
+<dd><p>Return a context manager around the construction of a node. <code class="docutils literal notranslate"><span class="pre">shared</span></code>
+tells whether the node is written to from another worker, which a
+backend may use to build the queues of the node accordingly. A backend
+with a single kind of queue returns a no-op context manager.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="juturna.transport.TransportBackend.remote_destination">
+<span class="sig-name descname"><span class="pre">remote_destination</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Any</span></span></span><a class="headerlink" href="#juturna.transport.TransportBackend.remote_destination" title="Link to this definition">¶</a></dt>
+<dd><p>Return the object that stands for a node of another worker: anything
+with a <code class="docutils literal notranslate"><span class="pre">put(message)</span></code> method, to be used as a destination of the
+local nodes. Raises <code class="docutils literal notranslate"><span class="pre">ValueError</span></code> if the backend cannot reach other
+workers.</p>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="juturna.transport.TransportBackend.spawn">
@@ -539,12 +655,15 @@ buffers only depend on this interface, never on the concrete primitives.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="juturna.transport.get_transport">
-<span class="sig-prename descclassname"><span class="pre">juturna.transport.</span></span><span class="sig-name descname"><span class="pre">get_transport</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#juturna.transport.TransportBackend" title="juturna.transport._base.TransportBackend"><span class="pre">TransportBackend</span></a></span></span><a class="headerlink" href="#juturna.transport.get_transport" title="Link to this definition">¶</a></dt>
-<dd><p>Resolve a transport backend by name.</p>
+<span class="sig-prename descclassname"><span class="pre">juturna.transport.</span></span><span class="sig-name descname"><span class="pre">get_transport</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">spec</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">dict</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#juturna.transport.TransportBackend" title="juturna.transport._base.TransportBackend"><span class="pre">TransportBackend</span></a></span></span><a class="headerlink" href="#juturna.transport.get_transport" title="Link to this definition">¶</a></dt>
+<dd><p>Resolve a transport backend from its configuration.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>name</strong> (<em>str</em><em> | </em><em>None</em>) – The name of the transport backend, as registered in <cite>_TRANSPORTS</cite>.
-Defaults to the threading backend if not provided.</p>
+<dd class="field-odd"><p><strong>spec</strong> (<em>str</em><em> | </em><em>dict</em><em> | </em><em>None</em>) – Either the name of the backend, as registered in <cite>_TRANSPORTS</cite>, or a
+dictionary with its <code class="docutils literal notranslate"><span class="pre">name</span></code> and the options of the backend, that are
+passed to its constructor, like
+<code class="docutils literal notranslate"><span class="pre">{'name':</span> <span class="pre">'browser',</span> <span class="pre">'max_payload_bytes':</span> <span class="pre">4000000}</span></code>. Defaults to the
+threading backend if not provided.</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>A new instance of the requested backend.</p>
@@ -553,7 +672,8 @@ Defaults to the threading backend if not provided.</p>
 <dd class="field-odd"><p><a class="reference internal" href="#juturna.transport.TransportBackend" title="juturna.transport.TransportBackend">TransportBackend</a></p>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>ValueError</strong> – If <cite>name</cite> does not match any registered backend.</p>
+<dd class="field-even"><p><strong>ValueError</strong> – If the name does not match any registered backend, or the backend
+    does not accept one of the options.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -626,6 +746,20 @@ Defaults to the threading backend if not provided.</p>
             <ul>
 <li><a class="reference internal" href="#">juturna.transport package</a><ul>
 <li><a class="reference internal" href="#module-juturna.transport">Module contents</a><ul>
+<li><a class="reference internal" href="#juturna.transport.BrowserTransport"><code class="docutils literal notranslate"><span class="pre">BrowserTransport</span></code></a><ul>
+<li><a class="reference internal" href="#juturna.transport.BrowserTransport.attach_queue"><code class="docutils literal notranslate"><span class="pre">BrowserTransport.attach_queue()</span></code></a></li>
+<li><a class="reference internal" href="#juturna.transport.BrowserTransport.connect"><code class="docutils literal notranslate"><span class="pre">BrowserTransport.connect()</span></code></a></li>
+<li><a class="reference internal" href="#juturna.transport.BrowserTransport.is_current"><code class="docutils literal notranslate"><span class="pre">BrowserTransport.is_current()</span></code></a></li>
+<li><a class="reference internal" href="#juturna.transport.BrowserTransport.new_condition"><code class="docutils literal notranslate"><span class="pre">BrowserTransport.new_condition()</span></code></a></li>
+<li><a class="reference internal" href="#juturna.transport.BrowserTransport.new_lock"><code class="docutils literal notranslate"><span class="pre">BrowserTransport.new_lock()</span></code></a></li>
+<li><a class="reference internal" href="#juturna.transport.BrowserTransport.new_queue"><code class="docutils literal notranslate"><span class="pre">BrowserTransport.new_queue()</span></code></a></li>
+<li><a class="reference internal" href="#juturna.transport.BrowserTransport.new_signal"><code class="docutils literal notranslate"><span class="pre">BrowserTransport.new_signal()</span></code></a></li>
+<li><a class="reference internal" href="#juturna.transport.BrowserTransport.node_scope"><code class="docutils literal notranslate"><span class="pre">BrowserTransport.node_scope()</span></code></a></li>
+<li><a class="reference internal" href="#juturna.transport.BrowserTransport.queue_handle"><code class="docutils literal notranslate"><span class="pre">BrowserTransport.queue_handle()</span></code></a></li>
+<li><a class="reference internal" href="#juturna.transport.BrowserTransport.remote_destination"><code class="docutils literal notranslate"><span class="pre">BrowserTransport.remote_destination()</span></code></a></li>
+<li><a class="reference internal" href="#juturna.transport.BrowserTransport.spawn"><code class="docutils literal notranslate"><span class="pre">BrowserTransport.spawn()</span></code></a></li>
+</ul>
+</li>
 <li><a class="reference internal" href="#juturna.transport.Condition"><code class="docutils literal notranslate"><span class="pre">Condition</span></code></a><ul>
 <li><a class="reference internal" href="#juturna.transport.Condition.notify_all"><code class="docutils literal notranslate"><span class="pre">Condition.notify_all()</span></code></a></li>
 <li><a class="reference internal" href="#juturna.transport.Condition.wait_for"><code class="docutils literal notranslate"><span class="pre">Condition.wait_for()</span></code></a></li>
@@ -655,6 +789,8 @@ Defaults to the threading backend if not provided.</p>
 <li><a class="reference internal" href="#juturna.transport.ThreadingTransport.new_event"><code class="docutils literal notranslate"><span class="pre">ThreadingTransport.new_event()</span></code></a></li>
 <li><a class="reference internal" href="#juturna.transport.ThreadingTransport.new_lock"><code class="docutils literal notranslate"><span class="pre">ThreadingTransport.new_lock()</span></code></a></li>
 <li><a class="reference internal" href="#juturna.transport.ThreadingTransport.new_queue"><code class="docutils literal notranslate"><span class="pre">ThreadingTransport.new_queue()</span></code></a></li>
+<li><a class="reference internal" href="#juturna.transport.ThreadingTransport.node_scope"><code class="docutils literal notranslate"><span class="pre">ThreadingTransport.node_scope()</span></code></a></li>
+<li><a class="reference internal" href="#juturna.transport.ThreadingTransport.remote_destination"><code class="docutils literal notranslate"><span class="pre">ThreadingTransport.remote_destination()</span></code></a></li>
 <li><a class="reference internal" href="#juturna.transport.ThreadingTransport.spawn"><code class="docutils literal notranslate"><span class="pre">ThreadingTransport.spawn()</span></code></a></li>
 </ul>
 </li>
@@ -664,6 +800,8 @@ Defaults to the threading backend if not provided.</p>
 <li><a class="reference internal" href="#juturna.transport.TransportBackend.new_event"><code class="docutils literal notranslate"><span class="pre">TransportBackend.new_event()</span></code></a></li>
 <li><a class="reference internal" href="#juturna.transport.TransportBackend.new_lock"><code class="docutils literal notranslate"><span class="pre">TransportBackend.new_lock()</span></code></a></li>
 <li><a class="reference internal" href="#juturna.transport.TransportBackend.new_queue"><code class="docutils literal notranslate"><span class="pre">TransportBackend.new_queue()</span></code></a></li>
+<li><a class="reference internal" href="#juturna.transport.TransportBackend.node_scope"><code class="docutils literal notranslate"><span class="pre">TransportBackend.node_scope()</span></code></a></li>
+<li><a class="reference internal" href="#juturna.transport.TransportBackend.remote_destination"><code class="docutils literal notranslate"><span class="pre">TransportBackend.remote_destination()</span></code></a></li>
 <li><a class="reference internal" href="#juturna.transport.TransportBackend.spawn"><code class="docutils literal notranslate"><span class="pre">TransportBackend.spawn()</span></code></a></li>
 </ul>
 </li>
