@@ -70,3 +70,19 @@ def test_audio_payload_roundtrip_still_works():
     out = _roundtrip(message)
 
     assert np.array_equal(out.payload.audio, audio), 'audio samples changed'
+
+
+def test_array_with_too_many_dimensions_is_rejected():
+    import numpy as np
+    import pytest
+
+    audio = np.zeros((2, 2, 2, 2, 2), dtype=np.float32)
+    message = Message(
+        creator='src',
+        payload=AudioPayload(
+            audio=audio, sampling_rate=16000, channels=1, start=0.0, end=0.01
+        ),
+    )
+
+    with pytest.raises(ValueError, match='5 dimensions'):
+        _serialize_message(message)

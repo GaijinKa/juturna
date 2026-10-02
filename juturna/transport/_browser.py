@@ -224,6 +224,8 @@ _GEOM_CAPACITY, _GEOM_META_BYTES, _GEOM_PAYLOAD_BYTES = 4, 5, 6
 # producers and the consumer whose turn the slot is (see `_BrowserQueue`).
 _SLOT_META_INT32_LENGTH = 9
 _SLOT_SEQ = 8
+# the shape of an array takes 4 of those words: that is its most dimensions
+_MAX_NDIM = 4
 
 _DTYPE_CODES = {
     'uint8': 1,
@@ -417,6 +419,12 @@ def _array_wire(arr, np) -> tuple[int, int, tuple[int, ...], Any]:
         raise ValueError(
             f'unsupported array dtype for BrowserTransport: {arr.dtype!r} '
             f'(supported: {sorted(_DTYPE_CODES)})'
+        )
+
+    if arr.ndim > _MAX_NDIM:
+        raise ValueError(
+            f'unsupported array for BrowserTransport: {arr.ndim} dimensions, '
+            f'at most {_MAX_NDIM} fit in a queue slot'
         )
 
     # Byte-reinterpretation, NOT a value conversion: preserves the exact
