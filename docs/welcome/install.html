@@ -399,23 +399,6 @@ experimenting!</p>
 <li><p><code class="docutils literal notranslate"><span class="pre">all</span></code> installs <code class="docutils literal notranslate"><span class="pre">full</span></code> and <code class="docutils literal notranslate"><span class="pre">dev_full</span></code></p></li>
 </ul>
 </section>
-<section id="pyodide">
-<h2>Pyodide<a class="headerlink" href="#pyodide" title="Link to this heading">¶</a></h2>
-<p>Juturna can run in a browser tab, inside a Pyodide Worker (Pyodide 314 or
-later, Python 3.14). Some core dependencies have no Pyodide build (<code class="docutils literal notranslate"><span class="pre">av</span></code>
-above all), so the library has to be installed without resolving them, after
-installing the ones the browser needs:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">micropip</span>
-
-<span class="k">await</span> <span class="n">micropip</span><span class="o">.</span><span class="n">install</span><span class="p">([</span><span class="s1">'numpy'</span><span class="p">,</span> <span class="s1">'websockets'</span><span class="p">])</span>
-<span class="k">await</span> <span class="n">micropip</span><span class="o">.</span><span class="n">install</span><span class="p">(</span><span class="s1">'&lt;url of the juturna wheel&gt;'</span><span class="p">,</span> <span class="n">deps</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>Importing <code class="docutils literal notranslate"><span class="pre">juturna</span></code> does not load <code class="docutils literal notranslate"><span class="pre">juturna.nodes</span></code>, <code class="docutils literal notranslate"><span class="pre">juturna.hub</span></code> and
-<code class="docutils literal notranslate"><span class="pre">juturna.remotizer</span></code> until they are used, so <code class="docutils literal notranslate"><span class="pre">av</span></code>, <code class="docutils literal notranslate"><span class="pre">requests</span></code> and
-<code class="docutils literal notranslate"><span class="pre">grpc</span></code> are not needed to build and run a pipeline with the browser
-transport.</p>
-</section>
 <section id="documentation-building">
 <h2>Documentation building<a class="headerlink" href="#documentation-building" title="Link to this heading">¶</a></h2>
 <p>If you want to build the documentation locally, install Juturna including the
@@ -514,7 +497,6 @@ recommended you disable them:</p>
             <ul>
 <li><a class="reference internal" href="#">Install</a><ul>
 <li><a class="reference internal" href="#extras">Extras</a></li>
-<li><a class="reference internal" href="#pyodide">Pyodide</a></li>
 <li><a class="reference internal" href="#documentation-building">Documentation building</a></li>
 <li><a class="reference internal" href="#testing">Testing</a></li>
 </ul>
