@@ -689,18 +689,27 @@ class _BrowserQueue:
         shape_padded = (list(shape) + [0, 0, 0, 0])[:4]
 
         meta_view = self._meta_views[slot]
-        meta_view[0] = len(meta_json_bytes)
-        meta_view[1] = dtype_code
-        meta_view[2] = ndim
-        meta_view[3] = shape_padded[0]
-        meta_view[4] = shape_padded[1]
-        meta_view[5] = shape_padded[2]
-        meta_view[6] = shape_padded[3]
-        meta_view[7] = payload_len
 
-        self._write_bulk(self._meta_json_views[slot], meta_json_bytes)
-        if payload_len > 0:
-            self._write_bulk(self._payload_views[slot], payload_buf)
+        try:
+            meta_view[0] = len(meta_json_bytes)
+            meta_view[1] = dtype_code
+            meta_view[2] = ndim
+            meta_view[3] = shape_padded[0]
+            meta_view[4] = shape_padded[1]
+            meta_view[5] = shape_padded[2]
+            meta_view[6] = shape_padded[3]
+            meta_view[7] = payload_len
+
+            self._write_bulk(self._meta_json_views[slot], meta_json_bytes)
+            if payload_len > 0:
+                self._write_bulk(self._payload_views[slot], payload_buf)
+        except BaseException:
+            # the slot is claimed: leaving it unpublished would stop the
+            # consumer for good, so publish it empty, which `get()` skips
+            meta_view[0] = 0
+            self._publish_write(slot, ticket)
+
+            raise
 
         self._publish_write(slot, ticket)
 
