@@ -727,8 +727,19 @@ class _BrowserQueue:
             if slot == -1:
                 raise Empty
 
-            msg = self._read_slot(slot)
-            self._release_read(slot)
+            try:
+                msg = self._read_slot(slot)
+            except Exception:
+                # a message that cannot be rebuilt here (a class this Worker
+                # does not have, a malformed slot) must not stall the queue
+                # nor make `get()` raise something other than `Empty`
+                logging.getLogger('jt.transport').error(
+                    'dropping a message that cannot be read from the queue',
+                    exc_info=True,
+                )
+                msg = _TOMBSTONE
+            finally:
+                self._release_read(slot)
 
             # a slot the page filled in for a producer that died: nothing there
             if msg is not _TOMBSTONE:
