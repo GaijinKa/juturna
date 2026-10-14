@@ -15,7 +15,8 @@ class TelemetryManager:
         self._target = target
         self._transport: TransportBackend = transport or ThreadingTransport()
 
-        self._queue = self._transport.new_queue()
+        # batches are lists, which a cross-worker ring queue does not accept
+        self._queue = self._transport.new_queue(local=True)
         self._evt: Event = self._transport.new_event()
         self._logger = jt_logger('telemetry')
 

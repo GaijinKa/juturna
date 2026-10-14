@@ -54,10 +54,6 @@ from juturna.transport.browser._worker import _BrowserRemoteDestination
 class BrowserTransport:
     """Transport backend for a pipeline running in a browser (Pyodide)"""
 
-    # the telemetry manager puts batches of tuples on a queue, which a ring
-    # does not accept: `Pipeline` leaves the telemetry off
-    supports_telemetry = False
-
     def __init__(
         self,
         queue_capacity: int = DEFAULT_QUEUE_CAPACITY,
