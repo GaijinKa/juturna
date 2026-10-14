@@ -344,8 +344,17 @@ class Pipeline:
         elif _tele_file:
             self._telemetry = True
             self._telemetry_file = pathlib.Path(self.pipe_path, _tele_file)
-            self._telemetry_manager = TelemetryManager(
-                str(self._telemetry_file), transport=self._transport
+
+            # a backend may keep the telemetry in a place of its own
+            new_manager = getattr(
+                self._transport, 'new_telemetry_manager', None
+            )
+            self._telemetry_manager = (
+                new_manager(self._worker)
+                if new_manager
+                else TelemetryManager(
+                    str(self._telemetry_file), transport=self._transport
+                )
             )
 
         nodes = self._raw_config['pipeline']['nodes']
