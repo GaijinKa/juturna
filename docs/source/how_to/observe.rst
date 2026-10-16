@@ -275,8 +275,9 @@ the manager does not accept, a manager the transport cannot support, such as
 is warmed up. ``python -m juturna validate`` reports it beforehand.
 
 When a pipeline is served through the HTTP service, the records are available
-at ``GET /pipelines/{pipeline_id}/telemetry`` as a list, one record per entry,
-with the fields in the order described above (the ``worker`` last).
+at ``GET /pipelines/{pipeline_id}/telemetry``. The response is
+``{"pipeline": <id>, "telemetry": [...]}``, with one record per entry of the
+list and the fields in the order described above (the ``worker`` last).
 
 Migrating from version 2
 ^^^^^^^^^^^^^^^^^^^^^^^^
@@ -300,6 +301,19 @@ Migrating from version 2
 - A CSV file written by version 2 has no ``worker`` column: its rows are not
   returned by ``records()`` or by the telemetry endpoint, and new rows are
   appended after them.
+- The ``csv`` manager no longer queues without a limit: when it cannot write
+  fast enough, the newest batches are dropped (``max_pending``). Its start now
+  fails if the file cannot be written, where the writer used to die silently.
+  ``target`` cannot be ``config.json``, which the pipeline writes in the same
+  folder.
+- A transport must declare ``capabilities`` (a new attribute of
+  ``TransportBackend``) to be used with the telemetry: the ``supports_telemetry``
+  attribute is gone.
+- ``juturna validate`` has two new checks, for the transport and for the
+  telemetry. A configuration with an unknown transport, or with options the
+  transport or the telemetry manager does not accept, is now reported.
+- A transport specification that is neither a name nor a dictionary raises a
+  ``ValueError``.
 
 Interact with the filesystem
 ----------------------------
