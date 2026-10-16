@@ -65,23 +65,6 @@ def _resolve(
     return manager_cls, options
 
 
-def check_telemetry(
-    spec: dict | None, transport_cls: type[TransportBackend]
-) -> None:
-    """
-    Check a telemetry configuration against a transport, building nothing.
-
-    Raises
-    ------
-    ValueError
-        If the configuration does not ask for a registered manager with
-        options it accepts, or the manager needs something the transport
-        does not offer.
-
-    """
-    _resolve(spec, transport_cls)
-
-
 def get_telemetry(
     spec: dict | None, ctx: TelemetryContext
 ) -> TelemetryManager | None:
@@ -105,7 +88,9 @@ def get_telemetry(
     Raises
     ------
     ValueError
-        See `check_telemetry`.
+        If the configuration does not ask for a registered manager with
+        options it accepts, or the manager needs something the transport
+        does not offer.
 
     """
     resolved = _resolve(spec, type(ctx.transport))

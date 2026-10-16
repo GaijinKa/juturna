@@ -17,9 +17,7 @@ def test_valid_pairs():
     _check_telemetry(
         {'transport': 'threading', 'telemetry': {'name': 'csv', 'target': 'x'}}
     )
-    _check_telemetry(
-        {'transport': 'browser', 'telemetry': {'name': 'browser'}}
-    )
+    _check_telemetry({'transport': 'browser', 'telemetry': {'name': 'browser'}})
 
 
 @pytest.mark.parametrize(
@@ -31,6 +29,10 @@ def test_valid_pairs():
         {'transport': 'browser', 'telemetry': {'name': 'csv', 'target': 'x'}},
         {'transport': 'threading', 'telemetry': {'name': 'browser'}},
         {'transport': 'nope', 'telemetry': {'name': 'memory'}},
+        {'telemetry': {'name': 'csv', 'target': 5}},
+        {'telemetry': {'name': 'csv', 'target': 'x', 'max_pending': 0}},
+        {'telemetry': {'name': 'memory', 'max_records': 0}},
+        {'telemetry': {'name': 'memory', 'max_records': '5'}},
     ],
 )
 def test_invalid_pairs(pipeline):

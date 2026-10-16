@@ -1,7 +1,6 @@
 import pytest
 
 from juturna.telemetry import TelemetryContext
-from juturna.telemetry import check_telemetry
 from juturna.telemetry import get_telemetry
 from juturna.telemetry.memory import MemoryTelemetry
 from juturna.transport import ThreadingTransport
@@ -40,11 +39,3 @@ def test_unknown_name():
 def test_unknown_option():
     with pytest.raises(ValueError, match="invalid options for the 'memory'"):
         get_telemetry({'name': 'memory', 'colour': 'red'}, _ctx())
-
-
-def test_check_does_not_build_anything():
-    check_telemetry({'name': 'memory'}, ThreadingTransport)
-    check_telemetry(None, ThreadingTransport)
-
-    with pytest.raises(ValueError, match='unknown telemetry manager'):
-        check_telemetry({'name': 'nope'}, ThreadingTransport)
