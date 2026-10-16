@@ -11,6 +11,7 @@ from juturna.telemetry._base import tag_records
 from juturna.transport import Empty
 from juturna.transport import Full
 from juturna.transport import WorkerHandle
+from juturna.utils import jt_utils
 from juturna.utils.log_utils import jt_logger
 
 DEFAULT_MAX_PENDING = 10000
@@ -39,10 +40,8 @@ class CsvTelemetry:
             new batches are dropped (see `dropped`): the nodes never wait.
 
         """
-        if not isinstance(target, str) or not target:
-            raise ValueError(
-                f'target must be a non-empty string, got {target!r}'
-            )
+        # the target becomes a path under the pipeline folder
+        jt_utils.check_name(target, 'telemetry file')
 
         if (
             isinstance(max_pending, bool)
@@ -80,7 +79,9 @@ class CsvTelemetry:
         self._file = open(self._target, 'a', newline='', buffering=1)  # noqa: SIM115
 
         try:
-            csv.writer(self._file).writerow(TELEMETRY_FIELDS)
+            # on a restart the file already has its header
+            if self._file.tell() == 0:
+                csv.writer(self._file).writerow(TELEMETRY_FIELDS)
 
             self._thread = self._transport.spawn(
                 target=self._read_telemetry,
@@ -97,15 +98,20 @@ class CsvTelemetry:
 
     def stop(self):
         """Write what is left and stop the worker"""
-        if self._thread is not None and self._thread.is_alive():
-            self._evt.set()
+        if self._thread is not None:
+            if self._thread.is_alive():
+                self._evt.set()
 
-            # an empty batch wakes up the reader blocked on get(); if the
-            # queue is full the reader is busy and sees the event by itself
-            with contextlib.suppress(Full):
-                self._queue.put_nowait(list())
+                # an empty batch wakes up the reader blocked on get(); if the
+                # queue is full the reader is busy and sees the event itself
+                with contextlib.suppress(Full):
+                    self._queue.put_nowait(list())
 
-            self._thread.join()
+                self._thread.join()
+
+            # a stopped manager can be started again, as after a failed start
+            self._thread = None
+            self._evt.clear()
 
         if self.dropped:
             self._logger.warning(f'{self.dropped} telemetry records dropped')

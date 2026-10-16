@@ -57,7 +57,7 @@ def _config(name: str, node_name: str = 'node', telemetry=None) -> dict:
     }
 
     if telemetry:
-        pipeline['telemetry'] = telemetry
+        pipeline['telemetry'] = {'name': 'csv', 'target': telemetry}
 
     return {'version': '3.0.0', 'pipeline': pipeline}
 

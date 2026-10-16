@@ -23,7 +23,9 @@ class PipelineConfig(BaseModel):
             name = node.get('name') if isinstance(node, dict) else None
             jt_utils.check_name(name, 'node')
 
-        if telemetry := pipeline.get('telemetry'):
-            jt_utils.check_name(telemetry, 'telemetry file')
+        telemetry = pipeline.get('telemetry')
+
+        if isinstance(telemetry, dict) and 'target' in telemetry:
+            jt_utils.check_name(telemetry['target'], 'telemetry file')
 
         return pipeline

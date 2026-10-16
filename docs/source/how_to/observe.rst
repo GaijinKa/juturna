@@ -254,7 +254,8 @@ records. Every other key of the entry is an option of that manager.
    * - ``csv``
      - a file system shared by the pipeline (the threading transport)
      - Writes the records on a CSV file from a worker of its own. ``target``
-       (required) is the file name, relative to the pipeline folder.
+       (required) is a plain file name (up to 128 letters, digits, ``_``, ``-``
+       and ``.``, no folders), written in the pipeline folder.
        ``max_pending`` (default 10000) is how many batches can wait to be
        written: when the writer cannot keep up, the new batches are dropped,
        so that the nodes never wait for the telemetry. The number of dropped

@@ -136,7 +136,8 @@ def test_target_is_required(tmp_path):
 
 
 def test_start_fails_when_the_file_cannot_be_opened(tmp_path):
-    manager = CsvTelemetry(_ctx(tmp_path), 'missing/tele.csv')
+    pathlib.Path(tmp_path, 'tele.csv').mkdir()
+    manager = CsvTelemetry(_ctx(tmp_path), 'tele.csv')
 
     with pytest.raises(OSError):
         manager.start()
@@ -173,14 +174,16 @@ def test_records_skip_rows_with_corrupted_numbers(tmp_path):
     )
 
 
-@pytest.mark.parametrize('target', [5, None, '', ['tele.csv']])
-def test_target_must_be_a_non_empty_string(tmp_path, target):
-    with pytest.raises(ValueError, match='target'):
+@pytest.mark.parametrize(
+    'target', [5, None, '', ['tele.csv'], '../tele.csv', '/etc/x', 'a/b.csv']
+)
+def test_target_must_be_a_plain_file_name(tmp_path, target):
+    with pytest.raises(ValueError, match='telemetry file name'):
         CsvTelemetry(_ctx(tmp_path), target)
 
 
 def test_registry_reports_a_wrong_target_as_a_value_error(tmp_path):
-    with pytest.raises(ValueError, match='target'):
+    with pytest.raises(ValueError, match='telemetry file name'):
         get_telemetry({'name': 'csv', 'target': 5}, _ctx(tmp_path))
 
 
@@ -188,3 +191,20 @@ def test_registry_reports_a_wrong_target_as_a_value_error(tmp_path):
 def test_max_pending_must_be_a_real_integer(tmp_path, max_pending):
     with pytest.raises(ValueError, match='max_pending'):
         CsvTelemetry(_ctx(tmp_path), 'tele.csv', max_pending=max_pending)
+
+
+def test_a_stopped_manager_can_start_again_with_one_header(tmp_path):
+    manager = CsvTelemetry(_ctx(tmp_path), 'tele.csv')
+
+    manager.start()
+    manager.record_telemetry([_record(0)])
+    manager.stop()
+    manager.start()
+    manager.record_telemetry([_record(1)])
+    manager.stop()
+
+    with open(pathlib.Path(tmp_path, 'tele.csv'), newline='') as f:
+        rows = list(csv.reader(f))
+
+    assert [r[0] for r in rows].count('ts') == 1, f'Repeated header: {rows}'
+    assert [r[4] for r in rows[1:]] == ['0', '1'], f'Unexpected rows {rows}'
