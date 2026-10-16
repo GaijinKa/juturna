@@ -10,6 +10,7 @@ from juturna.transport._base import WorkerHandle
 from juturna.transport.threads import ThreadingTransport
 from juturna.transport.browser import BrowserTransport
 from juturna.transport._registry import get_transport
+from juturna.transport._registry import get_transport_class
 
 
 __all__ = [
@@ -24,4 +25,5 @@ __all__ = [
     'TransportBackend',
     'WorkerHandle',
     'get_transport',
+    'get_transport_class',
 ]

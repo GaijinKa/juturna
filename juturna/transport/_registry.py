@@ -13,6 +13,49 @@ _TRANSPORTS: dict[str, type[TransportBackend]] = {
 _DEFAULT_TRANSPORT = 'threading'
 
 
+def _split_spec(spec: str | dict | None) -> tuple[str, dict]:
+    if isinstance(spec, dict):
+        options = dict(spec)
+        name = options.pop('name', None)
+    else:
+        options, name = dict(), spec
+
+    return name or _DEFAULT_TRANSPORT, options
+
+
+def get_transport_class(
+    spec: str | dict | None = None,
+) -> type[TransportBackend]:
+    """
+    Resolve the class of a transport backend from its configuration.
+
+    Parameters
+    ----------
+    spec : str | dict | None
+        Same as `get_transport`; the options, if any, are not validated here.
+
+    Returns
+    -------
+    type[TransportBackend]
+        The class of the requested backend.
+
+    Raises
+    ------
+    ValueError
+        If the name does not match any registered backend.
+
+    """
+    name, _ = _split_spec(spec)
+
+    if name not in _TRANSPORTS:
+        raise ValueError(
+            f'unknown transport backend: {name!r}, '
+            f'available: {list(_TRANSPORTS)}'
+        )
+
+    return _TRANSPORTS[name]
+
+
 def get_transport(spec: str | dict | None = None) -> TransportBackend:
     """
     Resolve a transport backend from its configuration.
@@ -38,21 +81,14 @@ def get_transport(spec: str | dict | None = None) -> TransportBackend:
         does not accept one of the options.
 
     """
-    options = dict(spec) if isinstance(spec, dict) else dict()
-    name = options.pop('name', None) if options else spec
-    name = name or _DEFAULT_TRANSPORT
-
-    if name not in _TRANSPORTS:
-        raise ValueError(
-            f'unknown transport backend: {name!r}, '
-            f'available: {list(_TRANSPORTS)}'
-        )
+    name, options = _split_spec(spec)
+    transport = get_transport_class(name)
 
     try:
-        inspect.signature(_TRANSPORTS[name]).bind(**options)
+        inspect.signature(transport).bind(**options)
     except TypeError as exc:
         raise ValueError(
             f'invalid options for the {name!r} transport: {exc}'
         ) from exc
 
-    return _TRANSPORTS[name](**options)
+    return transport(**options)

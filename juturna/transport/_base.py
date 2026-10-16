@@ -2,6 +2,7 @@ from collections.abc import Callable
 from contextlib import AbstractContextManager
 from typing import Any
 from typing import Protocol
+from typing import ClassVar
 
 
 class Empty(Exception):
@@ -84,6 +85,8 @@ class TransportBackend(Protocol):
     executed (e.g. real OS threads, or a cooperative scheduler); nodes and
     buffers only depend on this interface, never on the concrete primitives.
     """
+
+    capabilities: ClassVar[frozenset[str]]
 
     def new_queue(self, maxsize: int = 0, local: bool = False) -> Queue:
         """
