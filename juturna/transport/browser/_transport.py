@@ -38,7 +38,6 @@ from typing import ClassVar
 
 from juturna.transport._base import WorkerHandle
 
-from juturna.transport.browser._telemetry import BrowserTelemetryManager
 from juturna.transport.browser._queue import _BrowserQueue
 from juturna.transport.browser._queue import _BrowserLocalQueue
 from juturna.transport.browser._primitives import _BrowserEvent
@@ -183,10 +182,6 @@ class BrowserTransport:
                 ) from None
 
         return self.attach_queue(self._remote_handles[node_name])
-
-    def new_telemetry_manager(self, worker: str) -> BrowserTelemetryManager:
-        """The telemetry manager of the Worker called ``worker``"""
-        return BrowserTelemetryManager(worker)
 
     def new_event(self) -> _BrowserEvent:
         return _BrowserEvent()
