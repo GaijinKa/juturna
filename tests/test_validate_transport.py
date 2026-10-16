@@ -28,3 +28,9 @@ def test_valid_transports(pipeline):
 def test_unknown_transport_is_a_validation_error(pipeline):
     with pytest.raises(ValidationError, match='nope'):
         _check_transport(pipeline)
+
+
+@pytest.mark.parametrize('transport', [['browser'], 5, {'name': ['browser']}])
+def test_transport_of_the_wrong_type_is_a_validation_error(transport):
+    with pytest.raises(ValidationError, match='transport'):
+        _check_transport({'transport': transport})

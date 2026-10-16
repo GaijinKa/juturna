@@ -17,8 +17,15 @@ def _split_spec(spec: str | dict | None) -> tuple[str, dict]:
     if isinstance(spec, dict):
         options = dict(spec)
         name = options.pop('name', None)
-    else:
+    elif spec is None or isinstance(spec, str):
         options, name = dict(), spec
+    else:
+        raise ValueError(
+            f'transport must be a name or a dict, got {type(spec).__name__}'
+        )
+
+    if name is not None and not isinstance(name, str):
+        raise ValueError(f'transport name must be a string, got {name!r}')
 
     return name or _DEFAULT_TRANSPORT, options
 
