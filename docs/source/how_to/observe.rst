@@ -269,6 +269,9 @@ records. Every other key of the entry is an option of that manager.
      - Like ``memory``, and every batch of records is also posted to the web
        page that hosts the pipeline.
 
+Once a pipeline is stopped, its managers drop the records that still arrive,
+and a manager that is started again does not write them.
+
 A ``telemetry`` entry that cannot be honoured (an unknown ``name``, an option
 the manager does not accept, a manager the transport cannot support, such as
 ``csv`` with the browser transport) raises a ``ValueError`` when the pipeline
@@ -298,9 +301,9 @@ Migrating from version 2
   ``juturna.components._telemetry_manager``, which is removed: it is now the
   protocol that every manager follows, in ``juturna.telemetry``. The CSV writer
   is ``juturna.telemetry.csv.CsvTelemetry``.
-- A CSV file written by version 2 has no ``worker`` column: its rows are not
-  returned by ``records()`` or by the telemetry endpoint, and new rows are
-  appended after them.
+- A CSV file written by version 2 has no ``worker`` column. It is still read:
+  its records have ``None`` as the worker, and the rows written by the new
+  version are appended after a new header.
 - The ``csv`` manager no longer queues without a limit: when it cannot write
   fast enough, the newest batches are dropped (``max_pending``). Its start now
   fails if the file cannot be written, where the writer used to die silently.

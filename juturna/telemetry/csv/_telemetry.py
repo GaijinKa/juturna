@@ -73,6 +73,9 @@ class CsvTelemetry:
         self._thread: WorkerHandle | None = None
         self._file = None
 
+        # false from a stop to the next start: what arrives is dropped
+        self._open = True
+
         # approximate: `+=` from several threads may miss a count
         self.dropped = 0
 
@@ -88,9 +91,17 @@ class CsvTelemetry:
         self._file = open(self._target, 'a', newline='', buffering=1)  # noqa: SIM115
 
         try:
-            # on a restart the file already has its header
-            if self._file.tell() == 0:
+            # the header is written once; a file of version 2 has an older one,
+            # and the new header tells records() what the new rows look like
+            if self._file.tell() == 0 or not self._has_current_header():
                 csv.writer(self._file).writerow(TELEMETRY_FIELDS)
+
+            # what a late producer left from the previous run is not data of
+            # this one
+            if not self._open:
+                self._discard_pending()
+
+            self._open = True
 
             self._thread = self._transport.spawn(
                 target=self._read_telemetry,
@@ -106,7 +117,9 @@ class CsvTelemetry:
             raise
 
     def stop(self):
-        """Write what is left and stop the worker"""
+        """Write what is left and stop the worker; later batches are dropped"""
+        self._open = False
+
         if self._thread is not None:
             if self._thread.is_alive():
                 self._evt.set()
@@ -122,11 +135,18 @@ class CsvTelemetry:
             self._thread = None
             self._evt.clear()
 
+        self._discard_pending()
+
         if self.dropped:
             self._logger.warning(f'{self.dropped} telemetry records dropped')
 
     def record_telemetry(self, record_batch: list[tuple]):
         """Queue a batch to be written, or drop it if the writer is behind"""
+        if not self._open:
+            self.dropped += len(record_batch)
+
+            return
+
         try:
             self._queue.put_nowait(tag_records(record_batch, self._worker))
         except Full:
@@ -140,12 +160,18 @@ class CsvTelemetry:
         except FileNotFoundError:
             return []
 
-        # the header is repeated at every start, and a row may be partial or
-        # corrupted: those are skipped
+        # a header says how many fields the rows after it have (the worker is
+        # missing in version 2); a row may be partial or corrupted: skipped
         records = []
+        width = len(TELEMETRY_FIELDS)
 
         for row in rows:
-            if len(row) != len(TELEMETRY_FIELDS) or row[0] == 'ts':
+            if row and row[0] == 'ts':
+                width = len(row)
+
+                continue
+
+            if len(row) != width:
                 continue
 
             try:
@@ -179,6 +205,19 @@ class CsvTelemetry:
 
                 self._write(_writer, telemetry_batch)
 
+    def _has_current_header(self) -> bool:
+        with open(self._target, newline='') as f:
+            return next(csv.reader(f), []) == list(TELEMETRY_FIELDS)
+
+    def _discard_pending(self):
+        while True:
+            try:
+                batch = self._queue.get_nowait()
+            except Empty:
+                break
+
+            self.dropped += len(batch)
+
     def _write(self, writer, batch: list[tuple]):
         try:
             writer.writerows(batch)
@@ -189,7 +228,10 @@ class CsvTelemetry:
 
 
 def _parse(row: list[str]) -> tuple:
-    ts, evt, node, origin, msg_id, src_id, size, worker = row
+    if len(row) not in (len(TELEMETRY_FIELDS) - 1, len(TELEMETRY_FIELDS)):
+        raise ValueError(f'a record has 7 or 8 fields, got {len(row)}')
+
+    ts, evt, node, origin, msg_id, src_id, size, *worker = row
 
     return (
         float(ts),
@@ -199,5 +241,5 @@ def _parse(row: list[str]) -> tuple:
         int(msg_id),
         int(src_id) if src_id else None,
         int(size),
-        worker,
+        worker[0] if worker else None,
     )

@@ -74,3 +74,16 @@ def test_concurrent_writers_and_reader():
 def test_max_records_must_be_a_real_integer(max_records):
     with pytest.raises(ValueError, match='max_records'):
         MemoryTelemetry(_ctx(), max_records=max_records)
+
+
+def test_records_after_a_stop_are_dropped_until_the_next_start():
+    manager = MemoryTelemetry(_ctx())
+
+    manager.record_telemetry([_record(0)])
+    manager.stop()
+    manager.record_telemetry([_record(1)])
+    manager.start()
+    manager.record_telemetry([_record(2)])
+
+    ids = [r[4] for r in manager.records()]
+    assert ids == [0, 2], f'Expected the records of the two runs, got {ids}'

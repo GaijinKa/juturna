@@ -93,3 +93,14 @@ def test_failing_post_is_logged_once():
 def test_post_must_be_callable(post):
     with pytest.raises(ValueError, match='post'):
         BrowserTelemetry(_ctx(), post=post)
+
+
+def test_nothing_is_posted_after_a_stop():
+    posted = []
+    manager = BrowserTelemetry(_ctx(), post=posted.append)
+
+    manager.stop()
+    manager.record_telemetry([_record(0)])
+
+    assert not posted, f'Expected nothing posted, got {posted}'
+    assert manager.records() == [], 'Expected no records'

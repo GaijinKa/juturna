@@ -213,3 +213,69 @@ def test_a_stopped_manager_can_start_again_with_one_header(tmp_path):
 def test_the_pipeline_configuration_is_not_a_valid_target(tmp_path):
     with pytest.raises(ValueError, match='reserved'):
         CsvTelemetry(_ctx(tmp_path), 'config.json')
+
+
+def test_batches_after_a_stop_are_dropped(tmp_path):
+    manager = CsvTelemetry(_ctx(tmp_path), 'tele.csv')
+
+    manager.start()
+    manager.record_telemetry([_record(0)])
+    manager.stop()
+    manager.record_telemetry([_record(1)])
+    manager.start()
+    manager.stop()
+
+    ids = [r[4] for r in manager.records()]
+    assert ids == [0], f'Expected only the batch before the stop, got {ids}'
+    assert manager.dropped == 1, f'Expected 1 dropped, got {manager.dropped}'
+
+
+def test_a_late_batch_left_in_the_queue_is_not_written_by_the_next_run(
+    tmp_path,
+):
+    manager = CsvTelemetry(_ctx(tmp_path), 'tele.csv')
+
+    manager.start()
+    manager.stop()
+    manager._queue.put_nowait([(9.0, 'tx', 'in', 'in', 9, None, 1, 'main')])
+    manager.start()
+    manager.stop()
+
+    assert manager.records() == [], 'The late batch must not be written'
+    assert manager.dropped == 1, f'Expected 1 dropped, got {manager.dropped}'
+
+
+_V2_HEADER = 'ts,evt,node,origin,msg_id,src_id,size'
+
+
+def test_a_file_of_version_2_is_read_without_the_worker(tmp_path):
+    pathlib.Path(tmp_path, 'tele.csv').write_text(
+        f'{_V2_HEADER}\n1.0,tx,a,a,1,,5\n2.0,rx,b,a,1,1,5\n'
+    )
+
+    records = CsvTelemetry(_ctx(tmp_path), 'tele.csv').records()
+
+    assert records == [
+        (1.0, 'tx', 'a', 'a', 1, None, 5, None),
+        (2.0, 'rx', 'b', 'a', 1, 1, 5, None),
+    ], f'Unexpected {records}'
+
+
+def test_rows_appended_to_a_file_of_version_2_follow_a_new_header(tmp_path):
+    pathlib.Path(tmp_path, 'tele.csv').write_text(
+        f'{_V2_HEADER}\n1.0,tx,a,a,1,,5\n'
+    )
+    manager = CsvTelemetry(_ctx(tmp_path, 'w1'), 'tele.csv')
+
+    manager.start()
+    manager.record_telemetry([_record(2)])
+    manager.stop()
+
+    with open(pathlib.Path(tmp_path, 'tele.csv'), newline='') as f:
+        headers = [r for r in csv.reader(f) if r[0] == 'ts']
+
+    assert [len(h) for h in headers] == [7, 8], f'Unexpected {headers}'
+    assert manager.records() == [
+        (1.0, 'tx', 'a', 'a', 1, None, 5, None),
+        (2.0, 'tx', 'in', 'in', 2, None, 10, 'w1'),
+    ], f'Unexpected {manager.records()}'

@@ -38,13 +38,18 @@ class MemoryTelemetry:
 
         self._worker = ctx.worker
         self._records: deque[tuple] = deque(maxlen=max_records)
+
+        # false from a stop to the next start: what arrives is dropped
+        self._open = True
         self._logger = jt_logger('telemetry')
 
     def start(self):
-        """Nothing to start: records are kept where they are produced"""
+        """Accept records again, after a stop"""
+        self._open = True
 
     def stop(self):
-        """Nothing to flush"""
+        """Drop the records that arrive from now on, keep the ones collected"""
+        self._open = False
 
     def record_telemetry(self, record_batch: list[tuple]):
         """Store a batch of records"""
@@ -64,7 +69,7 @@ class MemoryTelemetry:
         return list(self._records)
 
     def _store(self, record_batch: list[tuple]) -> list[tuple]:
-        if not record_batch:
+        if not self._open or not record_batch:
             return []
 
         batch = tag_records(record_batch, self._worker)
