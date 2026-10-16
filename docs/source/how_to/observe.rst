@@ -289,6 +289,16 @@ Migrating from version 2
   instead of the text of the CSV file.
 - The browser transport used to switch the telemetry off with a warning. Ask
   for ``{"name": "browser"}`` to collect it.
+- Only a missing or ``null`` ``telemetry`` entry switches the telemetry off.
+  Any other value that is not a dictionary, such as ``""`` or ``false``, which
+  used to be ignored, now raises a ``ValueError``.
+- ``TelemetryManager`` is no longer the CSV writer of
+  ``juturna.components._telemetry_manager``, which is removed: it is now the
+  protocol that every manager follows, in ``juturna.telemetry``. The CSV writer
+  is ``juturna.telemetry.csv.CsvTelemetry``.
+- A CSV file written by version 2 has no ``worker`` column: its rows are not
+  returned by ``records()`` or by the telemetry endpoint, and new rows are
+  appended after them.
 
 Interact with the filesystem
 ----------------------------
