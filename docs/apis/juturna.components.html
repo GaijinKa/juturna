@@ -610,6 +610,10 @@ fully shut down before its resources are released.</p>
 signalled at once and exit as soon as their current iteration is
 over: any message still in the input queue or in the buffer is
 discarded. Subclass cleanup in <code class="docutils literal notranslate"><span class="pre">stop()</span></code> still runs.</p>
+<p>Unlike <code class="docutils literal notranslate"><span class="pre">stop()</span></code>, kill() does not wait for a busy <code class="docutils literal notranslate"><span class="pre">update()</span></code> or
+source call to return: each thread gets <code class="docutils literal notranslate"><span class="pre">JUTURNA_THREAD_JOIN_TIMEOUT</span></code>
+seconds, then it is left behind (it exits on its own as soon as the
+call returns, without processing anything else).</p>
 </dd></dl>
 
 <dl class="py method">
@@ -665,26 +669,31 @@ with basic substitution of the passed arguments.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="juturna.components.Node.set_source">
-<span class="sig-name descname"><span class="pre">set_source</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">source</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">by</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mode</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'post'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#juturna.components.Node.set_source" title="Link to this definition">¶</a></dt>
-<dd><p>Set the node source (to be used for <code class="docutils literal notranslate"><span class="pre">source</span></code> nodes). The source can be
-either a callable or a buffer. However, source nodes are expected to be
-provided with a callable that will be used to generate the data to be
-transmitted.</p>
+<span class="sig-name descname"><span class="pre">set_source</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">source</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">by</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mode</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'post'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#juturna.components.Node.set_source" title="Link to this definition">¶</a></dt>
+<dd><p>Set the node source (to be used for <code class="docutils literal notranslate"><span class="pre">source</span></code> nodes). The source is a
+callable invoked periodically: the message it returns is fed to the
+node, while <code class="docutils literal notranslate"><span class="pre">None</span></code> means there is nothing to deliver this time.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>source</strong> (<em>Union</em><em>[</em><a class="reference internal" href="#juturna.components.Buffer" title="juturna.components.Buffer"><em>Buffer</em></a><em>, </em><em>callable</em><em>]</em>) – The source to be set. This can be either a buffer or a callable.</p></li>
-<li><p><strong>by</strong> (<em>int</em><em>, </em><em>optional</em>) – The time interval (in seconds) between two consecutive calls to the
-source. This parameter is only used if the source is a callable.
-The default is 0.</p></li>
+<li><p><strong>source</strong> (<em>callable</em>) – The function producing the messages of the node.</p></li>
+<li><p><strong>by</strong> (<em>float</em><em>, </em><em>optional</em>) – The time interval (in seconds) between two consecutive calls to the
+source. With the default of 0 the source is called again right
+away, so it is expected to block until data is available.</p></li>
 <li><p><strong>mode</strong> (<em>str</em><em>, </em><em>optional</em>) – Whether to apply the <code class="docutils literal notranslate"><span class="pre">by</span></code> timer before or after the source call.
-The default is <code class="docutils literal notranslate"><span class="pre">post</span></code>, indicating the source function will wait
-for <code class="docutils literal notranslate"><span class="pre">by</span></code> seconds before being called. If set to <code class="docutils literal notranslate"><span class="pre">pre</span></code>, the
-source function will be called and then wait for <code class="docutils literal notranslate"><span class="pre">by</span></code> seconds
-before being called again.</p></li>
+The default is <code class="docutils literal notranslate"><span class="pre">post</span></code>: the source is called, then the node waits
+for <code class="docutils literal notranslate"><span class="pre">by</span></code> seconds before delivering the message (or before the next
+call, if the source returned <code class="docutils literal notranslate"><span class="pre">None</span></code>). If set to <code class="docutils literal notranslate"><span class="pre">pre</span></code>, the node
+waits for <code class="docutils literal notranslate"><span class="pre">by</span></code> seconds before every call.</p></li>
 </ul>
 </dd>
 </dl>
+<p class="rubric">Notes</p>
+<p>An exception raised by the source is logged and counted in
+<code class="docutils literal notranslate"><span class="pre">health</span></code>, and the next call is delayed by an exponential backoff
+starting at <code class="docutils literal notranslate"><span class="pre">by</span></code> (at least 0.1 seconds) and capped to
+<code class="docutils literal notranslate"><span class="pre">JUTURNA_SOURCE_MAX_BACKOFF</span></code>, which resets at the first successful
+call.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -727,7 +736,12 @@ the node is stopped correctly.</p>
 <p>Threads are stopped one at a time, each one after its upstream has
 terminated: source first, then worker, then update. Every thread
 consumes its own pending data before exiting, so all the messages
-received before the stop call are processed.</p>
+received before the stop call are processed, and stop() waits for
+an <code class="docutils literal notranslate"><span class="pre">update()</span></code> call in progress to return, however long it takes.</p>
+<p>When the node is being killed (see <code class="docutils literal notranslate"><span class="pre">kill()</span></code>), each thread is only
+waited for <code class="docutils literal notranslate"><span class="pre">JUTURNA_THREAD_JOIN_TIMEOUT</span></code> seconds: a thread still
+busy after that is left behind, and listed in <code class="docutils literal notranslate"><span class="pre">health</span></code> under
+<code class="docutils literal notranslate"><span class="pre">stuck_workers</span></code>.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -835,6 +849,10 @@ process data. The nodes are started in reverse order of their
 configuration, ensuring that the source node is the last one to be
 started. This is important to ensure that the data flow is properly
 established and that all nodes are ready to receive data.</p>
+<p>If a node fails to start, the nodes already started (including the
+failing one) are killed and telemetry is stopped before the error is
+raised: the pipeline stays READY with no worker running, so start()
+can be retried, or the pipeline destroyed.</p>
 </dd></dl>
 
 <dl class="py property">
@@ -869,6 +887,10 @@ returned by the transport’s <code class="docutils literal notranslate"><span c
 transport must provide it; a link from another worker’s node only
 adds that node to the origins of the local one. Cycles are checked
 on the local graph only.</p>
+<p>Node names and the telemetry file name are joined to the pipeline
+folder, so they must be plain file names (see
+<code class="docutils literal notranslate"><span class="pre">jt_utils.check_name</span></code>): a <code class="docutils literal notranslate"><span class="pre">ValueError</span></code> is raised before anything
+is written otherwise.</p>
 </dd></dl>
 
 </dd></dl>
