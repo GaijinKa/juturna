@@ -21,7 +21,6 @@ from juturna.cli.commands._validation_tools import warn
 from juturna.telemetry import TelemetryContext
 from juturna.telemetry import get_telemetry
 from juturna.transport import get_transport
-from juturna.transport import get_transport_class
 
 
 def setup_parser(subparsers):  # noqa: D103
@@ -101,9 +100,9 @@ def _check_transport(pipeline: dict) -> None:
         return
 
     try:
-        get_transport_class(req_transport)
+        get_transport(req_transport)
     except ValueError as exc:
-        raise ValidationError(f'Invalid transport class: {exc}') from exc
+        raise ValidationError(f'Invalid transport: {exc}') from exc
 
 
 def _check_telemetry(pipeline: dict) -> None:

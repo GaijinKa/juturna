@@ -4,7 +4,6 @@ from juturna.components import Pipeline
 from juturna.transport import BrowserTransport
 from juturna.transport import ThreadingTransport
 from juturna.transport import get_transport
-from juturna.transport import get_transport_class
 
 
 def test_transport_capabilities():
@@ -14,23 +13,6 @@ def test_transport_capabilities():
     assert BrowserTransport.capabilities == frozenset({'page_channel'}), (
         f'Unexpected {BrowserTransport.capabilities}'
     )
-
-
-def test_transport_class_by_spec():
-    assert get_transport_class() is ThreadingTransport, 'Expected threading'
-    assert get_transport_class('browser') is BrowserTransport, 'Expected browser'
-    assert (
-        get_transport_class({'name': 'browser', 'queue_capacity': 4})
-        is BrowserTransport
-    ), 'Expected browser from a dict spec'
-
-
-def test_transport_class_unknown_name():
-    with pytest.raises(ValueError, match='unknown transport backend'):
-        get_transport_class('carrier-pigeon')
-
-    with pytest.raises(ValueError, match='unknown transport backend'):
-        get_transport_class({'name': 'carrier-pigeon'})
 
 
 def test_default_transport_is_threading():
@@ -96,6 +78,3 @@ def test_pipeline_configures_its_transport(tmp_path):
 def test_spec_of_the_wrong_type_is_a_value_error(spec):
     with pytest.raises(ValueError, match='transport'):
         get_transport(spec)
-
-    with pytest.raises(ValueError, match='transport'):
-        get_transport_class(spec)

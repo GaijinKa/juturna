@@ -30,39 +30,6 @@ def _split_spec(spec: str | dict | None) -> tuple[str, dict]:
     return name or _DEFAULT_TRANSPORT, options
 
 
-def get_transport_class(
-    spec: str | dict | None = None,
-) -> type[TransportBackend]:
-    """
-    Resolve the class of a transport backend from its configuration.
-
-    Parameters
-    ----------
-    spec : str | dict | None
-        Same as `get_transport`; the options, if any, are not validated here.
-
-    Returns
-    -------
-    type[TransportBackend]
-        The class of the requested backend.
-
-    Raises
-    ------
-    ValueError
-        If the name does not match any registered backend.
-
-    """
-    name, _ = _split_spec(spec)
-
-    if name not in _TRANSPORTS:
-        raise ValueError(
-            f'unknown transport backend: {name!r}, '
-            f'available: {list(_TRANSPORTS)}'
-        )
-
-    return _TRANSPORTS[name]
-
-
 def get_transport(spec: str | dict | None = None) -> TransportBackend:
     """
     Resolve a transport backend from its configuration.
@@ -89,7 +56,13 @@ def get_transport(spec: str | dict | None = None) -> TransportBackend:
 
     """
     name, options = _split_spec(spec)
-    transport = get_transport_class(name)
+    if name not in _TRANSPORTS:
+        raise ValueError(
+            f'unknown transport backend: {name!r}, '
+            f'available: {list(_TRANSPORTS)}'
+        )
+
+    transport = _TRANSPORTS[name]
 
     try:
         inspect.signature(transport).bind(**options)
