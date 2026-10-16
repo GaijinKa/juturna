@@ -1,3 +1,5 @@
+from unittest import mock
+
 import pytest
 
 from juturna.telemetry import TelemetryContext
@@ -68,3 +70,26 @@ def test_registry_refuses_it_on_threading():
 
     with pytest.raises(ValueError, match='requires.*page_channel'):
         get_telemetry({'name': 'browser'}, ctx)
+
+
+def test_failing_post_is_logged_once():
+    def post(message):
+        raise RuntimeError('no page')
+
+    manager = BrowserTelemetry(_ctx(), post=post)
+    manager._logger = mock.Mock()
+
+    for i in range(3):
+        manager.record_telemetry([_record(i)])
+
+    assert manager._logger.error.call_count == 1, (
+        f'Expected 1 log, got {manager._logger.error.call_count}'
+    )
+    assert manager.post_failures == 3, f'Got {manager.post_failures}'
+    assert len(manager.records()) == 3, 'the records must be kept'
+
+
+@pytest.mark.parametrize('post', ['postMessage', 5, ['x']])
+def test_post_must_be_callable(post):
+    with pytest.raises(ValueError, match='post'):
+        BrowserTelemetry(_ctx(), post=post)

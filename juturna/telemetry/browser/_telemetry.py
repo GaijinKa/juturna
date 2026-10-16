@@ -1,3 +1,4 @@
+from collections.abc import Callable
 from typing import ClassVar
 
 from juturna.telemetry._base import TelemetryContext
@@ -14,7 +15,7 @@ class BrowserTelemetry(MemoryTelemetry):
         self,
         ctx: TelemetryContext,
         max_records: int = DEFAULT_MAX_RECORDS,
-        post=None,
+        post: Callable[[dict], None] | None = None,
     ):
         """
         Parameters
@@ -30,7 +31,13 @@ class BrowserTelemetry(MemoryTelemetry):
         """
         super().__init__(ctx, max_records)
 
+        if post is not None and not callable(post):
+            raise ValueError(f'post must be callable, got {post!r}')
+
         self._post = post or _post_to_page
+
+        # approximate, like `dropped` in the csv manager
+        self.post_failures = 0
 
     def record_telemetry(self, record_batch: list[tuple]):
         """Store a batch and post it to the page"""
@@ -44,8 +51,12 @@ class BrowserTelemetry(MemoryTelemetry):
                 {'type': 'telemetry', 'worker': self._worker, 'records': batch}
             )
         except Exception:
-            # telemetry must never take a node down
-            self._logger.error('cannot post telemetry', exc_info=True)
+            # telemetry must never take a node down; the same failure would
+            # repeat at every batch, so only the first one is logged
+            self.post_failures += 1
+
+            if self.post_failures == 1:
+                self._logger.error('cannot post telemetry', exc_info=True)
 
 
 def _post_to_page(message: dict):
