@@ -127,7 +127,6 @@ class CsvTelemetry:
 
     def record_telemetry(self, record_batch: list[tuple]):
         """Queue a batch to be written, or drop it if the writer is behind"""
-        # the telemetry must never slow a node down
         try:
             self._queue.put_nowait(tag_records(record_batch, self._worker))
         except Full:

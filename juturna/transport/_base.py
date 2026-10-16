@@ -86,6 +86,8 @@ class TransportBackend(Protocol):
     buffers only depend on this interface, never on the concrete primitives.
     """
 
+    # what the backend offers: ``shared_fs`` (a file system shared by the
+    # whole pipeline), ``page_channel`` (a channel to the web page hosting it)
     capabilities: ClassVar[frozenset[str]]
 
     def new_queue(self, maxsize: int = 0, local: bool = False) -> Queue:

@@ -60,6 +60,7 @@ class BrowserTelemetry(MemoryTelemetry):
 
 
 def _post_to_page(message: dict):
+    # js and pyodide only exist inside Pyodide
     from js import Object
     from js import postMessage
     from pyodide.ffi import to_js

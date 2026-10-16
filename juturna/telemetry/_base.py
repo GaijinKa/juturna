@@ -32,10 +32,24 @@ class TelemetryManager(Protocol):
     # what the transport must offer (see `TransportBackend.capabilities`)
     requires: ClassVar[frozenset[str]]
 
-    def start(self) -> None: ...
-    def stop(self) -> None: ...
-    def records(self) -> list[tuple]: ...
-    def record_telemetry(self, record_batch: list[tuple]) -> None: ...
+    def start(self) -> None:
+        """Start whatever the manager needs to collect the records"""
+        ...
+
+    def stop(self) -> None:
+        """Write what is left and release what ``start`` acquired"""
+        ...
+
+    def records(self) -> list[tuple]:
+        """The records collected so far, oldest first"""
+        ...
+
+    def record_telemetry(self, record_batch: list[tuple]) -> None:
+        """
+        Take a batch of records. It runs in the thread of a node: it must
+        never block, and drops the batch rather than slow the node down.
+        """
+        ...
 
 
 def tag_records(record_batch: list[tuple], worker: str) -> list[tuple]:
