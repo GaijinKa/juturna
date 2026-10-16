@@ -18,8 +18,7 @@ from juturna.cli.commands._validation_tools import ValidationError
 from juturna.cli.commands._validation_tools import DAG
 from juturna.cli.commands._validation_tools import warn
 
-from juturna.telemetry import TelemetryContext
-from juturna.telemetry import get_telemetry
+from juturna.telemetry import check_pipeline_telemetry
 from juturna.transport import get_transport
 
 
@@ -106,25 +105,11 @@ def _check_transport(pipeline: dict) -> None:
 
 
 def _check_telemetry(pipeline: dict) -> None:
-    req_transport = pipeline.get('transport')
-    req_telemetry = pipeline.get('telemetry')
-
-    if req_telemetry is None:
+    if pipeline.get('telemetry') is None:
         return
 
-    # It should never happen that the transport is invalid at this point, but
-    # we check anyway.
     try:
-        transport = get_transport(req_transport)
-    except ValueError as exc:
-        raise ValidationError(f'Invalid transport: {exc}') from exc
-
-    # the manager is built and dropped: its constructor validates the options,
-    # and builds nothing that needs to be released (the file is opened on start)
-    ctx = TelemetryContext(transport, 'main', pipeline.get('folder', '.'))
-
-    try:
-        get_telemetry(req_telemetry, ctx)
+        check_pipeline_telemetry(pipeline)
     except ValueError as exc:
         raise ValidationError(
             f'Invalid telemetry configuration: {exc}'

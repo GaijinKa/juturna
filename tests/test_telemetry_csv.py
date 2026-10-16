@@ -208,3 +208,8 @@ def test_a_stopped_manager_can_start_again_with_one_header(tmp_path):
 
     assert [r[0] for r in rows].count('ts') == 1, f'Repeated header: {rows}'
     assert [r[4] for r in rows[1:]] == ['0', '1'], f'Unexpected rows {rows}'
+
+
+def test_the_pipeline_configuration_is_not_a_valid_target(tmp_path):
+    with pytest.raises(ValueError, match='reserved'):
+        CsvTelemetry(_ctx(tmp_path), 'config.json')

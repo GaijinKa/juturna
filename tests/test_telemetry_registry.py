@@ -1,6 +1,7 @@
 import pytest
 
 from juturna.telemetry import TelemetryContext
+from juturna.telemetry import check_pipeline_telemetry
 from juturna.telemetry import get_telemetry
 from juturna.telemetry.memory import MemoryTelemetry
 from juturna.transport import ThreadingTransport
@@ -39,3 +40,31 @@ def test_unknown_name():
 def test_unknown_option():
     with pytest.raises(ValueError, match="invalid options for the 'memory'"):
         get_telemetry({'name': 'memory', 'colour': 'red'}, _ctx())
+
+
+def test_transport_without_capabilities_offers_nothing(tmp_path):
+    class Foreign:
+        pass
+
+    ctx = TelemetryContext(Foreign(), 'main', str(tmp_path))
+
+    with pytest.raises(ValueError, match='requires.*shared_fs'):
+        get_telemetry({'name': 'csv', 'target': 'tele.csv'}, ctx)
+
+
+def test_pipeline_telemetry_is_checked_like_the_pipeline_would():
+    check_pipeline_telemetry({'folder': '.'})
+    check_pipeline_telemetry({'telemetry': {'name': 'memory'}})
+
+    with pytest.raises(ValueError, match='telemetry file name'):
+        check_pipeline_telemetry(
+            {'telemetry': {'name': 'csv', 'target': '../tele.csv'}}
+        )
+
+    with pytest.raises(ValueError, match='shared_fs'):
+        check_pipeline_telemetry(
+            {
+                'transport': 'browser',
+                'telemetry': {'name': 'csv', 'target': 'tele.csv'},
+            }
+        )

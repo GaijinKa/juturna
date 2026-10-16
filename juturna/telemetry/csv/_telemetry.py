@@ -16,6 +16,9 @@ from juturna.utils.log_utils import jt_logger
 
 DEFAULT_MAX_PENDING = 10000
 
+# written by the pipeline in the same folder
+_RESERVED_NAMES = frozenset({'config.json'})
+
 
 class CsvTelemetry:
     """Write the telemetry records on a CSV file, from a worker of its own"""
@@ -42,6 +45,12 @@ class CsvTelemetry:
         """
         # the target becomes a path under the pipeline folder
         jt_utils.check_name(target, 'telemetry file')
+
+        if target in _RESERVED_NAMES:
+            raise ValueError(
+                f'invalid telemetry file name {target!r}: reserved for the '
+                'pipeline configuration'
+            )
 
         if (
             isinstance(max_pending, bool)

@@ -151,3 +151,25 @@ def test_running_pipeline_records_telemetry(test_config, wait_for_condition):
     assert events.count(('source_1', 'tx')) == 4, f'Unexpected {events}'
     assert events.count(('sink_1', 'rx')) == 4, f'Unexpected {events}'
     assert {r[-1] for r in records} == {'main'}, f'Unexpected {records}'
+
+
+@pytest.mark.parametrize(
+    'telemetry',
+    [
+        'tele.csv',
+        {'name': 'nope'},
+        {'name': 'csv', 'target': '../tele.csv'},
+        {'name': 'csv', 'target': 'config.json'},
+    ],
+)
+def test_refused_telemetry_leaves_nothing_on_disk(tmp_path, telemetry):
+    folder = tmp_path / 'pipe'
+    config = copy.deepcopy(_EMPTY)
+    config['pipeline']['folder'] = str(folder)
+    config['pipeline']['telemetry'] = telemetry
+    pipeline = jt.components.Pipeline(config)
+
+    with pytest.raises(ValueError):
+        pipeline.warmup()
+
+    assert not folder.exists(), 'the pipeline folder must not be created'

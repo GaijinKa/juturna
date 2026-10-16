@@ -8,6 +8,7 @@ from juturna.telemetry.browser import BrowserTelemetry
 from juturna.telemetry.csv import CsvTelemetry
 from juturna.telemetry.memory import MemoryTelemetry
 from juturna.transport import TransportBackend
+from juturna.transport import get_transport
 
 
 # Any: every manager has options of its own, which no common constructor
@@ -54,7 +55,9 @@ def _resolve(
             f'invalid options for the {name!r} telemetry: {exc}'
         ) from exc
 
-    missing = manager_cls.requires - transport_cls.capabilities
+    missing = manager_cls.requires - getattr(
+        transport_cls, 'capabilities', frozenset()
+    )
 
     if missing:
         raise ValueError(
@@ -101,3 +104,28 @@ def get_telemetry(
     manager_cls, options = resolved
 
     return manager_cls(ctx, **options)
+
+
+def check_pipeline_telemetry(pipeline: dict) -> None:
+    """
+    Check the telemetry of a pipeline configuration.
+
+    The transport and the manager are built and dropped: their constructors
+    validate the options and hold no resource (the csv file is opened on
+    start).
+
+    Parameters
+    ----------
+    pipeline : dict
+        The ``pipeline`` entry of a pipeline configuration.
+
+    Raises
+    ------
+    ValueError
+        If the transport or the telemetry cannot be built from it.
+
+    """
+    transport = get_transport(pipeline.get('transport'))
+    ctx = TelemetryContext(transport, 'main', pipeline.get('folder', '.'))
+
+    get_telemetry(pipeline.get('telemetry'), ctx)

@@ -128,6 +128,8 @@ def service_client():
         ('/abs/escaped', 'node', None),
         ('service_pipe', '../escaped', None),
         ('service_pipe', 'node', '../../id_rsa'),
+        ('service_pipe', 'node', 'config.json'),
+        ('service_pipe', 'node', 'a/b.csv'),
     ],
 )
 def test_service_rejects_unsafe_names(

@@ -321,20 +321,22 @@ class Pipeline:
 
     def _warmup(self):
         # these names become paths under the pipeline folder: a name like
-        # "../x" or "/x" would write (and, for telemetry, read) outside of it
+        # "../x" or "/x" would write outside of it
         for node in self._raw_config['pipeline']['nodes']:
             jt_utils.check_name(node['name'], 'node')
 
-        pathlib.Path(self.pipe_path).mkdir(parents=True, exist_ok=True)
-
-        with open(pathlib.Path(self.pipe_path, 'config.json'), 'w') as f:
-            json.dump(self._raw_config, f, indent=2)
-
+        # built (it opens nothing) before anything is written, so that a
+        # telemetry the registry refuses leaves no trace on disk
         self._telemetry_manager = get_telemetry(
             self._raw_config['pipeline'].get('telemetry'),
             TelemetryContext(self._transport, self._worker, self.pipe_path),
         )
         self._telemetry = self._telemetry_manager is not None
+
+        pathlib.Path(self.pipe_path).mkdir(parents=True, exist_ok=True)
+
+        with open(pathlib.Path(self.pipe_path, 'config.json'), 'w') as f:
+            json.dump(self._raw_config, f, indent=2)
 
         nodes = self._raw_config['pipeline']['nodes']
         links = self._raw_config['pipeline']['links']
