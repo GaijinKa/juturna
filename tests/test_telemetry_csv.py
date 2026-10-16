@@ -171,3 +171,14 @@ def test_records_skip_rows_with_corrupted_numbers(tmp_path):
     assert records == [(2.0, 'tx', 'a', 'a', 2, None, 5, 'w')], (
         f'Expected only the valid record, got {records}'
     )
+
+
+@pytest.mark.parametrize('target', [5, None, '', ['tele.csv']])
+def test_target_must_be_a_non_empty_string(tmp_path, target):
+    with pytest.raises(ValueError, match='target'):
+        CsvTelemetry(_ctx(tmp_path), target)
+
+
+def test_registry_reports_a_wrong_target_as_a_value_error(tmp_path):
+    with pytest.raises(ValueError, match='target'):
+        get_telemetry({'name': 'csv', 'target': 5}, _ctx(tmp_path))
