@@ -133,3 +133,41 @@ def test_registry_refuses_csv_on_browser(tmp_path):
 def test_target_is_required(tmp_path):
     with pytest.raises(ValueError, match="invalid options for the 'csv'"):
         get_telemetry({'name': 'csv'}, _ctx(tmp_path))
+
+
+def test_start_fails_when_the_file_cannot_be_opened(tmp_path):
+    manager = CsvTelemetry(_ctx(tmp_path), 'missing/tele.csv')
+
+    with pytest.raises(OSError):
+        manager.start()
+
+
+def test_a_batch_that_cannot_be_written_does_not_kill_the_writer(tmp_path):
+    class Unwritable:
+        def __str__(self):
+            raise RuntimeError('cannot be written')
+
+    manager = CsvTelemetry(_ctx(tmp_path), 'tele.csv')
+
+    manager.start()
+    manager.record_telemetry([(1.0, 'tx', 'in', 'in', 0, None, Unwritable())])
+    manager.record_telemetry([_record(1)])
+    manager.stop()
+
+    ids = [r[4] for r in manager.records()]
+    assert ids == [1], f'Expected only the writable record, got {ids}'
+    assert manager.dropped == 1, f'Expected 1 dropped, got {manager.dropped}'
+
+
+def test_records_skip_rows_with_corrupted_numbers(tmp_path):
+    target = pathlib.Path(tmp_path, 'tele.csv')
+    header = ','.join(TELEMETRY_FIELDS)
+    target.write_text(
+        f'{header}\n1.0,rx,n,o,1,,,main\n2.0,tx,a,a,2,,5,w\nx,tx,a,a,3,,5,w\n'
+    )
+
+    records = CsvTelemetry(_ctx(tmp_path), 'tele.csv').records()
+
+    assert records == [(2.0, 'tx', 'a', 'a', 2, None, 5, 'w')], (
+        f'Expected only the valid record, got {records}'
+    )

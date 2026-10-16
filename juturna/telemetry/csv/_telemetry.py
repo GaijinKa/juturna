@@ -54,6 +54,7 @@ class CsvTelemetry:
         self._logger = jt_logger('telemetry')
 
         self._thread: WorkerHandle | None = None
+        self._file = None
 
         # approximate: `+=` from several threads may miss a count
         self.dropped = 0
@@ -65,13 +66,25 @@ class CsvTelemetry:
 
             return
 
-        self._thread = self._transport.spawn(
-            target=self._read_telemetry,
-            name='telemetry',
-            daemon=True,
-        )
+        # opened here, not by the writer: a target that cannot be written
+        # fails the start of the pipeline instead of killing a worker
+        self._file = open(self._target, 'a', newline='', buffering=1)  # noqa: SIM115
 
-        self._thread.start()
+        try:
+            csv.writer(self._file).writerow(TELEMETRY_FIELDS)
+
+            self._thread = self._transport.spawn(
+                target=self._read_telemetry,
+                name='telemetry',
+                daemon=True,
+            )
+
+            self._thread.start()
+        except BaseException:
+            self._file.close()
+            self._thread = None
+
+            raise
 
     def stop(self):
         """Write what is left and stop the worker"""
@@ -104,19 +117,26 @@ class CsvTelemetry:
         except FileNotFoundError:
             return []
 
-        # the header is repeated at every start, and the last row may be partial
-        return [
-            _parse(row)
-            for row in rows
-            if len(row) == len(TELEMETRY_FIELDS) and row[0] != 'ts'
-        ]
+        # the header is repeated at every start, and a row may be partial or
+        # corrupted: those are skipped
+        records = []
+
+        for row in rows:
+            if len(row) != len(TELEMETRY_FIELDS) or row[0] == 'ts':
+                continue
+
+            try:
+                records.append(_parse(row))
+            except ValueError:
+                continue
+
+        return records
 
     def _read_telemetry(self):
         self._logger.info(f'telemetry started, writing on {self._target}')
 
-        with open(self._target, 'a', newline='', buffering=1) as f:
+        with self._file as f:
             _writer = csv.writer(f)
-            _writer.writerow(TELEMETRY_FIELDS)
 
             while not self._evt.is_set():
                 try:
@@ -126,7 +146,7 @@ class CsvTelemetry:
                 except Empty:
                     continue
 
-                _writer.writerows(telemetry_batch)
+                self._write(_writer, telemetry_batch)
 
             while True:
                 try:
@@ -134,7 +154,15 @@ class CsvTelemetry:
                 except Empty:
                     break
 
-                _writer.writerows(telemetry_batch)
+                self._write(_writer, telemetry_batch)
+
+    def _write(self, writer, batch: list[tuple]):
+        try:
+            writer.writerows(batch)
+        except Exception:
+            # a batch that cannot be written must not kill the writer
+            self.dropped += len(batch)
+            self._logger.error('cannot write telemetry', exc_info=True)
 
 
 def _parse(row: list[str]) -> tuple:
