@@ -4,6 +4,7 @@ from typing import Any
 
 from juturna.telemetry._base import TelemetryContext
 from juturna.telemetry._base import TelemetryManager
+from juturna.telemetry.csv import CsvTelemetry
 from juturna.telemetry.memory import MemoryTelemetry
 from juturna.transport import TransportBackend
 
@@ -11,6 +12,7 @@ from juturna.transport import TransportBackend
 # Any: every manager has options of its own, which no common constructor
 # signature can express
 _MANAGERS: dict[str, Any] = {
+    'csv': CsvTelemetry,
     'memory': MemoryTelemetry,
 }
 
