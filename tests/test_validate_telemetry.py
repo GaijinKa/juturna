@@ -15,7 +15,7 @@ def test_null_telemetry_is_valid():
 def test_valid_pairs():
     _check_telemetry({'telemetry': {'name': 'memory'}})
     _check_telemetry(
-        {'transport': 'threading', 'telemetry': {'name': 'csv', 'target': 'x'}}
+        {'transport': 'threading', 'telemetry': {'name': 'csv', 'target': 'x.csv'}}
     )
     _check_telemetry({'transport': 'browser', 'telemetry': {'name': 'browser'}})
 
@@ -26,11 +26,11 @@ def test_valid_pairs():
         {'telemetry': 'tele.csv'},
         {'telemetry': {'name': 'nope'}},
         {'telemetry': {'name': 'csv'}},
-        {'transport': 'browser', 'telemetry': {'name': 'csv', 'target': 'x'}},
+        {'transport': 'browser', 'telemetry': {'name': 'csv', 'target': 'x.csv'}},
         {'transport': 'threading', 'telemetry': {'name': 'browser'}},
         {'transport': 'nope', 'telemetry': {'name': 'memory'}},
         {'telemetry': {'name': 'csv', 'target': 5}},
-        {'telemetry': {'name': 'csv', 'target': 'x', 'max_pending': 0}},
+        {'telemetry': {'name': 'csv', 'target': 'x.csv', 'max_pending': 0}},
         {'telemetry': {'name': 'memory', 'max_records': 0}},
         {'telemetry': {'name': 'memory', 'max_records': '5'}},
     ],

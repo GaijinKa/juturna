@@ -255,7 +255,9 @@ records. Every other key of the entry is an option of that manager.
      - a file system shared by the pipeline (the threading transport)
      - Writes the records on a CSV file from a worker of its own. ``target``
        (required) is a plain file name (up to 128 letters, digits, ``_``, ``-``
-       and ``.``, no folders), written in the pipeline folder.
+       and ``.``, no folders) ending in ``.csv``, written in the pipeline
+       folder: the extension keeps it from replacing any other file of the
+       folder, such as the configuration of the pipeline.
        ``max_pending`` (default 10000) is how many batches can wait to be
        written: when the writer cannot keep up, the new batches are dropped,
        so that the nodes never wait for the telemetry. The number of dropped
@@ -307,8 +309,7 @@ Migrating from version 2
 - The ``csv`` manager no longer queues without a limit: when it cannot write
   fast enough, the newest batches are dropped (``max_pending``). Its start now
   fails if the file cannot be written, where the writer used to die silently.
-  ``target`` cannot be ``config.json``, which the pipeline writes in the same
-  folder.
+  ``target`` must end in ``.csv`` (the version 2 accepted any name).
 - A transport must declare ``capabilities`` (a new attribute of
   ``TransportBackend``) to be used with the telemetry: the ``supports_telemetry``
   attribute is gone.

@@ -59,9 +59,7 @@ def test_records_before_the_file_exists(tmp_path):
 def test_records_skip_repeated_headers_and_partial_rows(tmp_path):
     target = pathlib.Path(tmp_path, 'tele.csv')
     header = ','.join(TELEMETRY_FIELDS)
-    target.write_text(
-        f'{header}\n1.0,tx,a,a,1,,5,w\n{header}\n2.0,rx,b,a,2\n'
-    )
+    target.write_text(f'{header}\n1.0,tx,a,a,1,,5,w\n{header}\n2.0,rx,b,a,2\n')
 
     records = CsvTelemetry(_ctx(tmp_path), 'tele.csv').records()
 
@@ -210,9 +208,25 @@ def test_a_stopped_manager_can_start_again_with_one_header(tmp_path):
     assert [r[4] for r in rows[1:]] == ['0', '1'], f'Unexpected rows {rows}'
 
 
-def test_the_pipeline_configuration_is_not_a_valid_target(tmp_path):
-    with pytest.raises(ValueError, match='reserved'):
-        CsvTelemetry(_ctx(tmp_path), 'config.json')
+@pytest.mark.parametrize(
+    'target',
+    [
+        'config.json',
+        'Config.JSON',
+        'tele.txt',
+        'tele',
+        'tele.csv.json',
+        'x.csvx',
+    ],
+)
+def test_target_must_have_a_csv_extension(tmp_path, target):
+    with pytest.raises(ValueError, match='must end with'):
+        CsvTelemetry(_ctx(tmp_path), target)
+
+
+@pytest.mark.parametrize('target', ['tele.csv', 'TELE.CSV', 'a.b.csv'])
+def test_a_csv_extension_is_accepted_whatever_its_case(tmp_path, target):
+    CsvTelemetry(_ctx(tmp_path), target)
 
 
 def test_batches_after_a_stop_are_dropped(tmp_path):
