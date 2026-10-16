@@ -182,3 +182,9 @@ def test_target_must_be_a_non_empty_string(tmp_path, target):
 def test_registry_reports_a_wrong_target_as_a_value_error(tmp_path):
     with pytest.raises(ValueError, match='target'):
         get_telemetry({'name': 'csv', 'target': 5}, _ctx(tmp_path))
+
+
+@pytest.mark.parametrize('max_pending', [True, False, 1.5, '5', None])
+def test_max_pending_must_be_a_real_integer(tmp_path, max_pending):
+    with pytest.raises(ValueError, match='max_pending'):
+        CsvTelemetry(_ctx(tmp_path), 'tele.csv', max_pending=max_pending)

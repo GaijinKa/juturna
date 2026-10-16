@@ -26,7 +26,12 @@ class MemoryTelemetry:
             Records kept; the oldest are dropped first.
 
         """
-        if not isinstance(max_records, int) or max_records < 1:
+        # bool is an int: `true` in a configuration would mean 1
+        if (
+            isinstance(max_records, bool)
+            or not isinstance(max_records, int)
+            or max_records < 1
+        ):
             raise ValueError(
                 f'max_records must be a positive integer, got {max_records}'
             )

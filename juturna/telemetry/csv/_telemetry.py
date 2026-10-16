@@ -44,7 +44,11 @@ class CsvTelemetry:
                 f'target must be a non-empty string, got {target!r}'
             )
 
-        if not isinstance(max_pending, int) or max_pending < 1:
+        if (
+            isinstance(max_pending, bool)
+            or not isinstance(max_pending, int)
+            or max_pending < 1
+        ):
             raise ValueError(
                 f'max_pending must be a positive integer, got {max_pending}'
             )

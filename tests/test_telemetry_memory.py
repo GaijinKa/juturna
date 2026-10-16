@@ -68,3 +68,9 @@ def test_concurrent_writers_and_reader():
     [t.join() for t in threads]
 
     assert not errors, f'The reader failed: {errors}'
+
+
+@pytest.mark.parametrize('max_records', [True, False, 1.5, '5', None])
+def test_max_records_must_be_a_real_integer(max_records):
+    with pytest.raises(ValueError, match='max_records'):
+        MemoryTelemetry(_ctx(), max_records=max_records)
