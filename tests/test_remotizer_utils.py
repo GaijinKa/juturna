@@ -227,3 +227,18 @@ def test_messages_can_leave_out_what_cannot_be_sent():
         "message.meta['ids'] (set)",
         "message.payload[0].payload['ids'] (set)",
     ]
+
+
+def test_message_ids_beyond_32_bits_round_trip():
+    message = Message(creator='s', payload=BytesPayload(cnt=b'a'))
+    message.id = 2**40
+
+    assert deserialize_message(message_to_proto(message)).id == 2**40
+
+
+def test_messaging_service_has_stream_and_control():
+    pytest.importorskip('grpc')
+    from juturna.remotizer.c_protos import messaging_service_pb2_grpc as g
+
+    assert hasattr(g.MessagingServiceServicer, 'Stream')
+    assert hasattr(g.MessagingServiceServicer, 'Control')

@@ -7,4 +7,10 @@ import "payloads.proto";
 service MessagingService {
   // Send a message and get acknowledgment
   rpc SendAndReceive(juturna.proto.payloads.ProtoEnvelope) returns (juturna.proto.payloads.ProtoEnvelope);
+
+  // Client-streaming data channel between processes
+  rpc Stream(stream juturna.proto.payloads.ProtoEnvelope) returns (juturna.proto.payloads.ProtoEnvelope);
+
+  // Bidirectional host-worker command channel
+  rpc Control(stream juturna.proto.payloads.ProtoEnvelope) returns (stream juturna.proto.payloads.ProtoEnvelope);
 }
