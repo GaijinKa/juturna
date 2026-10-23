@@ -189,14 +189,20 @@ Failures
   data and control channels): one warning per broken link, the messages for it
   are dropped, the nodes writing to it are released, and the rest of the
   pipeline keeps running. ``stop`` and ``delete`` skip it and return.
-- "Lost" means disconnected, not slow.
+- "Lost" means disconnected, not slow. A ``stop`` held by a live but slow
+  receiver waits for as long as it stays connected: the only ways out are
+  stopping that worker process or shutting the service down.
 
 Limits of this version
 ----------------------
 
 - **Trusted network.** There is no TLS: the service token and the data travel
   in cleartext between the processes. Run them on a network you trust, or
-  inside a tunnel. With ``serve --no-auth`` the host accepts any worker.
+  inside a tunnel. With ``serve --no-auth`` the host accepts any worker. The
+  values of the allowed environment variables cross the control channel in
+  cleartext too.
+- **Unauthenticated data port.** The data address checks no token: anyone who
+  can reach it and knows a pipeline id and a node name can inject messages.
 - **No recovery.** A worker that dies is not attached again, even when it
   comes back: its branch stays stopped until the pipeline is created again.
 - **No sharding.** Several copies of the same node sharing the messages are
@@ -211,3 +217,9 @@ Limits of this version
   and timestamps of different machines are not comparable: this only affects
   telemetry.
 - **Status.** The host does not report the detailed status of remote nodes.
+- **Transport.** The host sets the ``pipeline.transport`` of a distributed
+  pipeline: a value in the configuration is replaced.
+- **No csv telemetry.** The csv telemetry needs a shared file system, which
+  the gRPC transport does not offer: the pipeline is refused at warmup.
+- **Folder wipe.** Deleting a pipeline with ``wipe`` removes only the host
+  folder; the folders on the workers stay under each worker's ``--folder``.
