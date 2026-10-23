@@ -1,3 +1,4 @@
+import importlib
 import inspect
 
 from juturna.transport._base import TransportBackend
@@ -8,6 +9,11 @@ from juturna.transport.browser import BrowserTransport
 _TRANSPORTS: dict[str, type[TransportBackend]] = {
     'threading': ThreadingTransport,
     'browser': BrowserTransport,
+}
+
+# imported on first use, so that their dependencies stay optional
+_LAZY_TRANSPORTS: dict[str, tuple[str, str]] = {
+    'grpc': ('juturna.transport.grpc', 'GrpcTransport'),
 }
 
 _DEFAULT_TRANSPORT = 'threading'
@@ -37,9 +43,9 @@ def get_transport(spec: str | dict | None = None) -> TransportBackend:
     Parameters
     ----------
     spec : str | dict | None
-        Either the name of the backend, as registered in `_TRANSPORTS`, or a
-        dictionary with its ``name`` and the options of the backend, that are
-        passed to its constructor, like
+        Either the name of the backend, as registered in `_TRANSPORTS` or
+        `_LAZY_TRANSPORTS`, or a dictionary with its ``name`` and the options
+        of the backend, that are passed to its constructor, like
         ``{'name': 'browser', 'max_payload_bytes': 4000000}``. Defaults to the
         threading backend if not provided.
 
@@ -56,13 +62,22 @@ def get_transport(spec: str | dict | None = None) -> TransportBackend:
 
     """
     name, options = _split_spec(spec)
-    if name not in _TRANSPORTS:
+    if name in _LAZY_TRANSPORTS:
+        module, attribute = _LAZY_TRANSPORTS[name]
+
+        try:
+            transport = getattr(importlib.import_module(module), attribute)
+        except ImportError as exc:
+            raise ValueError(
+                f'the {name!r} transport needs the warp extra: {exc}'
+            ) from exc
+    elif name in _TRANSPORTS:
+        transport = _TRANSPORTS[name]
+    else:
         raise ValueError(
             f'unknown transport backend: {name!r}, '
-            f'available: {list(_TRANSPORTS)}'
+            f'available: {list(_TRANSPORTS) + list(_LAZY_TRANSPORTS)}'
         )
-
-    transport = _TRANSPORTS[name]
 
     try:
         inspect.signature(transport).bind(**options)
