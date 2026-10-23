@@ -14,6 +14,10 @@ jobs:
       fail-fast: false
       matrix:
         python-version: ["3.12", "3.13", "3.14", "3.14t"]
+        include:
+          - extras: dev_full,warp,httpwrapper
+          - python-version: "3.14t"
+            extras: dev_full
     steps:
       - uses: actions/checkout@v4
 
@@ -26,7 +30,7 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y ffmpeg
 
       - name: Install
-        run: pip install -e ".[dev_full]"
+        run: pip install -e ".[${{ matrix.extras }}]"
 
       - name: Run tests
         run: >
