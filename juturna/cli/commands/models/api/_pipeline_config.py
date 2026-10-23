@@ -36,7 +36,7 @@ class PipelineConfig(BaseModel):
         their keys, and the transport and telemetry must be ones the
         registries accept. Pipeline and node names, and the telemetry file
         name, must be plain file names, since they become paths under the
-        service base folder.
+        service base folder. A node worker, when given, must be a name.
         """
         jt_utils.check_name(pipeline.get('name'), 'pipeline')
 
@@ -52,6 +52,11 @@ class PipelineConfig(BaseModel):
                 raise ValueError(f'two nodes are named {node["name"]}')
 
             names.add(node['name'])
+
+            if 'worker' in node and (
+                not isinstance(node['worker'], str) or not node['worker']
+            ):
+                raise ValueError(f'node {node["name"]} needs a worker name')
 
             if not isinstance(node.get('configuration'), dict):
                 raise ValueError(
