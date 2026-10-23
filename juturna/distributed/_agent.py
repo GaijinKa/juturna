@@ -1,3 +1,5 @@
+import json
+import os
 import queue
 import threading
 
@@ -55,7 +57,26 @@ class WorkerAgent:
         self.name = name
         self.folder = folder
         self.data_address = data_address
-        self.handlers: dict[str, Callable[[dict], dict]] = dict()
+        self.handlers: dict[str, Callable[[dict], dict]] = {
+            'warmup': self._warmup,
+            'destroy': self._destroy,
+            'status': self._status,
+            'begin_stop': lambda args: {'began': self._get(args).begin_stop()},
+            **{
+                step: self._step(step)
+                for step in (
+                    'start',
+                    'abort_start',
+                    'end_stop',
+                    'abort_stop',
+                    'kill',
+                )
+            },
+            **{
+                step: self._step(step, 'nodes')
+                for step in ('close_remote', 'stop_nodes')
+            },
+        }
         self._host_address = host_address
         self._max_streams = max_streams
         self._token = token
@@ -197,6 +218,72 @@ class WorkerAgent:
             self._pipelines[pipe_id] = pipeline
 
             return True
+
+    def _get(self, args: dict) -> Pipeline:
+        with self._lock:
+            if args['pipe_id'] not in self._pipelines:
+                raise LookupError(f'unknown pipeline {args["pipe_id"]}')
+
+            return self._pipelines[args['pipe_id']]
+
+    def _step(self, step: str, *keys: str) -> Callable[[dict], dict]:
+        def handler(args: dict) -> dict:
+            getattr(self._get(args), step)(*(args[key] for key in keys))
+
+            return dict()
+
+        return handler
+
+    def _warmup(self, args: dict) -> dict:
+        config = args['config']
+        pipe_id = config['pipeline']['id']
+
+        with self._lock:
+            if pipe_id in self._pipelines:
+                raise ValueError(f'pipeline {pipe_id} already on {self.name}')
+
+        base = os.path.basename(config['pipeline']['folder'].rstrip('/\\'))
+        config['pipeline']['folder'] = os.path.join(self.folder, base)
+        pipeline = Pipeline(config, worker=self.name, environ=args['environ'])
+
+        try:
+            pipeline.warmup()
+        except Exception:
+            # warmup rolled itself back, only the object is left
+            pipeline.destroy()
+
+            raise
+
+        self._data.register(pipe_id, pipeline._nodes)
+
+        if not self._keep(pipe_id, pipeline):
+            self._drop(pipe_id, pipeline)
+
+            raise ConnectionError('host lost during warmup')
+
+        return dict()
+
+    def _destroy(self, args: dict) -> dict:
+        with self._lock:
+            pipeline = self._pipelines.pop(args['pipe_id'], None)
+
+        if pipeline is None:
+            raise LookupError(f'unknown pipeline {args["pipe_id"]}')
+
+        try:
+            self._data.unregister(args['pipe_id'])
+            pipeline.destroy()
+        except Exception:
+            self._logger.warning(
+                f'destroy of pipeline {args["pipe_id"]} failed', exc_info=True
+            )
+
+            raise
+
+        return dict()
+
+    def _status(self, args: dict) -> dict:
+        return json.loads(json.dumps(self._get(args).status, default=str))
 
     def _requests(self):
         while (envelope := self._outbound.get()) is not None:
