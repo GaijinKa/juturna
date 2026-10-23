@@ -1,5 +1,6 @@
 import importlib
 import os
+from collections.abc import Mapping
 
 from juturna.utils.log_utils import jt_logger
 from juturna.meta._constants import JUTURNA_ENV_VAR_PREFIX
@@ -10,12 +11,18 @@ _logger = jt_logger('builder.utils')
 
 
 def _resolve_env_var(
-    key: str, value: str, node_name: str, local_arguments: dict
+    key: str,
+    value: str,
+    node_name: str,
+    local_arguments: dict,
+    environ: Mapping[str, str] | None = None,
 ) -> str:
     env_var_name = value[len(JUTURNA_ENV_VAR_PREFIX) :]
     default_value = local_arguments[key]
 
-    if env_var_name not in os.environ:
+    source = os.environ if environ is None else environ
+
+    if env_var_name not in source:
         error_msg = (
             f'env variable "{env_var_name}" is not set in node "{node_name}" '
             f'for config key "{key}" (found in config but not in environment)'
@@ -24,7 +31,7 @@ def _resolve_env_var(
 
         raise ValueError(error_msg)
 
-    return get_env_var(env_var_name, default_value)
+    return get_env_var(env_var_name, default_value, environ)
 
 
 def _update_local_with_remote(local: dict, remote: dict) -> dict:

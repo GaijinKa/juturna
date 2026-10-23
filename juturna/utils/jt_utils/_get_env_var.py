@@ -1,4 +1,5 @@
 import os
+from collections.abc import Mapping
 from typing import TypeVar
 from juturna.utils.log_utils import jt_logger
 
@@ -7,8 +8,13 @@ T = TypeVar('T')
 _logger = jt_logger()
 
 
-def get_env_var[T](var_name: str, default_value: T) -> T:
-    env_value = os.environ.get(var_name)
+def get_env_var[T](
+    var_name: str,
+    default_value: T,
+    environ: Mapping[str, str] | None = None,
+) -> T:
+    # None reads os.environ live: it is not copied
+    env_value = (os.environ if environ is None else environ).get(var_name)
 
     if env_value is None:
         return default_value

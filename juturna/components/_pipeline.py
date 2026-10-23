@@ -5,6 +5,7 @@ import pathlib
 import gc
 import threading
 import typing
+from collections.abc import Mapping
 
 from juturna.components import Node
 
@@ -85,7 +86,12 @@ class Pipeline:
     destination nodes.
     """
 
-    def __init__(self, config: dict, worker: str = DEFAULT_WORKER):
+    def __init__(
+        self,
+        config: dict,
+        worker: str = DEFAULT_WORKER,
+        environ: Mapping[str, str] | None = None,
+    ):
         """
         Parameters
         ----------
@@ -98,9 +104,13 @@ class Pipeline:
             worker named by its optional ``worker`` key (``main`` when
             missing); the nodes of other workers are not built here, and the
             links towards them go through the transport, see `warmup`.
+        environ : Mapping[str, str] | None
+            Where ``$JT_ENV_*`` values of the node configuration are read
+            from; ``None`` means ``os.environ``.
 
         """
         self._worker = worker
+        self._environ = environ
         self._raw_config = copy.deepcopy(config)
         self._name = self._raw_config['pipeline']['name']
         self._pipe_id = self._raw_config['pipeline']['id']
@@ -400,6 +410,7 @@ class Pipeline:
                     node,
                     pipe_name=self.name,
                     transport=self._transport,
+                    environ=self._environ,
                 )
 
             _node.pipe_id = copy.deepcopy(self._pipe_id)

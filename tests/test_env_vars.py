@@ -94,3 +94,45 @@ def test_pipeline_with_missing_env_var(test_config, caplog):
     assert 'not set' in error_message.lower()
     assert 'test_node' in error_message or 'node "test_node"' in error_message
     assert 'delay' in error_message or 'config key "delay"' in error_message
+
+
+def _streamer_config(tmp_path, rate):
+    return {
+        'pipeline': {
+            'name': 'env_mapping',
+            'id': 'env-mapping-1',
+            'folder': str(tmp_path),
+            'nodes': [
+                {
+                    'name': 's',
+                    'type': 'contrib.jt_test.nodes.DataStreamer',
+                    'configuration': {'rate': rate},
+                }
+            ],
+            'links': [],
+        },
+    }
+
+
+def test_pipeline_resolves_env_vars_from_the_given_mapping(
+    tmp_path, monkeypatch
+):
+    monkeypatch.delenv('JT_TEST_RATE', raising=False)
+    pipe = jt.components.Pipeline(
+        _streamer_config(tmp_path, rate='$JT_ENV_JT_TEST_RATE'),
+        environ={'JT_TEST_RATE': '5'},
+    )
+    pipe.warmup()
+
+    assert pipe._nodes['s']._rate == 5, f'rate is {pipe._nodes["s"]._rate!r}'
+    assert '$JT_ENV_JT_TEST_RATE' in (tmp_path / 'config.json').read_text()
+
+
+def test_variable_missing_from_the_mapping_fails(tmp_path, monkeypatch):
+    monkeypatch.setenv('JT_TEST_RATE', '5')
+    pipe = jt.components.Pipeline(
+        _streamer_config(tmp_path, rate='$JT_ENV_JT_TEST_RATE'), environ={}
+    )
+
+    with pytest.raises(ValueError, match='JT_TEST_RATE'):
+        pipe.warmup()

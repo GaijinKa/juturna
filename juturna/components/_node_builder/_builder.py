@@ -1,4 +1,5 @@
 import tomllib
+from collections.abc import Mapping
 import importlib
 import importlib.resources
 
@@ -18,6 +19,7 @@ def _get_node(
     node: dict,
     pipe_name: str,
     transport: TransportBackend | None = None,
+    environ: Mapping[str, str] | None = None,
 ):
     node_full_path = node['type']
     node_configuration = node['configuration']
@@ -41,7 +43,9 @@ def _get_node(
 
     operational_config.update(
         {
-            key: _resolve_env_var(key, value, node['name'], default_args)
+            key: _resolve_env_var(
+                key, value, node['name'], default_args, environ
+            )
             for key, value in items_to_process
         }
     )
