@@ -5,6 +5,7 @@ import pathlib
 import gc
 import threading
 import typing
+from collections.abc import Iterable
 from collections.abc import Mapping
 
 from juturna.components import Node
@@ -77,6 +78,18 @@ _TRANSITION_RULES: dict[str, dict] = {
             PipelineStatus.READY: 'pipeline {name} is not running',
         },
     },
+    'abort_start': {
+        'illegal': {
+            PipelineStatus.NEW: PipelineNotRunningError,
+            PipelineStatus.READY: PipelineNotRunningError,
+            PipelineStatus.STOPPED: PipelineStoppedError,
+            PipelineStatus.DESTROYED: PipelineDestroyedError,
+        },
+        'messages': {
+            PipelineStatus.NEW: 'pipeline {name} is not running',
+            PipelineStatus.READY: 'pipeline {name} is not running',
+        },
+    },
 }
 
 
@@ -127,6 +140,7 @@ class Pipeline:
         self._links: list = list()
         self._dag: DAG = DAG()
         self._node_state_store = dict()
+        self._remote_destinations: dict[str, typing.Any] = dict()
 
         self._transport: TransportBackend = get_transport(
             self._raw_config['pipeline'].get('transport')
@@ -139,6 +153,7 @@ class Pipeline:
         self._status_lock = threading.Lock()
         self._transitioning = False
         self._started_nodes: list[str] = list()
+        self._stopping = False
 
         self.created_at = time.time()
 
@@ -433,8 +448,13 @@ class Pipeline:
                 continue
 
             if to_node in remote_names:
+                if to_node not in self._remote_destinations:
+                    self._remote_destinations[to_node] = (
+                        self._transport.remote_destination(to_node)
+                    )
+
                 self._nodes[from_node].add_destination(
-                    to_node, self._transport.remote_destination(to_node)
+                    to_node, self._remote_destinations[to_node]
                 )
             else:
                 if from_node not in remote_names:
@@ -497,9 +517,12 @@ class Pipeline:
                     exc_info=True,
                 )
 
+        self._cancel_remote()
+
         self._links = list()
         self._dag = DAG()
         self._node_state_store = dict()
+        self._remote_destinations = dict()
 
         self._telemetry_manager = None
         self._telemetry = False
@@ -533,6 +556,12 @@ class Pipeline:
         try:
             self._start()
         except BaseException:
+            if self._started_nodes:
+                self._logger.error(
+                    f'node {self._started_nodes[-1]} failed to start, '
+                    'stopping the nodes already started'
+                )
+
             # interrupts are rolled back too, or nodes would be left running
             self._abort_transition(self._rollback_start)
 
@@ -578,12 +607,6 @@ class Pipeline:
         """
         started, self._started_nodes = self._started_nodes, list()
 
-        if started:
-            self._logger.error(
-                f'node {started[-1]} failed to start, stopping the nodes '
-                'already started'
-            )
-
         nodes = [self._nodes[node_name] for node_name in started[::-1]]
 
         for node in nodes:
@@ -603,6 +626,31 @@ class Pipeline:
 
         if self._telemetry:
             self._telemetry_manager.stop()
+
+    def abort_start(self):
+        """
+        Take a running pipeline back to READY, discarding pending messages.
+
+        A distributed start that fails on one worker uses this to undo the
+        start on the workers where it succeeded, so that it can be retried.
+        The nodes are killed as in a failed `start`.
+
+        Raises
+        ------
+        PipelineStateError
+            If the pipeline is not RUNNING.
+
+        """
+        self._begin_transition('abort_start', _TRANSITION_RULES)
+
+        try:
+            self._rollback_start()
+        except BaseException:
+            self._abort_transition()
+
+            raise
+        else:
+            self._end_transition(PipelineStatus.READY)
 
     def stop(self):
         """
@@ -630,21 +678,107 @@ class Pipeline:
 
         for layer in self._dag.BFS():
             self._logger.info(f'stopping layer {layer}')
+            self.stop_nodes(layer)
 
-            for node_name in layer:
-                self._logger.info(f'stopping node {node_name}')
-                self._nodes[node_name].stop()
+        self._stop_telemetry()
 
-            for node_name in layer:
-                self._nodes[node_name].join()
-
+    def _stop_telemetry(self):
         if self._telemetry:
             for node in self._nodes.values():
                 node.flush_telemetry()
 
             self._telemetry_manager.stop()
 
-        # self._status = PipelineStatus.READY
+    def begin_stop(self) -> bool:
+        """
+        Claim a stop driven layer by layer from outside.
+
+        A pipeline spread over several workers only sees its own links, so its
+        own `stop` could stop a node while another worker still writes to it.
+        The coordinator walks the layers of the global graph (see
+        `pipeline_layers`) and, on every worker, calls `close_remote` and then
+        `stop_nodes` for each layer, and `end_stop` at the end, or
+        `abort_stop` on failure. The pipeline stays busy in between.
+
+        Returns
+        -------
+        bool
+            True if the stop was claimed, False if the pipeline is already
+            STOPPED.
+
+        """
+        claimed = self._begin_transition('stop', _TRANSITION_RULES)
+        self._stopping = claimed
+
+        return claimed
+
+    def close_remote(self, nodes: Iterable[str]):
+        """
+        Flush and close the links from this worker to the given nodes.
+
+        Each close blocks until the receiver has every message sent on it, so
+        the nodes can be stopped without losing anything in flight. Names
+        this worker has no link to are ignored.
+
+        Parameters
+        ----------
+        nodes : Iterable[str]
+            The nodes of another worker whose incoming links are closed.
+
+        """
+        for node_name in nodes:
+            remote = self._remote_destinations.get(node_name)
+
+            if hasattr(remote, 'close'):
+                remote.close()
+
+    def stop_nodes(self, nodes: Iterable[str]):
+        """
+        Stop the given local nodes, then wait for each of them to finish.
+
+        Parameters
+        ----------
+        nodes : Iterable[str]
+            The nodes to stop; those of other workers are ignored.
+
+        """
+        local = [name for name in nodes if name in self._nodes]
+
+        for node_name in local:
+            self._logger.info(f'stopping node {node_name}')
+            self._nodes[node_name].stop()
+
+        for node_name in local:
+            self._nodes[node_name].join()
+
+    def end_stop(self):
+        """Flush telemetry and complete a stop claimed by `begin_stop`."""
+        if not self._stopping:
+            return
+
+        try:
+            self._stop_telemetry()
+        except Exception:
+            self.abort_stop()
+
+            raise
+
+        self._stopping = False
+        self._end_transition(PipelineStatus.STOPPED)
+
+    def abort_stop(self):
+        """Release a stop claimed by `begin_stop`, a no-op otherwise."""
+        if not self._stopping:
+            return
+
+        self._stopping = False
+        self._abort_transition()
+
+    def _cancel_remote(self):
+        # a writer blocked on a link to a slow or dead worker must return
+        for remote in self._remote_destinations.values():
+            if hasattr(remote, 'cancel'):
+                remote.cancel()
 
     def kill(self):
         """
@@ -670,6 +804,8 @@ class Pipeline:
         if not self._nodes:
             raise RuntimeError(f'pipeline {self.name} is not configured')
 
+        self._cancel_remote()
+
         for node in self._nodes.values():
             node.signal_kill()
 
@@ -677,11 +813,7 @@ class Pipeline:
             self._logger.info(f'killing node {node_name}')
             node.kill()
 
-        if self._telemetry:
-            for node in self._nodes.values():
-                node.flush_telemetry()
-
-            self._telemetry_manager.stop()
+        self._stop_telemetry()
 
     def destroy(self):
         """
@@ -721,6 +853,8 @@ class Pipeline:
             self._transitioning = True
 
         try:
+            self._cancel_remote()
+
             if was_running:
                 self._stop()
 
@@ -733,6 +867,7 @@ class Pipeline:
                     self._nodes[node_name] = None
 
             self._nodes = None
+            self._remote_destinations = dict()
         except Exception:
             self._abort_transition()
 
@@ -786,3 +921,40 @@ def check_links(pipe_name: str, nodes: list[dict], links: list[dict]):
             )
 
         seen.add((from_node, to_node))
+
+
+def pipeline_layers(config: dict) -> list[list[str]]:
+    """
+    Layers of the whole pipeline graph, whatever worker each node runs in.
+
+    Parameters
+    ----------
+    config : dict
+        The pipeline configuration.
+
+    Returns
+    -------
+    list[list[str]]
+        The node names, layer by layer in BFS order from the sources.
+
+    Raises
+    ------
+    ValueError
+        If a link is invalid (see `check_links`) or the graph has a cycle.
+
+    """
+    pipe = config['pipeline']
+    check_links(pipe['name'], pipe['nodes'], pipe['links'])
+
+    dag = DAG()
+
+    for node in pipe['nodes']:
+        dag.add_node(node['name'])
+
+    for link in pipe['links']:
+        dag.add_edge(link['from'], link['to'])
+
+    if dag.has_cycle():
+        raise ValueError(f'pipe {pipe["name"]} contains a cycle: {dag.edges}')
+
+    return dag.BFS()

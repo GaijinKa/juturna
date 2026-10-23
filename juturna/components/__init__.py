@@ -2,6 +2,7 @@
 from juturna.components._message import Message
 from juturna.components._node import Node
 from juturna.components._pipeline import Pipeline
+from juturna.components._pipeline import pipeline_layers
 from juturna.components._state import State
 from juturna.components.exceptions import PipelineStateError
 from juturna.components.exceptions import PipelineNotReadyError
@@ -16,6 +17,7 @@ __all__ = [
     'Message',
     'Node',
     'Pipeline',
+    'pipeline_layers',
     'State',
     'PipelineStateError',
     'PipelineNotReadyError',
