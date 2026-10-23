@@ -81,6 +81,9 @@ class RemoteWorker:
         if 'answer' not in slot:
             raise ConnectionError(f'worker {self.name} disconnected')
 
+        if not isinstance(slot['answer'], dict):
+            raise RuntimeError(f'worker {self.name} answered {slot["answer"]}')
+
         if 'error' in slot['answer']:
             raise RuntimeError(slot['answer']['error'])
 

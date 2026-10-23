@@ -1,3 +1,4 @@
+import enum
 import threading
 
 import pytest
@@ -208,6 +209,51 @@ def test_host_lost_destroys_the_pipelines(cluster, tmp_path):
 
     for pipe in pipelines:
         assert pipe._nodes is None, f'{pipe.pipe_id} kept its nodes'
+        assert pipe.status['self'] == PipelineStatus.DESTROYED, (
+            f'{pipe.pipe_id} is {pipe.status["self"]}'
+        )
+
+
+@pytest.mark.parametrize(
+    'result', [{'s': {1, 2}}, {'k': enum.Enum('Colour', 'RED').RED}, [1, 2]]
+)
+def test_unencodable_answer_is_an_error(cluster, result):
+    registry, agent = cluster
+    worker = agent('w1')
+    worker.handlers['bad'] = lambda args: result
+
+    with pytest.raises(RuntimeError):
+        registry.get('w1').call('bad', {}, timeout=10)
+
+
+def test_keep_refused_after_host_lost(cluster, tmp_path):
+    _, agent = cluster
+    worker = agent('w1', serve=False)
+
+    pipe = Pipeline(_config(tmp_path, 'late'))
+    worker.on_host_lost()
+    kept = worker._keep(pipe.pipe_id, pipe)
+
+    assert not kept, 'a pipeline was kept after the host was lost'
+    assert worker._pipelines == {}, f'kept: {list(worker._pipelines)}'
+
+
+def test_unregister_failure_does_not_stop_cleanup(cluster, tmp_path):
+    _, agent = cluster
+    worker = agent('w1', serve=False)
+    pipelines = [Pipeline(_config(tmp_path, f'p{i}')) for i in range(2)]
+
+    for pipe in pipelines:
+        pipe.warmup()
+        assert worker._keep(pipe.pipe_id, pipe)
+
+    def broken(pipe_id):
+        raise RuntimeError('unregister failed')
+
+    worker._data.unregister = broken
+    worker.on_host_lost()
+
+    for pipe in pipelines:
         assert pipe.status['self'] == PipelineStatus.DESTROYED, (
             f'{pipe.pipe_id} is {pipe.status["self"]}'
         )

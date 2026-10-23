@@ -62,6 +62,7 @@ class WorkerAgent:
         self._data = DataServer(data_address, max_streams)
         self._pipelines: dict[str, Pipeline] = dict()
         self._lock = threading.Lock()
+        self._lost = False
         self._outbound: queue.Queue[ProtoEnvelope | None] = queue.Queue()
         self._channel: grpc.Channel | None = None
         self._responses = None
@@ -149,6 +150,9 @@ class WorkerAgent:
         """
         while True:
             with self._lock:
+                # a command still running must not keep a pipeline after this
+                self._lost = True
+
                 if not self._pipelines:
                     return
 
@@ -171,7 +175,28 @@ class WorkerAgent:
                     f'{step} of pipeline {pipe_id} failed', exc_info=True
                 )
 
-        self._data.unregister(pipe_id)
+        try:
+            self._data.unregister(pipe_id)
+        except Exception:
+            self._logger.warning(
+                f'unregister of pipeline {pipe_id} failed', exc_info=True
+            )
+
+    def _keep(self, pipe_id: str, pipeline: Pipeline) -> bool:
+        """
+        Hold a pipeline, unless the host is already lost.
+
+        Register its nodes on the data server before calling this: on
+        ``False`` the caller unregisters and destroys the pipeline itself,
+        on ``True`` `on_host_lost` will.
+        """
+        with self._lock:
+            if self._lost:
+                return False
+
+            self._pipelines[pipe_id] = pipeline
+
+            return True
 
     def _requests(self):
         while (envelope := self._outbound.get()) is not None:
@@ -185,10 +210,16 @@ class WorkerAgent:
                 raise LookupError(f'unknown command {envelope.request_type}')
 
             answer = handler(envelope_args(envelope))
+
+            if not isinstance(answer, dict):
+                raise TypeError(f'answer is {type(answer).__name__}, not dict')
+
+            # encoded here so that an answer json refuses still gets a reply
+            reply = make_envelope('answer', answer, envelope.id)
         except Exception as exc:
             self._logger.warning(
                 f'command {envelope.request_type} failed: {exc}'
             )
-            answer = {'error': str(exc)}
+            reply = make_envelope('answer', {'error': str(exc)}, envelope.id)
 
-        self._outbound.put(make_envelope('answer', answer, envelope.id))
+        self._outbound.put(reply)
