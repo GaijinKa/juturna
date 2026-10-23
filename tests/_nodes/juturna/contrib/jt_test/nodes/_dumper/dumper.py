@@ -19,6 +19,7 @@ class Dumper(Node[BasePayload, None]):
         super().__init__(**kwargs)
 
         self._received = 0
+        self.versions: list[int] = []
 
     def start(self):
         super().start()
@@ -28,6 +29,7 @@ class Dumper(Node[BasePayload, None]):
         self.logger.info(f"{self._received} messages received in total")
 
     def update(self, message: Message[BasePayload], **kwargs):
+        self.versions.append(message.version)
         self._received += 1
         self.dump_json(message, f"message_{message.version}.json")
         self.logger.info(

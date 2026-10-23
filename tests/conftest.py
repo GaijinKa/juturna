@@ -2,6 +2,7 @@ import importlib.util
 import pathlib
 import shutil
 import itertools
+import logging
 import time
 
 import pytest
@@ -24,6 +25,23 @@ def pytest_addoption(parser):
         default=False,
         help='Do not delete the folder created for test pipelines'
     )
+
+
+@pytest.fixture
+def jt_records():
+    """Collect the records of the `jt` logger tree, which does not propagate."""
+    records = []
+    handler = logging.Handler(level=logging.DEBUG)
+    handler.emit = records.append
+    logger = logging.getLogger('jt')
+    previous = logger.level
+    logger.setLevel(logging.DEBUG)
+    logger.addHandler(handler)
+
+    yield records
+
+    logger.removeHandler(handler)
+    logger.setLevel(previous)
 
 
 @pytest.fixture
