@@ -30,6 +30,7 @@ The full list of commands (available with the groups ``httpwrapper`` and
         stub                create a custom node skeleton
         remotize            start the remote node service
         require             collect all the required packages for a pipeline
+        worker              run nodes of the pipelines of a juturna serve host
 
 +--------------+----------------------------+-----------------------------+------------------------------+
 | command      | group                      | description                 | dependencies                 |
@@ -52,6 +53,9 @@ The full list of commands (available with the groups ``httpwrapper`` and
 |              |                            |                             | ``typing_extensions``        |
 +--------------+----------------------------+-----------------------------+------------------------------+
 | ``require``  | :bdg-success:`built-in`    | aggregate node requirements | --                           |
++--------------+----------------------------+-----------------------------+------------------------------+
+| ``worker``   | :bdg-primary:`warp`        | run nodes for a ``serve``   | ``grpcio`` |br|              |
+|              |                            | host                        | ``protobuf``                 |
 +--------------+----------------------------+-----------------------------+------------------------------+
 
 .. |br| raw:: html
@@ -186,20 +190,76 @@ allows pipeline manipulation.
 .. code-block:: console
 
     (.venv) user:~/$ python -m juturna serve --help
-    usage: juturna serve [-h] --host HOST --port PORT --folder FOLDER [--log-level {NOTSET,DEBUG,INFO,WARNING,ERROR}] [--log-format {simple,colored,full,compact,development,minimal,json}] [--log-file LOG_FILE]
+    usage: juturna serve [-h] [--host HOST] --port PORT --folder FOLDER [--log-config LOG_CONFIG] [--dev] [--no-auth] [--allow-env NAME] [--workers HOST:PORT] [--data-address HOST:PORT]
+                         [--max-streams MAX_STREAMS]
 
     options:
       -h, --help            show this help message and exit
-      --host HOST, -H HOST  juturna service host address
+      --host HOST, -H HOST  juturna service host address (default: 127.0.0.1)
       --port PORT, -p PORT  juturna service port
       --folder FOLDER, -f FOLDER
                             juturna service pipeline folder
+      --log-config LOG_CONFIG, -l LOG_CONFIG
+                            log configuration file
+      --dev, -d             run service in development mode (allows cross-origin requests)
+      --no-auth             do not require the service token (only for development, or behind a layer that authenticates the clients)
+      --allow-env NAME, -e NAME
+                            environment variable that pipeline configurations sent to the service can reference with $JT_ENV_ (repeatable, none by default)
+      --workers HOST:PORT, -w HOST:PORT
+                            accept workers on this address (needs the warp extra)
+      --data-address HOST:PORT, -D HOST:PORT
+                            address the other processes send messages for the nodes of the service to, required with --workers (port 0: any free port)
+      --max-streams MAX_STREAMS
+                            incoming data streams served at once (default: 16)
+
+Every request needs the service token as a bearer credential, read from
+``JUTURNA_SERVICE_TOKEN`` (a random one is generated and printed when it is not
+set).
+
+With ``--workers HOST:PORT`` the service also accepts workers
+(``juturna worker``) on that address, and runs each node of a pipeline on the
+worker its ``worker`` key names. ``--data-address`` is then required: it is the
+address the workers send the messages for the service's own nodes to, so it
+must be reachable by all of them (``0.0.0.0`` is refused). ``--workers`` needs
+the ``warp`` extra. Without ``--workers``, a pipeline that uses workers is
+refused with ``409``. See :ref:`explain_distributed`.
+
+Pipe worker
+-----------
+
+:bdg-primary:`warp`
+
+Run the nodes that the pipelines of a ``juturna serve --workers`` host place on
+a worker name. The worker registers on the host address with the token in
+``JUTURNA_SERVICE_TOKEN`` and receives the messages for its nodes on
+``--data-address``, which every other process of the pipeline must be able to
+reach.
+
+.. code-block:: console
+
+    (.venv) user:~/$ python -m juturna worker --help
+    usage: juturna worker [-h] --name NAME --folder FOLDER --data-address HOST:PORT [--max-streams MAX_STREAMS] [--log-level {NOTSET,DEBUG,INFO,WARNING,ERROR}] HOST:PORT
+
+    positional arguments:
+      HOST:PORT             worker address of the host (serve --workers)
+
+    options:
+      -h, --help            show this help message and exit
+      --name NAME, -n NAME  worker name, the value of the worker key of its nodes
+      --folder FOLDER, -f FOLDER
+                            base folder of the pipelines run by the worker
+      --data-address HOST:PORT, -D HOST:PORT
+                            address the other processes send messages for the nodes of the worker to (port 0: any free port)
+      --max-streams MAX_STREAMS
+                            incoming data streams served at once (default: 16)
       --log-level {NOTSET,DEBUG,INFO,WARNING,ERROR}, -l {NOTSET,DEBUG,INFO,WARNING,ERROR}
-                            set log level during pipeline execution
-      --log-format {simple,colored,full,compact,development,minimal,json}, -F {simple,colored,full,compact,development,minimal,json}
-                            log format
-      --log-file LOG_FILE, -L LOG_FILE
-                            log file destination
+                            log level of the worker and its nodes (default: INFO)
+
+A refused registration ends the worker with a non-zero code, except for a name
+still registered by a previous instance the host has not yet seen go: then the
+worker retries every 2 seconds for 30 seconds. When the host is lost the
+worker destroys its pipelines and exits with a non-zero code. The token and
+the messages travel in cleartext: run host and workers on a trusted network.
 
 Remote service
 --------------

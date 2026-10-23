@@ -17,6 +17,7 @@
    explain/nodes
    explain/messages
    explain/remote
+   explain/distributed
 
 .. toctree::
     :maxdepth: 2
