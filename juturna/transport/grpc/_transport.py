@@ -1,9 +1,11 @@
+from typing import ClassVar
+
 import grpc
 
 from juturna.transport.threads import ThreadingTransport
 
 from juturna.transport.grpc._destination import _GrpcDestination
-from juturna.transport.grpc._options import KEEPALIVE_OPTIONS
+from juturna.transport.grpc._options import CHANNEL_OPTIONS
 
 
 class GrpcTransport(ThreadingTransport):
@@ -14,6 +16,9 @@ class GrpcTransport(ThreadingTransport):
     another process streams to the `DataServer` at its address in ``peers``,
     one stream per destination node.
     """
+
+    # the nodes of other processes do not share this file system
+    capabilities: ClassVar[frozenset[str]] = frozenset()
 
     def __init__(
         self,
@@ -54,7 +59,7 @@ class GrpcTransport(ThreadingTransport):
 
             if address not in self._channels:
                 self._channels[address] = grpc.insecure_channel(
-                    address, options=KEEPALIVE_OPTIONS
+                    address, options=CHANNEL_OPTIONS
                 )
 
             self._destinations[node_name] = _GrpcDestination(

@@ -11,6 +11,8 @@ from juturna.remotizer.c_protos.payloads_pb2 import ProtoEnvelope
 from juturna.remotizer.utils import message_to_proto
 from juturna.utils.log_utils import jt_logger
 
+from juturna.transport.grpc import _options
+
 
 _END = object()
 
@@ -46,6 +48,9 @@ class _GrpcDestination:
         self._closing = False
         self._warned = False
         self._logger = jt_logger(f'grpc.{node_name}')
+        self._header_bytes = ProtoEnvelope(
+            pipe_id=pipe_id, receiver=node_name, sender=worker
+        ).ByteSize()
 
     def put(self, message: Message):
         """Queue a message for the remote node; never raises."""
@@ -53,7 +58,14 @@ class _GrpcDestination:
             return
 
         try:
-            proto = message_to_proto(message)
+            envelope = ProtoEnvelope(message=message_to_proto(message))
+            size = envelope.ByteSize() + self._header_bytes
+
+            # gRPC would fail the whole stream on it, not just this message
+            if size > _options.MAX_MESSAGE_BYTES:
+                raise ValueError(
+                    f'{size} bytes, more than {_options.MAX_MESSAGE_BYTES}'
+                )
         except Exception as exc:
             if not self._warned:
                 self._warned = True
@@ -64,7 +76,7 @@ class _GrpcDestination:
             return
 
         self._open()
-        self._enqueue(proto)
+        self._enqueue(envelope)
 
     def close(self):
         """Flush the stream and wait until the receiver has every message."""
@@ -115,14 +127,12 @@ class _GrpcDestination:
         # polled: gRPC's request thread must leave once the link is dead
         while not self._dead.is_set():
             try:
-                item = self._queue.get(timeout=0.1)
+                envelope = self._queue.get(timeout=0.1)
             except queue.Empty:
                 continue
 
-            if item is _END:
+            if envelope is _END:
                 return
-
-            envelope = ProtoEnvelope(message=item)
 
             if first:
                 first = False

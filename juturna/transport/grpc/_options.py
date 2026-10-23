@@ -5,9 +5,21 @@ KEEPALIVE_OPTIONS = [
     ('grpc.http2.max_pings_without_data', 0),
 ]
 
-SERVER_OPTIONS = KEEPALIVE_OPTIONS + [
-    ('grpc.http2.min_ping_interval_without_data_ms', 5000),
+# as in the remote service: gRPC's default 4 MB cap refuses an HD frame
+MAX_MESSAGE_BYTES = 100 * 1024 * 1024
+
+MESSAGE_SIZE_OPTIONS = [
+    ('grpc.max_send_message_length', MAX_MESSAGE_BYTES),
+    ('grpc.max_receive_message_length', MAX_MESSAGE_BYTES),
 ]
+
+CHANNEL_OPTIONS = KEEPALIVE_OPTIONS + MESSAGE_SIZE_OPTIONS
+
+SERVER_OPTIONS = (
+    KEEPALIVE_OPTIONS
+    + [('grpc.http2.min_ping_interval_without_data_ms', 5000)]
+    + MESSAGE_SIZE_OPTIONS
+)
 
 
 def check_address(address: str) -> tuple[str, int]:

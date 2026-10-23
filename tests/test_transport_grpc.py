@@ -311,6 +311,57 @@ def test_kill_releases_the_receiver_thread(
     assert served, 'the stream of the killed pipeline still holds the thread'
 
 
+def _direct_link(cluster, tmp_path):
+    """A started k on x, and a link to it from a bare transport."""
+    from juturna.transport.grpc import GrpcTransport
+
+    server = cluster.server()
+    pipes = cluster.build(_stream_config(tmp_path), server, start=False)
+    pipes['x'].start()
+    transport = GrpcTransport(
+        worker='other', pipe_id='grpc-1', peers={'k': server.address}
+    )
+
+    return pipes['x']._nodes['k'], transport.remote_destination('k')
+
+
+def test_large_message_arrives(tmp_path, cluster):
+    sink, destination = _direct_link(cluster, tmp_path)
+    payload = BytesPayload(cnt=b'\1' * 5_000_000)
+
+    destination.put(Message(creator='o', version=7, payload=payload))
+    destination.close()
+
+    assert sink.versions == [7], f'Expected [7] at k, got {sink.versions}'
+
+
+def test_oversize_message_is_dropped_and_the_link_lives(
+    tmp_path, cluster, jt_records, monkeypatch
+):
+    from juturna.transport.grpc import _options
+
+    monkeypatch.setattr(_options, 'MAX_MESSAGE_BYTES', 10_000)
+    sink, destination = _direct_link(cluster, tmp_path)
+
+    for version, size in ((1, 20_000), (2, 100), (3, 20_000), (4, 100)):
+        payload = BytesPayload(cnt=b'\1' * size)
+        destination.put(Message(creator='o', version=version, payload=payload))
+
+    destination.close()
+
+    assert sink.versions == [2, 4], f'Expected [2, 4] at k, got {sink.versions}'
+    dropped = [r for r in jt_records if 'cannot be sent' in r.getMessage()]
+    assert len(dropped) == 1, f'Expected 1 warning, got {len(dropped)}'
+
+
+def test_grpc_transport_does_not_share_the_file_system():
+    from juturna.transport.grpc import GrpcTransport
+
+    assert 'shared_fs' not in GrpcTransport.capabilities, (
+        f'Unexpected {GrpcTransport.capabilities}'
+    )
+
+
 def test_wildcard_data_address_is_refused():
     from juturna.transport.grpc import DataServer
 
