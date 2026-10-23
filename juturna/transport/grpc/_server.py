@@ -54,6 +54,7 @@ class DataServer:
 
         """
         self._address = address
+        self.address: str | None = None
         self._max_streams = max_streams
         self._pipes: dict[str, _Pipe] = dict()
         self._reserved = 0
@@ -87,8 +88,9 @@ class DataServer:
         add_MessagingServiceServicer_to_server(_Servicer(self), self._server)
         port = self._server.add_insecure_port(self._address)
         self._server.start()
+        self.address = f'[{host}]:{port}' if ':' in host else f'{host}:{port}'
 
-        return f'[{host}]:{port}' if ':' in host else f'{host}:{port}'
+        return self.address
 
     def stop(self, grace: float = 0):
         """Stop the server, releasing the handlers blocked on a node."""
