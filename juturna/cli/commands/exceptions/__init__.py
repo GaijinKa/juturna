@@ -10,6 +10,7 @@ from ._pipeline_exceptions import (
     PipelineStoppedError,
     PipelineDestroyedError,
     PipelineBusyError,
+    DistributionError,
 )
 
 from ._handlers_provider import (
@@ -28,6 +29,7 @@ __all__ = [
     'PipelineStoppedError',
     'PipelineDestroyedError',
     'PipelineBusyError',
+    'DistributionError',
     'register_pipeline_exception_handlers',
     'register_generic_exception_handler',
 ]

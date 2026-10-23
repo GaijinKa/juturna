@@ -12,9 +12,17 @@ token is generated and printed on startup. `--no-auth` turns the check off,
 for development or when another layer (a gateway, a service mesh) already
 authenticates the clients.
 
+With `--workers HOST:PORT` the service also accepts workers (`juturna worker`)
+on that address, and runs the nodes of a pipeline on the worker their `worker`
+key names. `--data-address` is then required: the other processes send
+messages for the nodes of the service there. Both need the `warp` dependency
+group.
+
 Serving the Juturna manager requires Juturna to be installed with the
 `httpwrapper` dependency group.
 """
+
+import sys
 
 from juturna.cli import _cli_utils
 from juturna.cli.commands._juturna_service import run
@@ -82,8 +90,33 @@ def setup_parser(subparsers):  # noqa: D103
         'service can reference with $JT_ENV_ (repeatable, none by default)',
     )
 
+    parser.add_argument(
+        '--workers',
+        '-w',
+        metavar='HOST:PORT',
+        help='accept workers on this address (needs the warp extra)',
+    )
+
+    parser.add_argument(
+        '--data-address',
+        '-D',
+        metavar='HOST:PORT',
+        help='address the other processes send messages for the nodes of the '
+        'service to, required with --workers (port 0: any free port)',
+    )
+
+    parser.add_argument(
+        '--max-streams',
+        type=int,
+        default=16,
+        help='incoming data streams served at once (default: 16)',
+    )
+
 
 def _execute(args):
+    if args.workers and not args.data_address:
+        sys.exit('serve: --data-address is required with --workers')
+
     run(
         args.host,
         args.port,
@@ -92,4 +125,7 @@ def _execute(args):
         args.dev,
         args.allow_env,
         args.auth,
+        args.workers,
+        args.data_address,
+        args.max_streams,
     )

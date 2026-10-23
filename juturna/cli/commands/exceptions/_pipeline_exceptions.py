@@ -16,6 +16,7 @@ from juturna.components.exceptions import (
     PipelineStoppedError,
     PipelineDestroyedError,
     PipelineBusyError,
+    DistributionError,
 )
 
 
@@ -67,4 +68,5 @@ __all__ = [
     'PipelineStoppedError',
     'PipelineDestroyedError',
     'PipelineBusyError',
+    'DistributionError',
 ]

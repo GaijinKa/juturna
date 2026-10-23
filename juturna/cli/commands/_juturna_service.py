@@ -197,6 +197,9 @@ def run(
     dev: bool,
     allow_env: list[str] | None = None,
     auth: bool = True,
+    workers: str | None = None,
+    data_address: str | None = None,
+    max_streams: int = 16,
 ):
     if log_config:
         with open(log_config) as f:
@@ -252,8 +255,36 @@ def run(
 
     logger.info(f'service address: {host}:{port}')
 
-    uvicorn.run(
-        'juturna.cli.commands._juturna_service:app',
-        host=host,
-        port=port,
-    )
+    servers = list()
+
+    try:
+        if workers:
+            # only here: without --workers, serve must not need grpc
+            from juturna.distributed import WorkerRegistry
+            from juturna.transport.grpc import DataServer
+
+            if not auth:
+                logger.warning(f'workers accepted on {workers} without a token')
+
+            registry = WorkerRegistry(app.state.token)
+            servers.append(registry)
+            logger.info(f'worker address: {registry.start(workers)}')
+
+            data_server = DataServer(data_address, max_streams)
+            servers.append(data_server)
+            logger.info(f'data address: {data_server.start()}')
+
+            PipelineManager.set_distribution(registry, data_server)
+
+        uvicorn.run(
+            'juturna.cli.commands._juturna_service:app',
+            host=host,
+            port=port,
+        )
+    finally:
+        # the lifespan cleanup has already destroyed the pipelines, through
+        # the workers still registered
+        for server in reversed(servers):
+            server.stop(0)
+
+        PipelineManager.set_distribution(None, None)

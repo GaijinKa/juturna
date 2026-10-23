@@ -12,6 +12,7 @@ from juturna.cli.commands.exceptions import (
     PipelineStoppedError,
     PipelineDestroyedError,
     PipelineBusyError,
+    DistributionError,
 )
 
 
@@ -80,6 +81,15 @@ def _pipeline_busy_handler(
     )
 
 
+def _distribution_handler(
+    request: Request, exception: DistributionError
+) -> JSONResponse:
+    return JSONResponse(
+        status_code=409,
+        content={'message': str(exception)},
+    )
+
+
 def _telemetry_not_enabled_handler(
     request: Request, exception: TelemetryNotEnabledException
 ) -> JSONResponse:
@@ -129,6 +139,7 @@ def register_pipeline_exception_handlers(app: FastAPI) -> None:
         - PipelineStoppedError
         - PipelineDestroyedError
         - PipelineBusyError
+        - DistributionError
         - TelemetryNotEnabledException
         - EnvVarNotAllowedException
 
@@ -153,6 +164,7 @@ def register_pipeline_exception_handlers(app: FastAPI) -> None:
         PipelineDestroyedError, _pipeline_destroyed_handler
     )
     app.add_exception_handler(PipelineBusyError, _pipeline_busy_handler)
+    app.add_exception_handler(DistributionError, _distribution_handler)
     app.add_exception_handler(
         TelemetryNotEnabledException, _telemetry_not_enabled_handler
     )

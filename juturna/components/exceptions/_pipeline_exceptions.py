@@ -69,3 +69,7 @@ class PipelineBusyError(PipelineStateError):
     DAG, node threads) until it completes, so a concurrent call cannot be
     safely evaluated against the pipeline's current status.
     """
+
+
+class DistributionError(RuntimeError):
+    """A pipeline cannot be placed on its workers."""

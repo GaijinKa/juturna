@@ -10,6 +10,7 @@ from juturna.components import layered_stop
 from juturna.components import pipeline_layers
 from juturna.components._pipeline import DEFAULT_WORKER
 from juturna.components._pipeline import _TRANSITION_RULES
+from juturna.components.exceptions import DistributionError
 from juturna.components.exceptions import PipelineBusyError
 from juturna.names import PipelineStatus
 from juturna.transport.grpc import DataServer
@@ -17,10 +18,6 @@ from juturna.utils.log_utils import jt_logger
 
 from juturna.distributed._registry import RemoteWorker
 from juturna.distributed._registry import WorkerRegistry
-
-
-class DistributionError(RuntimeError):
-    """A pipeline cannot be placed on its workers."""
 
 
 class RemoteParticipant:

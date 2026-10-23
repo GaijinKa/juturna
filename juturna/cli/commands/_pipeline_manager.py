@@ -1,3 +1,4 @@
+import os
 import uuid
 import gc
 import threading
@@ -6,6 +7,7 @@ import logging
 import pathlib
 
 from juturna.components import Pipeline
+from juturna.components._pipeline import DEFAULT_WORKER
 from juturna.names import PipelineStatus
 from juturna.meta import JUTURNA_ENV_VAR_PREFIX
 from juturna.utils import jt_utils
@@ -15,6 +17,7 @@ from juturna.cli.commands.exceptions import (
     InvalidPipelineIdException,
     TelemetryNotEnabledException,
     EnvVarNotAllowedException,
+    DistributionError,
 )
 
 
@@ -25,6 +28,7 @@ class PipelineManager:
     _instance = None
     _base_folder = None
     _allowed_env_vars = frozenset()
+    _distribution = None
     _lock = threading.Lock()
 
     def __new__(cls, *args, **kwargs):
@@ -58,14 +62,29 @@ class PipelineManager:
 
         return cls()
 
+    @classmethod
+    def set_distribution(cls, registry, data_server):
+        """
+        Let pipelines run nodes on workers: ``registry`` is the started
+        ``WorkerRegistry``, ``data_server`` the started host ``DataServer``.
+        ``None`` for both turns distribution off.
+        """
+        cls._distribution = (
+            None if registry is None else (registry, data_server)
+        )
+
+        return cls()
+
     @property
     def base_folder(self) -> str:
         return self.__class__._base_folder
 
-    def _check_env_vars(self, pipeline: dict):
+    def _check_env_vars(self, pipeline: dict) -> set[str]:
         # configurations come from service clients: they may only resolve the
         # environment variables the operator allowed, or they could route any
         # service secret into a node that sends it out
+        referenced = set()
+
         for node in pipeline.get('nodes') or list():
             configuration = node.get('configuration') or dict()
 
@@ -81,12 +100,29 @@ class PipelineManager:
                 if var_name not in self._allowed_env_vars:
                     raise EnvVarNotAllowedException(var_name, node.get('name'))
 
+                referenced.add(var_name)
+
+        return referenced
+
     def create_pipeline(
         self, pipeline_config: PipelineConfig
     ) -> CreatedPipelineDto:
         # the name becomes the pipeline folder under the base folder
         jt_utils.check_name(pipeline_config.pipeline.get('name'), 'pipeline')
-        self._check_env_vars(pipeline_config.pipeline)
+        referenced = self._check_env_vars(pipeline_config.pipeline)
+        workers = sorted(
+            {
+                node.get('worker', DEFAULT_WORKER)
+                for node in pipeline_config.pipeline['nodes']
+            }
+            - {DEFAULT_WORKER}
+        )
+
+        if workers and self._distribution is None:
+            raise DistributionError(
+                f'pipeline uses workers {", ".join(workers)}, start serve '
+                'with --workers'
+            )
 
         pipeline_id = str(uuid.uuid4())
 
@@ -98,7 +134,21 @@ class PipelineManager:
             )
         )
 
-        this_pipeline = Pipeline(pipeline_config.model_dump())
+        if workers:
+            from juturna.distributed import DistributedPipeline
+
+            # workers resolve $JT_ENV_ with the host values
+            this_pipeline = DistributedPipeline(
+                pipeline_config.model_dump(),
+                *self._distribution,
+                environ={
+                    name: os.environ[name]
+                    for name in referenced
+                    if name in os.environ
+                },
+            )
+        else:
+            this_pipeline = Pipeline(pipeline_config.model_dump())
 
         with self._registry_lock:
             self._pipelines[this_pipeline.pipe_id] = this_pipeline

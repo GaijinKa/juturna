@@ -15,9 +15,13 @@ the way it should be launched:
   pipeline
 """
 
+import json
+import sys
 import time
 
 import juturna as jt
+
+from juturna.components._pipeline import DEFAULT_WORKER
 
 from juturna.cli.commands import _common_pipe_parser
 
@@ -56,7 +60,27 @@ def setup_parser(subparsers):  # noqa: D103
 def _execute(args) -> int:
     jt.utils.log_utils.jt_logger().setLevel(args.log_level)
 
-    pipeline = jt.components.Pipeline.from_json(args.config)
+    with open(args.config) as f:
+        config = json.load(f)
+
+    workers = sorted(
+        {
+            node.get('worker', DEFAULT_WORKER)
+            for node in config['pipeline']['nodes']
+        }
+        - {DEFAULT_WORKER}
+    )
+
+    if workers:
+        print(
+            f'pipeline uses workers {", ".join(workers)}: run it with '
+            'juturna serve --workers',
+            file=sys.stderr,
+        )
+
+        return 1
+
+    pipeline = jt.components.Pipeline(config)
 
     pipeline.warmup()
 

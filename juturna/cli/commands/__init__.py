@@ -18,6 +18,7 @@ _MODULES = {
         'create',
         'stub',
         'remotize',
+        'worker',
     ]
 }
 
