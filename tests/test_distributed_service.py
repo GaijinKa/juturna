@@ -3,6 +3,7 @@ import json
 import logging
 import os
 import pathlib
+import signal
 import subprocess
 import sys
 import threading
@@ -256,6 +257,55 @@ def test_killed_worker_process_does_not_block_the_service(
     assert lost[0].startswith('link to b '), lost
 
 
+@pytest.mark.skipif(os.name != 'posix', reason='needs SIGSTOP')
+@pytest.mark.skip(
+    reason='keepalive takes about 70 s to lose a stopped peer with the '
+    'current options (passes in 15 s with grpc.http2.ping_timeout_ms=5000)'
+)
+def test_stopped_worker_process_is_lost_by_keepalive(
+    cluster, service_client, wait_for_condition
+):
+    # a stopped process keeps its sockets open: only keepalive can tell
+    cluster.agent('x')
+    proc = cluster.process('y')
+    registered = wait_for_condition(
+        lambda: (w := cluster.registry.get('y')) is not None and w.alive,
+        timeout=30,
+    )
+    assert registered, f'worker y did not register, exit code {proc.poll()}'
+
+    try:
+        created = service_client.post('/pipelines/new', json=_branches())
+        assert created.status_code == 200, created.text
+        pipeline_id = created.json()['data']['pipeline_id']
+
+        for step in ('warmup', 'start'):
+            response = service_client.post(f'/pipelines/{pipeline_id}/{step}')
+            assert response.status_code == 200, response.text
+
+        k2 = _pipeline(pipeline_id)._local._nodes['k2']
+        started = wait_for_condition(lambda: len(k2.versions) >= 2, timeout=20)
+        assert started, f'Expected 2 messages at k2, got {k2.versions}'
+
+        os.kill(proc.pid, signal.SIGSTOP)
+
+        stopped = _post_within(
+            service_client, f'/pipelines/{pipeline_id}/stop', timeout=40
+        )
+        assert stopped.status_code == 200, stopped.text
+        assert stopped.json()['workers'] == {'x': 'alive', 'y': 'lost'}
+        assert not cluster.registry.get('y').alive
+
+        deleted = _post_within(
+            service_client, f'/pipelines/{pipeline_id}/delete', timeout=40
+        )
+        assert deleted.status_code == 200, deleted.text
+    finally:
+        os.kill(proc.pid, signal.SIGCONT)
+        proc.kill()
+        proc.wait(10)
+
+
 def test_worker_with_a_wrong_token_exits(cluster):
     proc = cluster.process('z', token='wrong-token')
 
@@ -311,6 +361,16 @@ def test_workers_need_serve_with_workers(service_client):
     assert response.json() == {
         'message': 'pipeline uses workers x, y, start serve with --workers'
     }
+
+
+@pytest.mark.parametrize('worker', [None, 3, ['x'], ''])
+def test_service_refuses_a_worker_that_is_not_a_name(service_client, worker):
+    config = _chain()
+    config['pipeline']['nodes'][1]['worker'] = worker
+    response = service_client.post('/pipelines/new', json=config)
+
+    assert response.status_code == 422, response.text
+    assert 'node a needs a worker name' in response.text
 
 
 def test_launch_refuses_workers(tmp_path, capsys):

@@ -236,10 +236,64 @@ def test_closed_worker_does_not_block_stop_or_the_other_branch(
         and r.getMessage().startswith('link to')
         and 'lost' in r.getMessage()
     ]
-    print(lost)
     # the only link broken under a live sender is s -> b
     assert len(lost) == 1, lost
     assert lost[0].startswith('link to b '), lost
+
+
+def test_worker_lost_while_another_worker_writes_to_it(
+    tmp_path, wait_for_condition, cluster, jt_records
+):
+    cluster.agent('x')
+    agent_y = cluster.agent('y')
+    config = _config(
+        tmp_path,
+        [
+            _node('s', 'DataStreamer', 'main', rate=20),
+            _node('a', 'PassthroughIdentity', 'x', delay=0.0),
+            _node('b', 'PassthroughIdentity', 'y', delay=0.05),
+            _node('k1', 'Dumper', 'main'),
+            _node('k2', 'Dumper', 'main'),
+        ],
+        [('s', 'a'), ('s', 'b'), ('a', 'b'), ('a', 'k1'), ('b', 'k2')],
+    )
+    pipe = cluster.pipeline(config)
+    pipe.warmup()
+    pipe.start()
+    k1 = pipe._local._nodes['k1']
+    k2 = pipe._local._nodes['k2']
+
+    started = wait_for_condition(lambda: len(k2.versions) >= 4, timeout=20)
+    assert started, f'Expected 4 messages at k2, got {k2.versions}'
+
+    agent_y.close()
+    after_close = len(k1.versions)
+    grows = wait_for_condition(
+        lambda: len(k1.versions) >= after_close + 10, timeout=20
+    )
+    assert grows, f'k1 stuck at {len(k1.versions)} after the close'
+
+    for step in (pipe.stop, pipe.destroy):
+        thread = threading.Thread(target=step, daemon=True)
+        thread.start()
+        thread.join(timeout=30)
+        assert not thread.is_alive(), f'{step.__name__} blocked'
+
+    assert pipe.status['self'] == PipelineStatus.DESTROYED
+
+    sent = _sent_count(config['pipeline']['folder'])
+    assert k1.versions == list(range(sent)), k1.versions
+
+    lost = [
+        r.getMessage()
+        for r in jt_records
+        if r.levelno == logging.WARNING
+        and r.getMessage().startswith('link to')
+        and 'lost' in r.getMessage()
+    ]
+    # two links broken under a live sender: s (main) -> b and a (x) -> b
+    assert len(lost) == 2, lost
+    assert all(m.startswith('link to b ') for m in lost), lost
 
 
 def test_unregistered_worker_fails_warmup(tmp_path, cluster):
