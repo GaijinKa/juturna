@@ -3,6 +3,8 @@ KEEPALIVE_OPTIONS = [
     ('grpc.keepalive_timeout_ms', 5000),
     ('grpc.keepalive_permit_without_calls', 1),
     ('grpc.http2.max_pings_without_data', 0),
+    # without it a hung peer is lost after gRPC's 60 s ping timeout
+    ('grpc.http2.ping_timeout_ms', 5000),
 ]
 
 # as in the remote service: gRPC's default 4 MB cap refuses an HD frame

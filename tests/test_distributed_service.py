@@ -258,10 +258,6 @@ def test_killed_worker_process_does_not_block_the_service(
 
 
 @pytest.mark.skipif(os.name != 'posix', reason='needs SIGSTOP')
-@pytest.mark.skip(
-    reason='keepalive takes about 70 s to lose a stopped peer with the '
-    'current options (passes in 15 s with grpc.http2.ping_timeout_ms=5000)'
-)
 def test_stopped_worker_process_is_lost_by_keepalive(
     cluster, service_client, wait_for_condition
 ):

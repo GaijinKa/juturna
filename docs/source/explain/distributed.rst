@@ -186,7 +186,7 @@ Failures
 
 - A worker that is not registered at warmup: the pipeline does not start.
 - A worker that dies (lost connection, detected by the gRPC keepalive on the
-  data and control channels): one warning per broken link, the messages for it
+  data and control channels, within about 15 seconds): one warning per broken link, the messages for it
   are dropped, the nodes writing to it are released, and the rest of the
   pipeline keeps running. ``stop`` and ``delete`` skip it and return.
 - "Lost" means disconnected, not slow. A ``stop`` held by a live but slow
