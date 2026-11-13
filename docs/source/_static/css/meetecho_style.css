@@ -161,7 +161,34 @@ table.docutils tr:last-child td {
     border-bottom: 0;
 }
 
-/* admonitions, as .note */
+/* admonitions, as .note: Furo's own title variables carry the status ink */
+body {
+    --color-admonition-title: var(--jt-accent-strong);
+    --color-admonition-title--note: var(--jt-accent-strong);
+    --color-admonition-title--seealso: var(--jt-accent-strong);
+    --color-admonition-title--admonition-todo: var(--jt-accent-strong);
+    --color-admonition-title--caution: var(--jt-warn-ink);
+    --color-admonition-title--warning: var(--jt-warn-ink);
+    --color-admonition-title--tip: var(--jt-ok-ink);
+    --color-admonition-title--hint: var(--jt-ok-ink);
+    --color-admonition-title--important: var(--jt-ok-ink);
+    --color-admonition-title--danger: var(--jt-error-ink);
+    --color-admonition-title--error: var(--jt-error-ink);
+    --color-admonition-title--attention: var(--jt-error-ink);
+    --color-admonition-title-background: transparent;
+    --color-admonition-title-background--note: transparent;
+    --color-admonition-title-background--seealso: transparent;
+    --color-admonition-title-background--admonition-todo: transparent;
+    --color-admonition-title-background--caution: transparent;
+    --color-admonition-title-background--warning: transparent;
+    --color-admonition-title-background--tip: transparent;
+    --color-admonition-title-background--hint: transparent;
+    --color-admonition-title-background--important: transparent;
+    --color-admonition-title-background--danger: transparent;
+    --color-admonition-title-background--error: transparent;
+    --color-admonition-title-background--attention: transparent;
+}
+
 .admonition {
     --jt-note-bg: var(--jt-accent-soft);
     --jt-note-ink: var(--jt-accent-strong);
@@ -191,14 +218,9 @@ table.docutils tr:last-child td {
     --jt-note-ink: var(--jt-error-ink);
 }
 
-.admonition > .admonition-title {
-    background: transparent;
+.content .admonition > .admonition-title {
     color: var(--jt-note-ink);
     font-weight: 700;
-}
-
-.admonition > .admonition-title::before {
-    background-color: var(--jt-note-ink);
 }
 
 /* cards on the home page */
