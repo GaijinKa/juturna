@@ -1,22 +1,22 @@
-<svg viewBox="0 0 960 250" role="img" aria-label="What update() does with each image: if there is no cat, or no cat is orange enough, it sends nothing; otherwise it transmits the image annotated with the orange cats.">
+<svg viewBox="0 0 700 250" role="img" aria-label="What update() does with each image: if there is no cat, or no cat is orange enough, it sends nothing; otherwise it transmits the image annotated with the orange cats.">
 <defs><marker id="tutorial_create_node_flow_diagram-ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="ah" d="M0 0 L10 5 L0 10 z"/></marker><marker id="tutorial_create_node_flow_diagram-aha" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path class="ah acc" d="M0 0 L10 5 L0 10 z"/></marker></defs>
-<rect class="bx" x="10" y="40" width="170" height="60" rx="12"/>
-<text class="t" x="95.0" y="75.0" text-anchor="middle">receive an image</text>
-<rect class="bx" x="230" y="40" width="170" height="60" rx="12"/>
-<text class="t" x="315.0" y="75.0" text-anchor="middle">any cats?</text>
-<rect class="bx" x="450" y="40" width="210" height="60" rx="12"/>
-<text class="t" x="555.0" y="75.0" text-anchor="middle">any orange enough?</text>
-<rect class="bx core" x="710" y="40" width="240" height="60" rx="12"/>
-<text class="t" x="830.0" y="75.0" text-anchor="middle">transmit the annotated image</text>
-<path class="ln" d="M180 70 H 226" marker-end="url(#tutorial_create_node_flow_diagram-ah)"/>
-<path class="ln acc" d="M400 70 H 446" marker-end="url(#tutorial_create_node_flow_diagram-aha)"/>
-<text class="t s" x="423" y="60" text-anchor="middle">yes</text>
-<path class="ln acc" d="M660 70 H 706" marker-end="url(#tutorial_create_node_flow_diagram-aha)"/>
-<text class="t s" x="683" y="60" text-anchor="middle">yes</text>
-<rect class="bx" x="330" y="170" width="200" height="56" rx="12"/>
-<text class="t" x="430.0" y="203.0" text-anchor="middle">send nothing</text>
-<path class="ln" d="M315 100 V 198 H 326" marker-end="url(#tutorial_create_node_flow_diagram-ah)"/>
-<path class="ln" d="M555 100 V 198 H 534" marker-end="url(#tutorial_create_node_flow_diagram-ah)"/>
-<text class="t s" x="300" y="150" text-anchor="end">no</text>
-<text class="t s" x="570" y="150" text-anchor="start">no</text>
+<rect class="bx" x="4" y="40" width="140" height="60" rx="12"/>
+<text class="t" x="74.0" y="75.0" text-anchor="middle">receive an image</text>
+<rect class="bx" x="188" y="40" width="110" height="60" rx="12"/>
+<text class="t" x="243.0" y="75.0" text-anchor="middle">any cats?</text>
+<rect class="bx" x="342" y="40" width="176" height="60" rx="12"/>
+<text class="t" x="430.0" y="75.0" text-anchor="middle">any orange enough?</text>
+<rect class="bx core" x="558" y="40" width="138" height="60" rx="12"/>
+<text class="t m" x="627.0" y="67.0" text-anchor="middle">transmit()</text><text class="t s " x="627.0" y="87.0" text-anchor="middle">the annotated image</text>
+<path class="ln" d="M144 70 H 184" marker-end="url(#tutorial_create_node_flow_diagram-ah)"/>
+<path class="ln acc" d="M298 70 H 338" marker-end="url(#tutorial_create_node_flow_diagram-aha)"/>
+<text class="t s" x="320" y="60" text-anchor="middle">yes</text>
+<path class="ln acc" d="M518 70 H 554" marker-end="url(#tutorial_create_node_flow_diagram-aha)"/>
+<text class="t s" x="536" y="60" text-anchor="middle">yes</text>
+<rect class="bx" x="252" y="170" width="160" height="56" rx="12"/>
+<text class="t" x="332.0" y="203.0" text-anchor="middle">send nothing</text>
+<path class="ln" d="M243 100 V 198 H 248" marker-end="url(#tutorial_create_node_flow_diagram-ah)"/>
+<path class="ln" d="M430 100 V 198 H 416" marker-end="url(#tutorial_create_node_flow_diagram-ah)"/>
+<text class="t s" x="233" y="150" text-anchor="end">no</text>
+<text class="t s" x="440" y="150" text-anchor="start">no</text>
 </svg>

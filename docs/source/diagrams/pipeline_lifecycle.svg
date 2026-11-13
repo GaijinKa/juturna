@@ -1,29 +1,29 @@
-<svg viewBox="0 0 960 300" role="img" aria-label="States NEW, READY, RUNNING, STOPPED, DESTROYED joined by warmup, start, stop or kill, destroy. A failed warmup returns to NEW; a failed start returns to READY. destroy also leads from NEW, READY and RUNNING to DESTROYED.">
+<svg viewBox="0 0 700 290" role="img" aria-label="States NEW, READY, RUNNING, STOPPED, DESTROYED joined by warmup, start, stop or kill, destroy. A failed warmup returns to NEW; a failed start returns to READY. destroy also leads from NEW, READY and RUNNING to DESTROYED.">
 <defs><marker id="pipeline_lifecycle-ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="ah" d="M0 0 L10 5 L0 10 z"/></marker><marker id="pipeline_lifecycle-aha" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path class="ah acc" d="M0 0 L10 5 L0 10 z"/></marker></defs>
-<path class="ln dash" d="M60 110 C 60 50, 130 50, 130 104" marker-end="url(#pipeline_lifecycle-ah)"/>
-<text class="t s" x="95" y="42" text-anchor="middle">warmup fails: rollback</text>
-<path class="ln dash" d="M255 110 C 255 50, 325 50, 325 104" marker-end="url(#pipeline_lifecycle-ah)"/>
-<text class="t s" x="290" y="42" text-anchor="middle">start fails: rollback</text>
-<rect class="bx" x="20" y="110" width="150" height="60" rx="12"/>
-<text class="t m" x="95.0" y="145.0" text-anchor="middle">NEW</text>
-<rect class="bx" x="215" y="110" width="150" height="60" rx="12"/>
-<text class="t m" x="290.0" y="145.0" text-anchor="middle">READY</text>
-<rect class="bx" x="410" y="110" width="150" height="60" rx="12"/>
-<text class="t m" x="485.0" y="145.0" text-anchor="middle">RUNNING</text>
-<rect class="bx final" x="605" y="110" width="150" height="60" rx="12"/>
-<text class="t m" x="680.0" y="137.0" text-anchor="middle">STOPPED</text><text class="t s acc" x="680.0" y="157.0" text-anchor="middle">final</text>
-<rect class="bx" x="800" y="110" width="150" height="60" rx="12"/>
-<text class="t m" x="875.0" y="145.0" text-anchor="middle">DESTROYED</text>
-<path class="ln" d="M170 140 H 211" marker-end="url(#pipeline_lifecycle-ah)"/>
-<text class="t s" x="192" y="130" text-anchor="middle">warmup()</text>
-<path class="ln" d="M365 140 H 406" marker-end="url(#pipeline_lifecycle-ah)"/>
-<text class="t s" x="386" y="130" text-anchor="middle">start()</text>
-<path class="ln acc" d="M560 140 H 601" marker-end="url(#pipeline_lifecycle-aha)"/>
-<text class="t s" x="582" y="102" text-anchor="middle">stop(), kill()</text>
-<path class="ln" d="M755 140 H 796" marker-end="url(#pipeline_lifecycle-ah)"/>
-<text class="t s" x="776" y="130" text-anchor="middle">destroy()</text>
-<path class="ln dash" d="M95 170 V 230 H 875 V 174" marker-end="url(#pipeline_lifecycle-ah)"/>
-<path class="ln dash" d="M290 170 V 230"/>
-<path class="ln dash" d="M485 170 V 230"/>
-<text class="t s" x="485" y="256" text-anchor="middle">destroy() works from every state; on DESTROYED it does nothing</text>
+<path class="ln dash" d="M35 110 C 35 50, 81 50, 81 104" marker-end="url(#pipeline_lifecycle-ah)"/>
+<text class="t s" x="10" y="40" text-anchor="start">warmup fails: rollback</text>
+<path class="ln dash" d="M181 110 C 181 50, 227 50, 227 104" marker-end="url(#pipeline_lifecycle-ah)"/>
+<text class="t s" x="160" y="40" text-anchor="start">start fails: rollback</text>
+<rect class="bx" x="10" y="110" width="96" height="60" rx="12"/>
+<text class="t m" x="58.0" y="145.0" text-anchor="middle">NEW</text>
+<rect class="bx" x="156" y="110" width="96" height="60" rx="12"/>
+<text class="t m" x="204.0" y="145.0" text-anchor="middle">READY</text>
+<rect class="bx" x="302" y="110" width="96" height="60" rx="12"/>
+<text class="t m" x="350.0" y="145.0" text-anchor="middle">RUNNING</text>
+<rect class="bx final" x="448" y="110" width="96" height="60" rx="12"/>
+<text class="t m" x="496.0" y="137.0" text-anchor="middle">STOPPED</text><text class="t s acc" x="496.0" y="157.0" text-anchor="middle">final</text>
+<rect class="bx" x="594" y="110" width="96" height="60" rx="12"/>
+<text class="t m" x="642.0" y="145.0" text-anchor="middle">DESTROYED</text>
+<path class="ln" d="M106 140 H 152" marker-end="url(#pipeline_lifecycle-ah)"/>
+<text class="t s" x="131" y="100" text-anchor="middle">warmup()</text>
+<path class="ln" d="M252 140 H 298" marker-end="url(#pipeline_lifecycle-ah)"/>
+<text class="t s" x="277" y="100" text-anchor="middle">start()</text>
+<path class="ln acc" d="M398 140 H 444" marker-end="url(#pipeline_lifecycle-aha)"/>
+<text class="t s" x="423" y="100" text-anchor="middle">stop(), kill()</text>
+<path class="ln" d="M544 140 H 590" marker-end="url(#pipeline_lifecycle-ah)"/>
+<text class="t s" x="569" y="100" text-anchor="middle">destroy()</text>
+<path class="ln dash" d="M58 170 V 230 H 642 V 174" marker-end="url(#pipeline_lifecycle-ah)"/>
+<path class="ln dash" d="M204 170 V 230"/>
+<path class="ln dash" d="M350 170 V 230"/>
+<text class="t s" x="350" y="256" text-anchor="middle">destroy() works from every state; on DESTROYED it does nothing</text>
 </svg>

@@ -1,30 +1,30 @@
-<svg viewBox="0 0 960 260" role="img" aria-label="Two external sources feed two source nodes of the same pipeline. The audio source feeds stt, which feeds translate and subtitles; the video source feeds subtitles. translate and subtitles each end at a destination.">
+<svg viewBox="0 0 700 260" role="img" aria-label="Two external sources feed two source nodes of the same pipeline. The audio source feeds stt, which feeds translate and subtitles; the video source feeds subtitles. translate and subtitles each end at a destination.">
 <defs><marker id="pipeline_multisource-ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="ah" d="M0 0 L10 5 L0 10 z"/></marker><marker id="pipeline_multisource-aha" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path class="ah acc" d="M0 0 L10 5 L0 10 z"/></marker></defs>
-<rect class="bx grp" x="160" y="20" width="640" height="230" rx="14"/><text class="t lab" x="176" y="44">PIPELINE</text>
-<rect class="bx" x="10" y="70" width="130" height="56" rx="12"/>
-<text class="t" x="75.0" y="103.0" text-anchor="middle">external source</text>
-<rect class="bx core" x="180" y="70" width="150" height="56" rx="12"/>
-<text class="t" x="255.0" y="103.0" text-anchor="middle">audio source</text>
-<path class="ln acc" d="M140 98.0 H 176" marker-end="url(#pipeline_multisource-aha)"/>
-<path class="ln" d="M330 98.0 H 366" marker-end="url(#pipeline_multisource-ah)"/>
-<rect class="bx" x="820" y="70" width="130" height="56" rx="12"/>
-<text class="t" x="885.0" y="103.0" text-anchor="middle">destination</text>
-<rect class="bx" x="10" y="170" width="130" height="56" rx="12"/>
-<text class="t" x="75.0" y="203.0" text-anchor="middle">external source</text>
-<rect class="bx core" x="180" y="170" width="150" height="56" rx="12"/>
-<text class="t" x="255.0" y="203.0" text-anchor="middle">video source</text>
-<path class="ln acc" d="M140 198.0 H 176" marker-end="url(#pipeline_multisource-aha)"/>
-<path class="ln" d="M330 198.0 H 366" marker-end="url(#pipeline_multisource-ah)"/>
-<rect class="bx" x="820" y="170" width="130" height="56" rx="12"/>
-<text class="t" x="885.0" y="203.0" text-anchor="middle">destination</text>
-<rect class="bx" x="370" y="70" width="140" height="56" rx="12"/>
-<text class="t m" x="440.0" y="103.0" text-anchor="middle">stt</text>
-<rect class="bx" x="560" y="70" width="140" height="56" rx="12"/>
-<text class="t m" x="630.0" y="103.0" text-anchor="middle">translate</text>
-<rect class="bx" x="370" y="170" width="140" height="56" rx="12"/>
-<text class="t m" x="440.0" y="203.0" text-anchor="middle">subtitles</text>
-<path class="ln" d="M510 98.0 H 556" marker-end="url(#pipeline_multisource-ah)"/>
-<path class="ln" d="M700 98.0 H 816" marker-end="url(#pipeline_multisource-ah)"/>
-<path class="ln" d="M440 126 V 166" marker-end="url(#pipeline_multisource-ah)"/>
-<path class="ln" d="M510 198.0 H 816" marker-end="url(#pipeline_multisource-ah)"/>
+<rect class="bx grp" x="144" y="20" width="442" height="230" rx="14"/><text class="t lab" x="160" y="44">PIPELINE</text>
+<rect class="bx" x="2" y="70" width="132" height="56" rx="12"/>
+<text class="t" x="68.0" y="103.0" text-anchor="middle">external source</text>
+<rect class="bx core" x="160" y="70" width="116" height="56" rx="12"/>
+<text class="t" x="218.0" y="103.0" text-anchor="middle">audio source</text>
+<path class="ln acc" d="M134 98.0 H 156" marker-end="url(#pipeline_multisource-aha)"/>
+<path class="ln" d="M276 98.0 H 310" marker-end="url(#pipeline_multisource-ah)"/>
+<rect class="bx" x="600" y="70" width="96" height="56" rx="12"/>
+<text class="t" x="648.0" y="103.0" text-anchor="middle">destination</text>
+<rect class="bx" x="2" y="170" width="132" height="56" rx="12"/>
+<text class="t" x="68.0" y="203.0" text-anchor="middle">external source</text>
+<rect class="bx core" x="160" y="170" width="116" height="56" rx="12"/>
+<text class="t" x="218.0" y="203.0" text-anchor="middle">video source</text>
+<path class="ln acc" d="M134 198.0 H 156" marker-end="url(#pipeline_multisource-aha)"/>
+<path class="ln" d="M276 198.0 H 310" marker-end="url(#pipeline_multisource-ah)"/>
+<rect class="bx" x="600" y="170" width="96" height="56" rx="12"/>
+<text class="t" x="648.0" y="203.0" text-anchor="middle">destination</text>
+<rect class="bx" x="314" y="70" width="110" height="56" rx="12"/>
+<text class="t m" x="369.0" y="103.0" text-anchor="middle">stt</text>
+<rect class="bx" x="460" y="70" width="110" height="56" rx="12"/>
+<text class="t m" x="515.0" y="103.0" text-anchor="middle">translate</text>
+<rect class="bx" x="314" y="170" width="110" height="56" rx="12"/>
+<text class="t m" x="369.0" y="203.0" text-anchor="middle">subtitles</text>
+<path class="ln" d="M424 98.0 H 456" marker-end="url(#pipeline_multisource-ah)"/>
+<path class="ln" d="M570 98.0 H 596" marker-end="url(#pipeline_multisource-ah)"/>
+<path class="ln" d="M369 126 V 166" marker-end="url(#pipeline_multisource-ah)"/>
+<path class="ln" d="M424 198.0 H 596" marker-end="url(#pipeline_multisource-ah)"/>
 </svg>
