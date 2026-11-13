@@ -53,10 +53,12 @@ publish/subscribe broker for its input and output queues. Similarly to the warp
 node, the remote service manages the marshalling and unmarshalling of the data
 received from the local pipe.
 
-.. image:: ../_static/img/remote_structure.svg
-   :alt: remote juturna
-   :width: 80%
-   :align: center
+.. container:: jt-figure
+
+   .. raw:: html
+      :file: ../diagrams/remote_structure.svg
+
+   **Figure 1.** A warped node. The warp node stands in the local pipeline and sends each message to the remote service, which runs the concrete node; with ``sticky`` the service keeps the node state.
 
 State and replicas
 ------------------

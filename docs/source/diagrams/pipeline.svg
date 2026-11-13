@@ -1,0 +1,37 @@
+<svg viewBox="0 0 960 320" role="img" aria-label="An external source feeds the source node of the pipeline. Data flows through processing nodes along three branches: the second branch starts from the source node, one node of the first branch also feeds the second, and each branch ends at a destination outside the pipeline.">
+<defs><marker id="pipeline-ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="ah" d="M0 0 L10 5 L0 10 z"/></marker><marker id="pipeline-aha" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path class="ah acc" d="M0 0 L10 5 L0 10 z"/></marker></defs>
+<rect class="bx grp" x="160" y="30" width="510" height="280" rx="14"/><text class="t lab" x="176" y="54">PIPELINE</text>
+<rect class="bx" x="10" y="80" width="130" height="56" rx="12"/>
+<text class="t" x="75.0" y="113.0" text-anchor="middle">external source</text>
+<rect class="bx core" x="180" y="80" width="130" height="56" rx="12"/>
+<text class="t" x="245.0" y="113.0" text-anchor="middle">source node</text>
+<rect class="bx" x="350" y="80" width="130" height="56" rx="12"/>
+<text class="t" x="415.0" y="113.0" text-anchor="middle">node</text>
+<rect class="bx" x="520" y="80" width="130" height="56" rx="12"/>
+<text class="t" x="585.0" y="113.0" text-anchor="middle">node</text>
+<rect class="bx" x="180" y="160" width="130" height="56" rx="12"/>
+<text class="t" x="245.0" y="193.0" text-anchor="middle">node</text>
+<rect class="bx" x="350" y="160" width="130" height="56" rx="12"/>
+<text class="t" x="415.0" y="193.0" text-anchor="middle">node</text>
+<rect class="bx" x="520" y="160" width="130" height="56" rx="12"/>
+<text class="t" x="585.0" y="193.0" text-anchor="middle">node</text>
+<rect class="bx" x="350" y="240" width="130" height="56" rx="12"/>
+<text class="t" x="415.0" y="273.0" text-anchor="middle">node</text>
+<rect class="bx" x="820" y="80" width="130" height="56" rx="12"/>
+<text class="t" x="885.0" y="113.0" text-anchor="middle">destination</text>
+<rect class="bx" x="820" y="160" width="130" height="56" rx="12"/>
+<text class="t" x="885.0" y="193.0" text-anchor="middle">destination</text>
+<rect class="bx" x="820" y="240" width="130" height="56" rx="12"/>
+<text class="t" x="885.0" y="273.0" text-anchor="middle">destination</text>
+<path class="ln acc" d="M140 108.0 H 176" marker-end="url(#pipeline-aha)"/>
+<path class="ln" d="M310 108.0 H 346" marker-end="url(#pipeline-ah)"/>
+<path class="ln" d="M480 108.0 H 516" marker-end="url(#pipeline-ah)"/>
+<path class="ln" d="M650 108.0 H 816" marker-end="url(#pipeline-ah)"/>
+<path class="ln" d="M245.0 136 V 156" marker-end="url(#pipeline-ah)"/>
+<path class="ln" d="M310 188.0 H 346" marker-end="url(#pipeline-ah)"/>
+<path class="ln" d="M480 188.0 H 516" marker-end="url(#pipeline-ah)"/>
+<path class="ln" d="M650 188.0 H 816" marker-end="url(#pipeline-ah)"/>
+<path class="ln" d="M415.0 136 C 415.0 150, 550 142, 550 156" marker-end="url(#pipeline-ah)"/>
+<path class="ln" d="M245.0 216 C 245.0 268.0, 245.0 268.0, 346 268.0" marker-end="url(#pipeline-ah)"/>
+<path class="ln" d="M480 268.0 H 816" marker-end="url(#pipeline-ah)"/>
+</svg>

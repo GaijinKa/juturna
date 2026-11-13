@@ -69,10 +69,12 @@ Every node runs up to two independent threads, each with a singular
 responsibility. This separation of concerns is the key to the framework's
 responsiveness and fault isolation.
 
-.. image:: ../_static/img/node.svg
-   :alt: node
-   :width: 100%
-   :align: center
+.. container:: jt-figure
+
+   .. raw:: html
+      :file: ../diagrams/node.svg
+
+   **Figure 1.** Inside a node. ``put()`` fills the inbound queue, ``_worker()`` hands one message at a time to ``update()``, which keeps what it needs in the state. Only source nodes run ``_source()`` (dashed).
 
 The ``_worker`` thread is the node's processing engine. It runs in every node,
 and blocks on the node's inbound queue, waiting for incoming messages from

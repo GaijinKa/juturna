@@ -174,10 +174,12 @@ The work happens in ``update()``, called once for every message received:
 - keep the cats that are orange enough;
 - transmit an annotated image when at least one is found.
 
-.. image:: ../_static/img/tutorial_create_node_flow_diagram.svg
-   :alt: node flow
-   :width: 100%
-   :align: center
+.. container:: jt-figure
+
+   .. raw:: html
+      :file: ../diagrams/tutorial_create_node_flow_diagram.svg
+
+   **Figure 1.** What ``update()`` does with each image: it transmits only when at least one cat is orange enough.
 
 .. code-block:: python
 

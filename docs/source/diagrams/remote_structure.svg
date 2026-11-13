@@ -1,0 +1,23 @@
+<svg viewBox="0 0 960 330" role="img" aria-label="A warped node. In the local pipeline the warp node takes the place of the node: it turns each message into a ProtoEnvelope and sends it with SendAndReceive() over gRPC to the remote service, which runs the concrete node and sends back its result. With sticky the service keeps the node state.">
+<defs><marker id="remote_structure-ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="ah" d="M0 0 L10 5 L0 10 z"/></marker><marker id="remote_structure-aha" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path class="ah acc" d="M0 0 L10 5 L0 10 z"/></marker></defs>
+<rect class="bx grp" x="10" y="10" width="940" height="130" rx="14"/><text class="t lab" x="26" y="34">PIPELINE (LOCAL PROCESS)</text>
+<rect class="bx" x="40" y="56" width="160" height="60" rx="12"/>
+<text class="t" x="120.0" y="91.0" text-anchor="middle">upstream node</text>
+<rect class="bx core" x="370" y="50" width="220" height="72" rx="12"/>
+<text class="t" x="480.0" y="83.0" text-anchor="middle">warp node</text><text class="t s " x="480.0" y="103.0" text-anchor="middle">message → ProtoEnvelope</text>
+<rect class="bx" x="760" y="56" width="160" height="60" rx="12"/>
+<text class="t" x="840.0" y="91.0" text-anchor="middle">downstream node</text>
+<path class="ln" d="M200 86 H 366" marker-end="url(#remote_structure-ah)"/>
+<path class="ln" d="M590 86 H 756" marker-end="url(#remote_structure-ah)"/>
+<rect class="bx grp" x="230" y="190" width="500" height="130" rx="14"/><text class="t lab" x="246" y="214">REMOTE SERVICE (JUTURNA REMOTIZE)</text>
+<rect class="bx" x="260" y="232" width="220" height="64" rx="12"/>
+<text class="t m" x="370.0" y="261.0" text-anchor="middle">MessagingService</text><text class="t s " x="370.0" y="281.0" text-anchor="middle">keeps the state if sticky</text>
+<rect class="bx" x="540" y="236" width="160" height="56" rx="12"/>
+<text class="t" x="620.0" y="269.0" text-anchor="middle">concrete node</text>
+<path class="ln" d="M480 264 H 536" marker-start="url(#remote_structure-ah)" marker-end="url(#remote_structure-ah)"/>
+<path class="ln acc" d="M420 122 V 228" marker-end="url(#remote_structure-aha)"/>
+<path class="ln acc" d="M460 228 V 126" marker-end="url(#remote_structure-aha)"/>
+<text class="t s acc" x="410" y="168" text-anchor="end">SendAndReceive()</text>
+<text class="t s" x="410" y="186" text-anchor="end">over gRPC</text>
+<text class="t s" x="470" y="168" text-anchor="start">result</text>
+</svg>
