@@ -119,8 +119,6 @@ execute and manipulate real-time pipelines in minutes!
             .. card::
                 :text-align: center
 
-                :fas:`meetecho`
-
                 Juturna is brewed with love by the awesome team of
                 `Meetecho <https://www.meetecho.com/en/>`_. Come and say hi!
 

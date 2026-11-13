@@ -1,3 +1,8 @@
+import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).parent / '_ext'))
+
 project = 'juturna'
 copyright = '2025, Meetecho'
 author = 'Antonio Bevilacqua'
@@ -26,33 +31,94 @@ new_tab_link_show_external_link_icon = True
 html_theme = 'furo'
 html_title = 'Juturna'
 html_short_title = 'Juturna docs'
-html_favicon = '_static/img/logo_dark.svg'
+html_favicon = '_static/img/juturna_favicon.png'
 
 show_authors = True
 html_show_copyright = True
 
-pygments_style = 'solarized-light'
-pygments_dark_style = 'nord-darker'
+pygments_style = 'meetecho_pygments.MeetechoStyle'
+pygments_dark_style = 'meetecho_pygments.MeetechoDarkStyle'
 
 html_static_path = ['_static']
 
-html_css_files = ['css/meetecho_style.css', 'css/fa-6.7.2.all.min.css']
+html_css_files = ['css/meetecho_style.css']
 
-html_js_files = ['js/fa-6.7.2.all.min.js', 'js/meetecho-icon.js']
+# colours and fonts from the Meetecho design system tokens
+_font_stack = (
+    'system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", '
+    'Arial, sans-serif'
+)
+_font_stack_mono = 'ui-monospace, SFMono-Regular, Menlo, Consolas, monospace'
+
+_light_css_variables = {
+    'font-stack': _font_stack,
+    'font-stack--monospace': _font_stack_mono,
+    'font-stack--headings': _font_stack,
+    'color-foreground-primary': '#0f1d26',
+    'color-foreground-secondary': '#4b5d6b',
+    'color-foreground-muted': '#4b5d6b',
+    'color-foreground-border': '#7d8f9d',
+    'color-background-primary': '#ffffff',
+    'color-background-secondary': '#f5f8fb',
+    'color-background-hover': '#eef6fd',
+    'color-background-hover--transparent': '#eef6fd00',
+    'color-background-border': '#e2e9ef',
+    'color-background-item': '#cdd8e1',
+    'color-brand-primary': '#1a6dad',
+    'color-brand-content': '#1a6dad',
+    'color-brand-visited': '#1a6dad',
+    'color-highlighted-background': '#eef6fd',
+    'color-highlight-on-target': '#fdf3e0',
+    'color-sidebar-link-text--top-level': '#4b5d6b',
+    'color-sidebar-link-text': '#4b5d6b',
+    'color-sidebar-caption-text': '#4b5d6b',
+    'color-card-border': '#e2e9ef',
+}
+
+_dark_css_variables = {
+    'color-foreground-primary': '#e4edf3',
+    'color-foreground-secondary': '#a9bccb',
+    'color-foreground-muted': '#a9bccb',
+    'color-foreground-border': '#5f7a8d',
+    'color-background-primary': '#08161f',
+    'color-background-secondary': '#0c1e2a',
+    'color-background-hover': '#0f2433',
+    'color-background-hover--transparent': '#0f243300',
+    'color-background-border': '#1f3a4d',
+    'color-background-item': '#1f3a4d',
+    'color-brand-primary': '#6cb6f0',
+    'color-brand-content': '#6cb6f0',
+    'color-brand-visited': '#6cb6f0',
+    'color-highlighted-background': '#0f2433',
+    'color-highlight-on-target': '#0f2433',
+    'color-card-background': '#0f2433',
+    'color-card-border': '#1f3a4d',
+    'color-admonition-background': 'transparent',
+    'color-sidebar-link-text--top-level': '#a9bccb',
+    'color-sidebar-link-text': '#a9bccb',
+    'color-sidebar-caption-text': '#a9bccb',
+}
 
 html_theme_options = {
     'globaltoc_collapse': False,
-    'light_logo': 'img/logo_light_alt.svg',
-    'dark_logo': 'img/logo_dark_alt.svg',
+    'light_logo': 'img/juturna_logo.png',
+    'dark_logo': 'img/juturna_logo_dark.png',
+    'sidebar_hide_name': True,
+    'light_css_variables': _light_css_variables,
+    'dark_css_variables': _dark_css_variables,
     'footer_icons': [
         {
             'name': 'GitHub',
             'url': 'https://github.com/meetecho/juturna',
-            'html': '',
-            'class': 'fa-brands fa-solid fa-github fa-2x',
+            'html': """
+                <svg fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M12 .5a11.5 11.5 0 00-3.6 22.4c.6.1.8-.3.8-.6v-2c-3.2.7-3.9-1.5-3.9-1.5-.5-1.3-1.3-1.7-1.3-1.7-1-.7.1-.7.1-.7 1.2.1 1.8 1.2 1.8 1.2 1 1.8 2.8 1.3 3.5 1 .1-.8.4-1.3.7-1.6-2.6-.3-5.3-1.3-5.3-5.7 0-1.3.5-2.3 1.2-3.1-.1-.3-.5-1.5.1-3.1 0 0 1-.3 3.2 1.2a11 11 0 015.8 0c2.2-1.5 3.2-1.2 3.2-1.2.6 1.6.2 2.8.1 3.1.8.8 1.2 1.8 1.2 3.1 0 4.4-2.7 5.4-5.3 5.7.4.4.8 1.1.8 2.2v3.3c0 .3.2.7.8.6A11.5 11.5 0 0012 .5z"></path>
+                </svg>
+            """,
+            'class': '',
         },
         {
-            'name': 'MeetEcho',
+            'name': 'Meetecho',
             'url': 'https://meetecho.com',
             'html': """
                 <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 24 24">
