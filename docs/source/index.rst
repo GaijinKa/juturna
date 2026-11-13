@@ -12,6 +12,7 @@
    :hidden:
    :caption: Where it runs
 
+   explain/where_it_runs
    how_to/remotise_node
    how_to/serve_pipelines
    how_to/docker
