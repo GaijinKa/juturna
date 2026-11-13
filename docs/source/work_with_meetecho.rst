@@ -1,0 +1,38 @@
+.. _work_with_meetecho:
+
+Work with Meetecho
+==================
+
+Juturna is written and maintained by `Meetecho <https://www.meetecho.com/>`_,
+a spin-off of the University of Napoli Federico II that has built real-time
+media systems since 2009, and the team behind the Janus® WebRTC server. When
+a pipeline has to reach production, the people who wrote the library can
+help.
+
+Node development
+----------------
+Meetecho writes the nodes your pipeline is missing: a source for your
+protocol or device, a model wrapped as a node, a sink towards your systems,
+packaged and tested like the official ones.
+
+Performance tuning
+------------------
+Meetecho measures where a pipeline spends its time and changes what makes
+the difference: node placement, remote nodes on a GPU, worker layout,
+transport.
+
+Consulting
+----------
+Meetecho helps you design the pipeline before it is written: which nodes,
+where each one runs, and how it fits with the rest of your stack, including
+Janus.
+
+Support
+-------
+Meetecho supports the pipelines you run in production: answers from the
+maintainers, fixes, and upgrades between Juturna versions.
+
+.. button-link:: https://www.meetecho.com/
+    :color: primary
+
+    Talk to an expert

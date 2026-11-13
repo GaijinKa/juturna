@@ -1,25 +1,38 @@
 .. toctree::
    :maxdepth: 2
    :hidden:
-   :caption: Tutorials
+   :caption: Start
 
    tutorials/first_pipeline
+   how_to/install
+   how_to/migrate_from_2
 
 .. toctree::
    :maxdepth: 2
    :hidden:
-   :caption: How-to guides
+   :caption: Where it runs
+
+   how_to/remotise_node
+   how_to/serve_pipelines
+   how_to/docker
+
+.. toctree::
+   :maxdepth: 2
+   :hidden:
+   :caption: Nodes
+
+   how_to/create_nodes
+
+.. toctree::
+   :maxdepth: 2
+   :hidden:
+   :caption: Guides
 
    how_to/index
-   how_to/install
-   how_to/create_nodes
    how_to/create_pipelines
    how_to/environment
-   how_to/serve_pipelines
-   how_to/remotise_node
    how_to/observe
-   how_to/docker
-   how_to/migrate_from_2
+   troubleshooting
 
 .. toctree::
    :maxdepth: 2
@@ -44,92 +57,115 @@
    explain/messages
    explain/remote
 
+.. toctree::
+   :maxdepth: 1
+   :hidden:
+   :caption: Work with Meetecho
+
+   work_with_meetecho
+
 |version-badge|
 
-Juturna's documentation
-=======================
+Juturna
+=======
 
-.. .. image:: ./_static/img/logo_dark_alt_transparent.svg
-..    :alt: juturna
-..    :width: 30%
-..    :align: center
+Juturna is a Python library for real-time pipelines of audio, video and data.
+You write the processing steps as nodes, describe how they connect in a JSON
+file, and Juturna runs the graph: every node on its own worker thread,
+with messages frozen on the way out so several nodes can read the same
+payload without copying it. The same configuration runs in one process, with a node
+moved to another machine, or behind an HTTP service.
 
-.. \
+Quick start
+-----------
 
-.. image:: https://img.shields.io/github/license/meetecho/juturna?style=for-the-badge
-    :alt: License
+Install Juturna (Python 3.12 or newer):
 
-.. image:: https://img.shields.io/python/required-version-toml?tomlFilePath=https%3A%2F%2Fraw.githubusercontent.com%2Fmeetecho%2Fjuturna%2Frefs%2Fheads%2Fmain%2Fpyproject.toml&style=for-the-badge&color=green
-   :alt: Python Version from PEP 621 TOML
+.. code-block:: console
 
-.. image:: https://img.shields.io/github/stars/meetecho/juturna?style=for-the-badge
-    :alt: Stars
+    $ pip install juturna
 
-.. image:: https://img.shields.io/github/forks/meetecho/juturna?style=for-the-badge
-    :alt: Forks
+A pipeline is a list of nodes and the links between them:
 
-.. image:: https://img.shields.io/github/issues/meetecho/juturna?style=for-the-badge
-    :alt: Issues
+.. code-block:: json
 
-----
+    {
+      "version": "3.0.0",
+      "pipeline": {
+        "name": "first_pipeline",
+        "id": "first_pipeline_01",
+        "folder": "./run",
+        "nodes": [
+          { "name": "ticker", "type": "contrib.tutorial.nodes.Ticker",
+            "configuration": { "text": "juturna says hi" } },
+          { "name": "shouter", "type": "contrib.tutorial.nodes.Shouter",
+            "configuration": {} },
+          { "name": "printer", "type": "contrib.tutorial.nodes.Printer",
+            "configuration": {} }
+        ],
+        "links": [
+          { "from": "ticker", "to": "shouter" },
+          { "from": "shouter", "to": "printer" }
+        ]
+      }
+    }
 
-Energise your multimedia data prototyping with **Juturna**: design, implement,
-execute and manipulate real-time pipelines in minutes!
+Check it and run it:
 
-.. grid:: 2
+.. code-block:: console
 
-    .. grid-item::
-        .. card:: ``jt/tutorials``
-            :link: tutorial
-            :link-type: ref
+    $ python -m juturna validate --config pipeline.json
+    $ python -m juturna launch --config pipeline.json --auto --timeout 5
 
-            New to Juturna? Build and run your first pipeline, one step at a
-            time.
+The three nodes are yours to write: the :ref:`tutorial <tutorial>` builds
+them in about ten minutes.
 
-    .. grid-item::
-        .. card:: ``jt/how_to``
-            :link: howto
-            :link-type: ref
+Where a pipeline runs
+---------------------
 
-            Recipes for the tasks you will meet: writing nodes, running a
-            service, moving a node to another machine, upgrading from 2.x.
+.. grid:: 1 1 3 3
+    :gutter: 3
 
-.. grid:: 2
+    .. grid-item-card:: In one process
+        :link: tutorial
+        :link-type: ref
 
-    .. grid-item::
-        .. card:: ``jt/reference``
-            :link: reference
-            :link-type: ref
+        Every node runs in a thread of the same Python process. The default,
+        and where every pipeline starts.
 
-            The facts: configuration file, CLI, HTTP API, constants and the
-            Python API.
+    .. grid-item-card:: With a node on another machine
+        :link: how_to/remotise_node
+        :link-type: doc
 
-    .. grid-item::
-        .. card:: ``jt/explain``
-            :link: rationale
-            :link-type: ref
+        Move one heavy node, such as a model on a GPU, to a remote service;
+        the rest of the pipeline does not change.
 
-            The ideas behind Juturna: pipelines, nodes, messages, and how
-            they work together.
+    .. grid-item-card:: Behind an HTTP service
+        :link: how_to/serve_pipelines
+        :link-type: doc
 
-.. grid:: 1
+        Create, start and stop pipelines from other programs through a REST
+        API protected by a token.
 
-    .. grid-item::
+Nodes ready to use, such as RTP audio and video sources, transcription,
+voice activity detection, object detection and notifiers, live in the
+`juturna-nodes <https://github.com/meetecho/juturna_nodes>`_ package. Coming
+from Juturna 2.x? Start from the :ref:`migration guide <migrate_from_2>`.
 
-            .. card::
-                :text-align: center
+From the team behind Janus®
+---------------------------
 
-                Juturna is brewed with love by the awesome team of
-                `Meetecho <https://www.meetecho.com/en/>`_. Come and say hi!
+Juturna is written by `Meetecho <https://www.meetecho.com/>`_, the team
+behind the Janus® WebRTC server, building real-time media systems since 2009.
+When a pipeline has to reach production, Meetecho develops nodes, tunes
+performance, and offers consulting and support.
 
-Nodes ready to use (audio and video sources, transcription, detection,
-notifiers) live in their own package,
-`juturna-nodes <https://github.com/meetecho/juturna_nodes>`_.
+.. button-link:: https://www.meetecho.com/
+    :color: primary
 
-Coming from Juturna 2.x? Start from the :ref:`migration guide <migrate_from_2>`.
+    Talk to an expert
 
-Take a look at the `GitHub project <https://github.com/meetecho/juturna>`_ if
-you want to explore the code.
-
-Feel like contributing? Please refer to our
-`guidelines <https://github.com/meetecho/juturna/blob/main/CONTRIBUTING.md>`_.
+Juturna is open source under the MIT license: the code is on
+`GitHub <https://github.com/meetecho/juturna>`_, and the
+`contributing guidelines <https://github.com/meetecho/juturna/blob/main/CONTRIBUTING.md>`_
+explain how to propose a change.
