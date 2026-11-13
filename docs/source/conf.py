@@ -9,6 +9,22 @@ author = 'Antonio Bevilacqua'
 version = '3.0.0'  # x-release-please-version
 release = version
 
+# the node pages are imported by autodoc: their optional dependencies are mocked
+autodoc_mock_imports = [
+    'av',
+    'faster_whisper',
+    'grpc',
+    'juturna.remotizer.c_protos',
+    'juturna.remotizer.utils',
+    'pymongo',
+    'requests',
+    'silero_vad',
+    'torch',
+    'ultralytics',
+    'watchdog',
+    'websockets',
+]
+
 extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.napoleon',
@@ -16,6 +32,7 @@ extensions = [
     'sphinx.ext.doctest',
     'sphinx_design',
     'sphinx_new_tab_link',
+    'node_catalog',
 ]
 
 templates_path = ['_templates']

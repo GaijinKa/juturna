@@ -22,7 +22,12 @@
    :hidden:
    :caption: Nodes
 
+   catalog/nodes/overview
+   catalog/nodes/sources
+   catalog/nodes/processing
+   catalog/nodes/sinks
    how_to/create_nodes
+   catalog/contribute/new_node
 
 .. toctree::
    :maxdepth: 2
@@ -149,8 +154,9 @@ Where a pipeline runs
         API protected by a token.
 
 Nodes ready to use, such as RTP audio and video sources, transcription,
-voice activity detection, object detection and notifiers, live in the
-`juturna-nodes <https://github.com/meetecho/juturna_nodes>`_ package. Coming
+voice activity detection, object detection and notifiers, are in the
+:doc:`node catalog <catalog/nodes/overview>` and install with
+``pip install juturna-nodes``. Coming
 from Juturna 2.x? Start from the :ref:`migration guide <migrate_from_2>`.
 
 From the team behind Janus®
