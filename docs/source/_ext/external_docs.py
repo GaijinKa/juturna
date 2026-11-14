@@ -20,6 +20,8 @@ from sphinx.errors import ConfigError
 _NODE_SECTIONS = ('nodes', 'contribute')
 _NODE_INCLUDE_ROOT = '../../../src/'
 
+_BROWSER_REPO = 'https://github.com/meetecho/juturna-browser'
+
 # juturna-browser page -> page in the browser section
 _BROWSER_PAGES = {
     'README.md': 'index.md',
@@ -90,8 +92,15 @@ def _copy_browser(srcdir: pathlib.Path):
         # the README links the other pages under docs/
         if source == 'README.md':
             text = text.replace('](docs/', '](')
+            text = text.replace(
+                '](LICENSE)', f']({_BROWSER_REPO}/blob/main/LICENSE)'
+            )
 
         (target / page).write_text(text)
+
+    # figures are <picture> elements, which Sphinx does not copy: see setup()
+    if (checkout / 'docs' / 'img').is_dir():
+        shutil.copytree(checkout / 'docs' / 'img', target / 'img')
 
 
 def _copy_all(app, config):
@@ -100,7 +109,19 @@ def _copy_all(app, config):
     _copy_browser(srcdir)
 
 
+def _copy_browser_images(app, exception):
+    images = pathlib.Path(app.srcdir) / 'browser' / 'img'
+
+    if exception is None and app.builder.format == 'html' and images.is_dir():
+        shutil.copytree(
+            images,
+            pathlib.Path(app.outdir) / 'browser' / 'img',
+            dirs_exist_ok=True,
+        )
+
+
 def setup(app):  # noqa: D103
     app.connect('config-inited', _copy_all)
+    app.connect('build-finished', _copy_browser_images)
 
     return {'parallel_read_safe': True}
