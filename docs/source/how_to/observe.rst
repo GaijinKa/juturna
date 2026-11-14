@@ -212,8 +212,8 @@ Reading the four lines: source node ``A`` received its own message 0 and
 transmitted it; node ``B`` received it and, a second later, transmitted
 message 1, made while processing message 0 (``src_id``).
 
-Use ``{"name": "memory"}`` to keep the records in memory instead, which is
-what the pipeline service needs to return them from
+Use ``{"name": "memory"}`` to keep the records in memory instead. The
+pipeline service returns the records of either manager from
 ``GET /pipelines/{id}/telemetry``.
 
 The managers, their options and the meaning of every field are in

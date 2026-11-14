@@ -86,8 +86,9 @@ Errors of the service carry a ``message`` (the ``401`` and ``413`` answers
 carry a ``detail`` instead):
 
 - ``404``: no pipeline with that id, or no such file in its folder;
-- ``409``: the call is not allowed in the current status of the pipeline, or
-  another lifecycle call is in progress;
+- ``409``: the call is not allowed in the current status of the pipeline,
+  another lifecycle call is in progress, or the telemetry is requested from a
+  pipeline that has none;
 - ``403``: the configuration reads an environment variable that is neither
   in the environment file of the service nor allowed by it;
 - ``422``: the configuration is refused (the body says which part), or a

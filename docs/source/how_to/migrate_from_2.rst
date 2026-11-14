@@ -103,7 +103,7 @@ When you are done, let Juturna check the result:
 folder. They live in an installable package, under
 ``juturna.contrib.<package>.nodes``, and are used with the type
 ``contrib.<package>.nodes.<Class>``. The quickest way is to create the
-skeleton with ``juturna stub`` and move your code in:
+skeleton with ``python -m juturna stub`` and move your code in:
 :doc:`create_nodes` has the details.
 
 **Accept the state.** ``update()`` now receives the node state as a keyword
