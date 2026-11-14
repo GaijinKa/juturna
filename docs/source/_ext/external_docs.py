@@ -24,6 +24,8 @@ _NODE_INCLUDE_ROOT = '../../../src/'
 _BROWSER_PAGES = {
     'README.md': 'index.md',
     'docs/guide.md': 'guide.md',
+    'docs/how-it-works.md': 'how-it-works.md',
+    'docs/demos.md': 'demos.md',
     'docs/api.md': 'api.md',
     'docs/development.md': 'development.md',
 }

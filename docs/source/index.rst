@@ -24,6 +24,8 @@
 
    browser/index
    browser/guide
+   browser/how-it-works
+   browser/demos
    browser/api
    browser/development
 
