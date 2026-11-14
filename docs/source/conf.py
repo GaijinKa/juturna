@@ -45,6 +45,13 @@ exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
 
+linkcheck_ignore = [
+    # deployed with the site: the build does not see them online yet
+    r'https://meetecho\.github\.io/juturna/demos/',
+    # answers 403 to every client that is not a browser
+    r'https://www\.meetecho\.com/',
+]
+
 # open external links in blank targets
 new_tab_link_show_external_link_icon = True
 

@@ -21,6 +21,7 @@ _NODE_SECTIONS = ('nodes', 'contribute')
 _NODE_INCLUDE_ROOT = '../../../src/'
 
 _BROWSER_REPO = 'https://github.com/meetecho/juturna-browser'
+_DEMOS_URL = 'https://meetecho.github.io/juturna/demos/'
 
 # juturna-browser page -> page in the browser section
 _BROWSER_PAGES = {
@@ -96,6 +97,8 @@ def _copy_browser(srcdir: pathlib.Path):
                 '](LICENSE)', f']({_BROWSER_REPO}/blob/main/LICENSE)'
             )
 
+        # the demos are published with the site (docs/build_demos.sh)
+        text = text.replace('http://localhost:8765/', _DEMOS_URL)
         (target / page).write_text(text)
 
     # figures are <picture> elements, which Sphinx does not copy: see setup()
