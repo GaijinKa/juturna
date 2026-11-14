@@ -20,6 +20,16 @@
 .. toctree::
    :maxdepth: 2
    :hidden:
+   :caption: In the browser
+
+   browser/index
+   browser/guide
+   browser/api
+   browser/development
+
+.. toctree::
+   :maxdepth: 2
+   :hidden:
    :caption: Nodes
 
    catalog/nodes/overview
@@ -80,7 +90,7 @@ You write the processing steps as nodes, describe how they connect in a JSON
 file, and Juturna runs the graph: every node on its own worker thread,
 with messages frozen on the way out so several nodes can read the same
 payload without copying it. The same configuration runs in one process, with a node
-moved to another machine, or behind an HTTP service.
+moved to another machine, behind an HTTP service, or in a browser tab.
 
 Quick start
 -----------
@@ -129,7 +139,7 @@ them in about ten minutes.
 Where a pipeline runs
 ---------------------
 
-.. grid:: 1 1 3 3
+.. grid:: 1 2 2 2
     :gutter: 3
 
     .. grid-item-card:: In one process
@@ -152,6 +162,13 @@ Where a pipeline runs
 
         Create, start and stop pipelines from other programs through a REST
         API protected by a token.
+
+    .. grid-item-card:: In a browser tab
+        :link: browser/index
+        :link-type: doc
+
+        Run the pipeline in Pyodide Web Workers, next to the camera and the
+        microphone of the page, with nothing installed on the user's machine.
 
 Nodes ready to use, such as RTP audio and video sources, transcription,
 voice activity detection, object detection and notifiers, are in the

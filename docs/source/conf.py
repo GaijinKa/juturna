@@ -25,6 +25,9 @@ autodoc_mock_imports = [
     'websockets',
 ]
 
+# juturna-browser pages are Markdown, with GitHub-style heading anchors
+myst_heading_anchors = 3
+
 extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.napoleon',
@@ -32,7 +35,8 @@ extensions = [
     'sphinx.ext.doctest',
     'sphinx_design',
     'sphinx_new_tab_link',
-    'node_catalog',
+    'myst_parser',
+    'external_docs',
 ]
 
 templates_path = ['_templates']
