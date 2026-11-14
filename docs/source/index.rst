@@ -181,15 +181,15 @@ from Juturna 2.x? Start from the :ref:`migration guide <migrate_from_2>`.
 From the team behind Janus®
 ---------------------------
 
-Juturna is written by `Meetecho <https://www.meetecho.com/>`_, the team
-behind the Janus® WebRTC server, building real-time media systems since 2009.
-When a pipeline has to reach production, Meetecho develops nodes, tunes
-performance, and offers consulting and support.
+Juturna is brewed by `Meetecho <https://www.meetecho.com/>`_, the team
+behind the Janus® WebRTC server, hacking on real-time media since 2009.
+Taking a pipeline to production? We write the nodes you are missing, tune
+performance, and offer consulting and support.
 
 .. button-link:: https://www.meetecho.com/
     :color: primary
 
-    Talk to an expert
+    Ping the maintainers
 
 Juturna is open source under the MIT license: the code is on
 `GitHub <https://github.com/meetecho/juturna>`_, and the

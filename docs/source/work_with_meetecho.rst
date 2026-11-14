@@ -35,4 +35,4 @@ maintainers, fixes, and upgrades between Juturna versions.
 .. button-link:: https://www.meetecho.com/
     :color: primary
 
-    Talk to an expert
+    Ping the maintainers

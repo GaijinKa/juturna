@@ -69,4 +69,4 @@ Still stuck?
 
 Open an issue on `GitHub <https://github.com/meetecho/juturna/issues>`_ with
 the configuration and the log, or
-`talk to an expert <https://www.meetecho.com/>`_ at Meetecho.
+`ping the maintainers <https://www.meetecho.com/>`_ at Meetecho.
