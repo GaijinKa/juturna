@@ -70,6 +70,7 @@
 
    browser/index
    browser/guide
+   browser/write-a-node
    browser/how-it-works
    browser/demos
    browser/api

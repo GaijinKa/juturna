@@ -27,6 +27,7 @@ _DEMOS_URL = 'https://meetecho.github.io/juturna/demos/'
 _BROWSER_PAGES = {
     'README.md': 'index.md',
     'docs/guide.md': 'guide.md',
+    'docs/write-a-node.md': 'write-a-node.md',
     'docs/how-it-works.md': 'how-it-works.md',
     'docs/demos.md': 'demos.md',
     'docs/api.md': 'api.md',
