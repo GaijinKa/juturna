@@ -69,6 +69,11 @@ pygments_dark_style = 'meetecho_pygments.MeetechoDarkStyle'
 
 html_static_path = ['_static']
 
+# long signatures (the node constructors) get one parameter per line
+maximum_signature_line_length = 70
+# the page already says which module a class comes from
+add_module_names = False
+
 html_css_files = ['css/meetecho_style.css']
 
 # colours and fonts from the Meetecho design system tokens

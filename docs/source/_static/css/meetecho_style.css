@@ -91,8 +91,8 @@ body[data-theme="dark"] {
 }
 
 /* type */
-/* sizes from the design system's reading.css (h2 28-41.6px, h3 21px),
-   on Furo's 17.6px base */
+/* on Furo's 17.6px base; one step below the design system's reading.css
+   (h2 28px, h3 21px), which is made for long reading pages */
 article h1,
 article h2 {
     font-weight: 800;
@@ -101,21 +101,94 @@ article h2 {
 }
 
 article h1 {
-    font-size: 2.25em;
+    font-size: 2em;
 }
 
 article h2 {
-    font-size: 1.75em;
+    font-size: 1.5em;
+    margin-bottom: 0.9rem;
 }
 
 article h3 {
-    font-size: 1.25em;
+    font-size: 1.2em;
     font-weight: 700;
     letter-spacing: -0.01em;
 }
 
 article h4 {
-    font-size: 1.1em;
+    font-size: 1.05em;
+}
+
+/* node pages: the class name in the title reads as a title, not as code,
+   also where the title is repeated (sidebar, previous/next links) */
+article h1 > code.literal,
+.sidebar-tree code.literal,
+.related-pages code.literal {
+    background: none;
+    border: 0;
+    padding: 0;
+    font: inherit;
+}
+
+/* node pages: node type, input, output and extra as a row of tiles */
+article > section > dl.field-list {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-rows: auto auto;
+    grid-auto-flow: column;
+    margin: 1.25rem 0;
+    border: 1px solid var(--jt-line);
+    border-radius: var(--jt-radius);
+    background: var(--jt-soft);
+    overflow: hidden;
+}
+
+article > section > dl.field-list > dt,
+article > section > dl.field-list > dd {
+    margin: 0;
+    padding: 0 16px;
+    border-left: 1px solid var(--jt-line);
+}
+
+article > section > dl.field-list > dt:first-of-type,
+article > section > dl.field-list > dd:first-of-type {
+    border-left: 0;
+}
+
+article > section > dl.field-list > dt {
+    padding-top: 12px;
+    color: var(--jt-muted);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+article > section > dl.field-list > dt .colon {
+    display: none;
+}
+
+article > section > dl.field-list > dd {
+    padding-bottom: 12px;
+    font-weight: 600;
+}
+
+article > section > dl.field-list > dd p {
+    margin: 4px 0 0;
+}
+
+@media (max-width: 40em) {
+    article > section > dl.field-list {
+        grid-template-columns: auto 1fr;
+        grid-template-rows: none;
+        grid-auto-flow: row;
+    }
+
+    article > section > dl.field-list > dt,
+    article > section > dl.field-list > dd {
+        border-left: 0;
+        padding: 8px 16px;
+    }
 }
 
 :focus-visible {
