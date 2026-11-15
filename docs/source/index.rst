@@ -10,36 +10,12 @@
 .. toctree::
    :maxdepth: 2
    :hidden:
-   :caption: Where it runs
+   :caption: Deploy
 
    explain/where_it_runs
    how_to/remotise_node
    how_to/serve_pipelines
    how_to/docker
-
-.. toctree::
-   :maxdepth: 2
-   :hidden:
-   :caption: In the browser
-
-   browser/index
-   browser/guide
-   browser/how-it-works
-   browser/demos
-   browser/api
-   browser/development
-
-.. toctree::
-   :maxdepth: 2
-   :hidden:
-   :caption: Nodes
-
-   catalog/nodes/overview
-   catalog/nodes/sources
-   catalog/nodes/processing
-   catalog/nodes/sinks
-   how_to/create_nodes
-   catalog/contribute/new_node
 
 .. toctree::
    :maxdepth: 2
@@ -76,6 +52,30 @@
    explain/remote
 
 .. toctree::
+   :maxdepth: 2
+   :hidden:
+   :caption: In the browser
+
+   browser/index
+   browser/guide
+   browser/how-it-works
+   browser/demos
+   browser/api
+   browser/development
+
+.. toctree::
+   :maxdepth: 2
+   :hidden:
+   :caption: Nodes
+
+   catalog/nodes/overview
+   catalog/nodes/sources
+   catalog/nodes/processing
+   catalog/nodes/sinks
+   how_to/create_nodes
+   catalog/contribute/new_node
+
+.. toctree::
    :maxdepth: 1
    :hidden:
    :caption: Work with Meetecho
@@ -89,10 +89,14 @@ Juturna
 
 Juturna is a Python library for real-time pipelines of audio, video and data.
 You write the processing steps as nodes, describe how they connect in a JSON
-file, and Juturna runs the graph: every node on its own worker thread,
+file, and Juturna runs the graph: each node in worker threads of its own,
 with messages frozen on the way out so several nodes can read the same
-payload without copying it. The same configuration runs in one process, with a node
-moved to another machine, behind an HTTP service, or in a browser tab.
+payload without copying it. A pipeline runs in one process, behind an HTTP
+service, or with its heaviest nodes moved to other machines, such as a model
+on a GPU.
+
+The same pipeline also runs in a browser tab, on Pyodide: see
+:doc:`browser/index`.
 
 Quick start
 -----------
@@ -138,51 +142,71 @@ Check it and run it:
 The three nodes are yours to write: the :ref:`tutorial <tutorial>` builds
 them in about ten minutes.
 
-Where a pipeline runs
----------------------
+Explore the documentation
+-------------------------
 
 .. grid:: 1 2 2 2
     :gutter: 3
 
-    .. grid-item-card:: In one process
+    .. grid-item-card:: ``jt/start``
         :link: tutorial
         :link-type: ref
 
-        Every node runs in a thread of the same Python process. The default,
-        and where every pipeline starts.
+        New to Juturna? Install it and build your first pipeline, one step
+        at a time. Coming from 2.x? The migration guide is here too.
 
-    .. grid-item-card:: With a node on another machine
-        :link: how_to/remotise_node
+    .. grid-item-card:: ``jt/deploy``
+        :link: explain/where_it_runs
         :link-type: doc
 
-        Move one heavy node, such as a model on a GPU, to a remote service;
-        the rest of the pipeline does not change.
+        Run pipelines behind a REST API, move a heavy node to another
+        machine, ship it all in a container.
 
-    .. grid-item-card:: Behind an HTTP service
-        :link: how_to/serve_pipelines
+    .. grid-item-card:: ``jt/guides``
+        :link: howto
+        :link-type: ref
+
+        Recipes for the tasks you will meet: building pipelines,
+        environment variables, observing a running pipeline,
+        troubleshooting.
+
+    .. grid-item-card:: ``jt/reference``
+        :link: reference/configuration
         :link-type: doc
 
-        Create, start and stop pipelines from other programs through a REST
-        API protected by a token.
+        The facts: configuration file, CLI, HTTP API, constants and the
+        Python API.
 
-    .. grid-item-card:: In a browser tab
+    .. grid-item-card:: ``jt/explain``
+        :link: rationale
+        :link-type: ref
+
+        The ideas behind Juturna: pipelines, nodes, messages, and how they
+        work together.
+
+    .. grid-item-card:: ``jt/nodes``
+        :link: catalog/nodes/overview
+        :link-type: doc
+
+        Nodes ready to use from ``juturna-nodes``: RTP sources,
+        transcription, voice activity detection, object detection,
+        notifiers. And how to write your own.
+
+.. grid:: 1
+    :gutter: 3
+
+    .. grid-item-card:: ``jt/browser``
         :link: browser/index
         :link-type: doc
 
-        Run the pipeline in Pyodide Web Workers, next to the camera and the
-        microphone of the page, with nothing installed on the user's machine.
+        The same pipelines on Pyodide, in the Web Workers of a page, with
+        demos to try.
 
-Nodes ready to use, such as RTP audio and video sources, transcription,
-voice activity detection, object detection and notifiers, are in the
-:doc:`node catalog <catalog/nodes/overview>` and install with
-``pip install juturna-nodes``. Coming
-from Juturna 2.x? Start from the :ref:`migration guide <migrate_from_2>`.
+Brewed by Meetecho
+------------------
 
-From the team behind Janus®
----------------------------
-
-Juturna is brewed by `Meetecho <https://www.meetecho.com/>`_, the team
-behind the Janus® WebRTC server, hacking on real-time media since 2009.
+Juturna is brewed by `Meetecho <https://www.meetecho.com/>`_, hacking on
+real-time media since 2009.
 Taking a pipeline to production? We write the nodes you are missing, tune
 performance, and offer consulting and support.
 

@@ -3,8 +3,8 @@
 Where a pipeline runs
 =====================
 
-The same configuration runs on the threads of one Python process, in Web
-Workers inside a browser tab, or with one node on another machine. Nodes and
+The same configuration runs on the threads of one Python process, with one
+node on another machine, or in Web Workers inside a browser tab. Nodes and
 the pipeline never use ``threading`` or ``queue`` directly: they ask a
 **transport** for queues, events, locks and workers, and the transport
 decides what those are.
