@@ -1,3 +1,38 @@
+/* fonts served with the site, so every browser gets the same ones:
+   Ubuntu and Ubuntu Mono, subset and renamed as the Ubuntu Font Licence
+   requires (fonts/UBUNTU-FONT-LICENCE.txt) */
+@font-face {
+    font-family: 'Ubuntu derivative Juturna';
+    src: url('../fonts/Ubuntu.woff2') format('woff2');
+    font-weight: 100 800;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Ubuntu derivative Juturna';
+    src: url('../fonts/Ubuntu-Italic.woff2') format('woff2');
+    font-weight: 100 800;
+    font-style: italic;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Ubuntu Mono derivative Juturna';
+    src: url('../fonts/UbuntuMono.woff2') format('woff2');
+    font-weight: 400 700;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Ubuntu Mono derivative Juturna';
+    src: url('../fonts/UbuntuMono-Italic.woff2') format('woff2');
+    font-weight: 400 700;
+    font-style: italic;
+    font-display: swap;
+}
+
 /* Meetecho reading style (meetecho-design-system/web.md) on top of Furo.
    Furo colours are set in conf.py; these variables serve the components below. */
 

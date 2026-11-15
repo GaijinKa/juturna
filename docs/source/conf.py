@@ -73,10 +73,13 @@ html_css_files = ['css/meetecho_style.css']
 
 # colours and fonts from the Meetecho design system tokens
 _font_stack = (
-    'system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", '
-    'Arial, sans-serif'
+    '"Ubuntu derivative Juturna", system-ui, -apple-system, "Segoe UI", '
+    'Roboto, "Helvetica Neue", Arial, sans-serif'
 )
-_font_stack_mono = 'ui-monospace, SFMono-Regular, Menlo, Consolas, monospace'
+_font_stack_mono = (
+    '"Ubuntu Mono derivative Juturna", ui-monospace, SFMono-Regular, Menlo, '
+    'Consolas, monospace'
+)
 
 _light_css_variables = {
     'font-stack': _font_stack,
