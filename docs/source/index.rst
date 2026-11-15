@@ -54,18 +54,6 @@
 .. toctree::
    :maxdepth: 2
    :hidden:
-   :caption: In the browser
-
-   browser/index
-   browser/guide
-   browser/how-it-works
-   browser/demos
-   browser/api
-   browser/development
-
-.. toctree::
-   :maxdepth: 2
-   :hidden:
    :caption: Nodes
 
    catalog/nodes/overview
@@ -74,6 +62,18 @@
    catalog/nodes/sinks
    how_to/create_nodes
    catalog/contribute/new_node
+
+.. toctree::
+   :maxdepth: 2
+   :hidden:
+   :caption: In the browser
+
+   browser/index
+   browser/guide
+   browser/how-it-works
+   browser/demos
+   browser/api
+   browser/development
 
 .. toctree::
    :maxdepth: 1
