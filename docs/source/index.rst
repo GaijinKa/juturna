@@ -102,46 +102,59 @@ The same pipeline also runs in a browser tab, on Pyodide: see
 Quick start
 -----------
 
-Install Juturna (Python 3.12 or newer):
+Transcribe an audio file: Juturna reads it in blocks, a voice activity
+detector cuts it into speech segments, Whisper transcribes them and the text
+is printed on the terminal. Install Juturna (Python 3.12 or newer) and the
+nodes the pipeline uses:
 
 .. code-block:: console
 
-    $ pip install juturna
+    $ pip install juturna "juturna-nodes[av,audio-ml]"
 
-A pipeline is a list of nodes and the links between them:
+The ``audio-ml`` group pulls in PyTorch, so the install is a large download.
+
+A pipeline is a list of nodes and the links between them. Save this as
+``pipeline.json``, and point ``file_source`` to an audio file in English:
 
 .. code-block:: json
 
     {
       "version": "3.0.0",
       "pipeline": {
-        "name": "first_pipeline",
-        "id": "first_pipeline_01",
+        "name": "transcribe_file",
+        "id": "transcribe_file_01",
         "folder": "./run",
         "nodes": [
-          { "name": "ticker", "type": "contrib.tutorial.nodes.Ticker",
-            "configuration": { "text": "juturna says hi" } },
-          { "name": "shouter", "type": "contrib.tutorial.nodes.Shouter",
-            "configuration": {} },
-          { "name": "printer", "type": "contrib.tutorial.nodes.Printer",
-            "configuration": {} }
+          { "name": "audio", "type": "AudioFile",
+            "configuration": { "file_source": "sample.wav", "block_size": 2 } },
+          { "name": "vad", "type": "VadSilero",
+            "configuration": { "min_silence_duration_ms": 500 } },
+          { "name": "whisper", "type": "TranscriberWhisper",
+            "configuration": { "model_name": "tiny", "only_local": false,
+                               "device": "cpu" } },
+          { "name": "console", "type": "NotifierConsole", "configuration": {} }
         ],
         "links": [
-          { "from": "ticker", "to": "shouter" },
-          { "from": "shouter", "to": "printer" }
+          { "from": "audio", "to": "vad" },
+          { "from": "vad", "to": "whisper" },
+          { "from": "whisper", "to": "console" }
         ]
       }
     }
 
-Check it and run it:
+Check it and run it: press enter to start, and again to stop once the file
+is done.
 
 .. code-block:: console
 
     $ python -m juturna validate --config pipeline.json
-    $ python -m juturna launch --config pipeline.json --auto --timeout 5
+    $ python -m juturna launch --config pipeline.json
 
-The three nodes are yours to write: the :ref:`tutorial <tutorial>` builds
-them in about ten minutes.
+The text comes out as lines like ``[whisper] <the transcribed text>``, one
+more each time Whisper transcribes its latest blocks of speech.
+
+To write nodes of your own, follow the :ref:`tutorial <tutorial>`: it builds
+a pipeline from scratch in about ten minutes.
 
 Explore the documentation
 -------------------------
