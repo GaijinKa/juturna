@@ -20,6 +20,7 @@ class MeetechoStyle(Style):
 
 
 class MeetechoDarkStyle(MeetechoStyle):
-    """Code on the darker navy ground of the dark theme."""
+    """Code on a lighter navy than the page of the dark theme."""
 
-    background_color = '#06121a'
+    background_color = '#10293b'
+    highlight_color = '#1f4560'
