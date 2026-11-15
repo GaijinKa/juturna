@@ -97,8 +97,10 @@ def _copy_browser(srcdir: pathlib.Path):
                 '](LICENSE)', f']({_BROWSER_REPO}/blob/main/LICENSE)'
             )
 
-        # the demos are published with the site (docs/build_demos.sh)
+        # the demos are published with the site (docs/build_demos.sh), under
+        # demos/ next to browser/
         text = text.replace('http://localhost:8765/', _DEMOS_URL)
+        text = text.replace('href="../examples/', 'href="../demos/examples/')
         (target / page).write_text(text)
 
     # figures are <picture> elements, which Sphinx does not copy: see setup()

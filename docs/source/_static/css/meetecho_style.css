@@ -285,3 +285,25 @@ body {
         scroll-behavior: smooth;
     }
 }
+
+/* "Try it" buttons of the juturna-browser demos (plain links on GitHub) */
+.try-it {
+    display: inline-block;
+    margin: 0.15rem 0.4rem 0.15rem 0;
+    padding: 0.3rem 0.85rem;
+    border: 1px solid var(--jt-accent-strong);
+    border-radius: 999px;
+    background: var(--jt-accent-soft);
+    color: var(--jt-accent-strong);
+    font-size: 0.9em;
+    font-weight: 600;
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.try-it:hover,
+.try-it:focus-visible {
+    background: var(--jt-accent-strong);
+    color: var(--jt-surface);
+    text-decoration: none;
+}
