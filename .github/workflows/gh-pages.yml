@@ -8,7 +8,7 @@ on:
 env:
   # pages and demos built from these commits
   JUTURNA_NODES_REF: def68fbbb2667614841539672a6da16f527674af
-  JUTURNA_BROWSER_REF: ae3b58b386fc6fef86f42eb1d4b1fee535b5382e
+  JUTURNA_BROWSER_REF: 2903714b9240cde8131867104417fe1abde28d47
   JUTURNA_NODES_DIR: ${{ github.workspace }}/juturna_nodes
   JUTURNA_BROWSER_DIR: ${{ github.workspace }}/juturna-browser
 
