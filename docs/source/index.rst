@@ -10,6 +10,14 @@
 .. toctree::
    :maxdepth: 2
    :hidden:
+   :caption: Examples
+
+   examples/index
+   examples/video_detection
+
+.. toctree::
+   :maxdepth: 2
+   :hidden:
    :caption: Deploy
 
    explain/where_it_runs
