@@ -13,6 +13,7 @@
    :caption: Examples
 
    examples/index
+   examples/voice_assistant
    examples/video_detection
 
 .. toctree::
@@ -32,7 +33,6 @@
 
    how_to/index
    how_to/create_pipelines
-   how_to/voice_assistant
    how_to/environment
    how_to/observe
    troubleshooting

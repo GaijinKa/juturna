@@ -1,7 +1,9 @@
 Build a voice assistant
 =======================
 
-This guide builds a small assistant you talk to: press Enter, ask a question
+.. include:: /_includes/about_example.rst
+
+This example builds a small assistant you talk to: press Enter, ask a question
 in English, press Enter again, and it answers with a synthetic voice.
 
 .. code-block:: text
@@ -21,7 +23,12 @@ Everything runs on the CPU, without PyTorch. Once the models are downloaded,
 nothing leaves the machine: speech recognition, the language model and the
 voice all run locally.
 
-.. include:: /_includes/about_example.rst
+.. important::
+
+    ``MicSource``, ``SpeakerSink``, ``TranscriberSherpa``,
+    ``SynthesizerSherpa``, ``PrompterOllama``, ``NotifierConsole`` and
+    ``AudioWriter`` ship with the next release of juturna-nodes. Until it is
+    out, the install commands below get a version without them.
 
 Before you start
 ----------------
@@ -105,58 +112,10 @@ sherpa nodes to their folders, and ``lexicon`` to the lexicon file.
 Write the configuration
 -----------------------
 
-Save this as ``assistant.json``:
+Save this as ``pipeline.json``:
 
-.. code-block:: json
-
-    {
-      "version": "3.0.0",
-      "pipeline": {
-        "name": "voice_assistant",
-        "id": "voice_assistant_01",
-        "folder": "./run",
-        "nodes": [
-          {
-            "name": "question",
-            "type": "MicSource",
-            "configuration": { "push_to_talk": true }
-          },
-          {
-            "name": "stt",
-            "type": "TranscriberSherpa",
-            "configuration": {}
-          },
-          {
-            "name": "llm",
-            "type": "PrompterOllama",
-            "configuration": { "model_name": "qwen2.5:1.5b" }
-          },
-          {
-            "name": "tts",
-            "type": "SynthesizerSherpa",
-            "configuration": {}
-          },
-          {
-            "name": "answer",
-            "type": "SpeakerSink",
-            "configuration": {}
-          },
-          {
-            "name": "console",
-            "type": "NotifierConsole",
-            "configuration": {}
-          }
-        ],
-        "links": [
-          { "from": "question", "to": "stt" },
-          { "from": "stt", "to": "llm" },
-          { "from": "stt", "to": "console" },
-          { "from": "llm", "to": "tts" },
-          { "from": "llm", "to": "console" },
-          { "from": "tts", "to": "answer" }
-        ]
-      }
-    }
+.. literalinclude:: ../../../examples/voice_assistant/pipeline.json
+    :language: json
 
 ``stt`` and ``llm`` both send their messages to ``console`` as well: a node
 can feed any number of others, and each gets the same message without a
@@ -171,8 +130,8 @@ Run the pipeline in a terminal:
 
 .. code-block:: console
 
-    (.venv) $ python -m juturna validate --config assistant.json
-    (.venv) $ python -m juturna launch --config assistant.json --auto \
+    (.venv) $ python -m juturna validate --config pipeline.json
+    (.venv) $ python -m juturna launch --config pipeline.json --auto \
                                        --timeout 120 --log-level WARNING
     [question] press Enter to talk
     [question] listening, press Enter to stop
@@ -275,29 +234,12 @@ stream. The pipeline stays the same, you change two nodes in the JSON:
 
     (.venv) $ pip install "juturna-nodes[av]"
 
-Replace the ``question`` and ``answer`` nodes of ``assistant.json`` with
-these two:
+Save the same pipeline with ``AudioRtp`` in place of ``MicSource`` and
+``AudioWriter`` in place of ``SpeakerSink`` as ``pipeline_rtp.json``:
 
-.. code-block:: json
-
-    [
-      {
-        "name": "question",
-        "type": "AudioRtp",
-        "configuration": {
-          "port": 5004,
-          "payload_type": 0,
-          "encoding_clock_chan": "PCMU/8000",
-          "resampler_format": "flt",
-          "block_size": 1
-        }
-      },
-      {
-        "name": "answer",
-        "type": "AudioWriter",
-        "configuration": { "file_name": "answer.wav" }
-      }
-    ]
+.. literalinclude:: ../../../examples/voice_assistant/pipeline_rtp.json
+    :language: json
+    :emphasize-lines: 10,36
 
 The node listens on ``127.0.0.1:5004`` (``host`` and ``port``) for G.711
 μ-law audio at 8 kHz, payload type 0: the codec of telephone calls. It hands
@@ -310,7 +252,7 @@ that says it is running:
 
 .. code-block:: console
 
-    (.venv) $ python -m juturna launch --config assistant.json --auto \
+    (.venv) $ python -m juturna launch --config pipeline_rtp.json --auto \
                                        --timeout 60 --log-level INFO
     ...
     ... | INFO     | jt.voice_assistant      | pipe started
@@ -395,5 +337,5 @@ are the steps a production assistant would add.
 
 To see where the time goes before and after each change, turn on telemetry:
 it records when each node receives and transmits a message, which gives the
-latency of every node. :doc:`observe` shows how to turn it on and what the
+latency of every node. :doc:`/how_to/observe` shows how to turn it on and what the
 records hold.

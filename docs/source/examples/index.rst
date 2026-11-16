@@ -19,6 +19,13 @@ pages show them as they are.
      - Hardware
      - OS
      - Released
+   * - :doc:`voice_assistant`
+     - ``sherpa``, ``sound``; ``av`` for the RTP step
+     - about 240 MB of packages, 107 MB of speech models, and the 986 MB
+       language model through Ollama
+     - CPU, microphone and speaker
+     - Linux (tested); no push-to-talk on Windows
+     - Not yet: the nodes ship with the next juturna-nodes release
    * - :doc:`video_detection`
      - ``av``, ``onnx``
      - about 270 MB of packages, a 3.7 MB model, a 2 MB video
