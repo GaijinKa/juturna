@@ -182,7 +182,7 @@ Ask as many questions as you like; after ``--timeout`` seconds the pipeline
 stops.
 
 ``--auto`` matters: without it, the launcher itself reads Enter to start and
-stop the pipeline, and the microphone never gets it. ``--log-level WARNING``
+stop the pipeline, and the microphone misses the presses meant for it. ``--log-level WARNING``
 keeps the pipeline logs out of the way.
 
 The microphone only sends audio between the two presses of Enter, so the
