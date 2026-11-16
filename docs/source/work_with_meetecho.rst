@@ -21,6 +21,14 @@ Meetecho measures where a pipeline spends its time and changes what makes
 the difference: node placement, remote nodes on a GPU, worker layout,
 transport.
 
+Scaling
+-------
+Meetecho helps you move the heavy nodes of a pipeline off its machine: they
+run as remote services, on a GPU or on other machines, shared by several
+pipelines or, without sticky state, replicated behind a load balancer (see
+:ref:`explain_remote`). It also sizes the hardware, and the limits of each
+remote service, to the load you expect.
+
 Consulting
 ----------
 Meetecho helps you design the pipeline before it is written: which nodes,
