@@ -28,59 +28,37 @@ Among its many features, there are a few keypoints to highlight about Juturna:
 
 ## Quick start
 
-Transcribe an audio file: Juturna reads it in blocks, a voice activity
-detector cuts it into speech segments, Whisper transcribes them and the
-text is printed on the terminal. Juturna needs Python 3.12 or newer.
+Juturna needs Python 3.12 or newer.
 
 ```bash
-pip install juturna "juturna-nodes[av,audio-ml]"
+pip install juturna          # the core library and its CLI
+pip install juturna-nodes    # the officially supported nodes
 ```
 
-The `audio-ml` group pulls in PyTorch, so the install is a large download.
-
-A pipeline is a JSON file that lists nodes and the links between them. Save
-this as `pipeline.json`, and point `file_source` to an audio file in English
-(any format PyAV can read):
+A pipeline is a JSON file that lists nodes and the links between them:
 
 ```json
 {
   "version": "3.0.0",
   "pipeline": {
-    "name": "transcribe_file",
-    "id": "transcribe_file_01",
+    "name": "http_echo",
+    "id": "http_echo_01",
     "folder": "./run",
     "nodes": [
-      { "name": "audio", "type": "AudioFile",
-        "configuration": { "file_source": "sample.wav", "block_size": 2 } },
-      { "name": "vad", "type": "VadSilero",
-        "configuration": { "min_silence_duration_ms": 500 } },
-      { "name": "whisper", "type": "TranscriberWhisper",
-        "configuration": { "model_name": "tiny", "only_local": false,
-                           "device": "cpu" } },
-      { "name": "console", "type": "NotifierConsole", "configuration": {} }
+      { "name": "receiver", "type": "JsonHTTP", "configuration": {} },
+      { "name": "delay", "type": "PassthroughIdentity", "configuration": {} }
     ],
     "links": [
-      { "from": "audio", "to": "vad" },
-      { "from": "vad", "to": "whisper" },
-      { "from": "whisper", "to": "console" }
+      { "from": "receiver", "to": "delay" }
     ]
   }
 }
 ```
 
-Check it, then run it: press enter to start, and again to stop once the
-file is done.
-
 ```bash
 python -m juturna validate --config pipeline.json
 python -m juturna launch --config pipeline.json
 ```
-
-The text comes out as lines like `[whisper] <the transcribed text>`.
-Whisper transcribes its last few blocks of speech every time a new one
-arrives, so a sentence grows line after line until a whole block without
-speech starts the next one. `only_local: false` lets Whisper download the model on the first run,
-and `device: cpu` runs it without a GPU.
 
 The documentation has a tutorial that builds a pipeline from scratch, nodes
 included, and a guide to upgrade from Juturna 2.x.
