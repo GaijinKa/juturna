@@ -33,9 +33,25 @@ installs Juturna as a dependency:
 
     (.venv) $ pip install juturna-nodes
 
-Nodes with heavy dependencies sit behind optional groups (``av``,
-``audio-ml``, ``vision``, ``warp``): see the README of the package for the
-list.
+Nodes with heavy dependencies sit behind optional groups of
+``juturna-nodes``:
+
+- ``av``: PyAV, for ``AudioFile``, ``AudioRtp``, ``VideoCapture`` and
+  ``VideoRtp``
+- ``audio-ml``: faster-whisper and silero-vad (which brings PyTorch), for
+  ``TranscriberWhisper`` and ``VadSilero``
+- ``vision``: ultralytics, for ``DetectorYolo``
+- ``onnx``: ONNX Runtime, for ``DetectorYolox``
+- ``sherpa``: sherpa-onnx, for ``TranscriberSherpa`` and
+  ``SynthesizerSherpa``
+- ``sound``: sounddevice, for ``MicSource`` and ``SpeakerSink``; on Linux it
+  also needs PortAudio from the system (``libportaudio2``)
+- ``warp``: the ``warp`` group of Juturna, for the ``Warp`` node
+- ``all``: every group above
+
+.. code-block:: console
+
+    (.venv) $ pip install "juturna-nodes[av,onnx]"
 
 Optional groups
 ---------------
