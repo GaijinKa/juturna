@@ -274,4 +274,6 @@ performance, and offer consulting and support.
 Juturna is open source under the MIT license: the code is on
 `GitHub <https://github.com/meetecho/juturna>`_, and the
 `contributing guidelines <https://github.com/meetecho/juturna/blob/main/CONTRIBUTING.md>`_
-explain how to propose a change.
+explain how to propose a change. To report a vulnerability, follow the
+`security policy <https://github.com/meetecho/juturna/blob/main/SECURITY.md>`_: it covers private reporting, handling and
+coordinated disclosure, under the EU Cyber Resilience Act.

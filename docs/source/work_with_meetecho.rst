@@ -38,7 +38,10 @@ Janus.
 Support
 -------
 Meetecho supports the pipelines you run in production: answers from the
-maintainers, fixes, and upgrades between Juturna versions.
+maintainers, fixes, and upgrades between Juturna versions. Vulnerabilities
+follow the `security policy <https://github.com/meetecho/juturna/blob/main/SECURITY.md>`_, which says how to report them
+privately and how Meetecho, as the open-source software steward of Juturna
+under the EU Cyber Resilience Act, handles and discloses them.
 
 .. button-link:: https://www.meetecho.com/
     :color: primary
