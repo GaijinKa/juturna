@@ -257,6 +257,80 @@ The node pages tell the arguments and the message formats of each node:
 :ref:`SynthesizerSherpa <node-synthesizer-sherpa>`,
 :ref:`SpeakerSink <node-speaker-sink>`.
 
+Plug it into a real audio stream
+--------------------------------
+
+The microphone is for trying the assistant on your desk. On a server there is
+no microphone and no speaker, but there is audio coming over the network: a
+media server such as Janus or Asterisk can send the audio of a call as an RTP
+stream. The pipeline stays the same, you change two nodes in the JSON:
+``MicSource`` becomes ``AudioRtp``, which receives the stream, and
+``SpeakerSink`` becomes ``AudioWriter``, which writes the answers to a file.
+
+``AudioRtp`` reads the stream with PyAV, so add the ``av`` group:
+
+.. code-block:: console
+
+    (.venv) $ pip install "juturna-nodes[av]"
+
+Replace the ``question`` and ``answer`` nodes of ``assistant.json`` with
+these two:
+
+.. code-block:: json
+
+    [
+      {
+        "name": "question",
+        "type": "AudioRtp",
+        "configuration": {
+          "port": 5004,
+          "payload_type": 0,
+          "encoding_clock_chan": "PCMU/8000",
+          "resampler_format": "flt",
+          "block_size": 1
+        }
+      },
+      {
+        "name": "answer",
+        "type": "AudioWriter",
+        "configuration": { "file_name": "answer.wav" }
+      }
+    ]
+
+The node listens on ``127.0.0.1:5004`` (``host`` and ``port``) for G.711
+μ-law audio at 8 kHz, payload type 0: the codec of telephone calls. It hands
+the transcriber blocks of 1 second.
+
+Start the pipeline first, this time with the logs on, and wait for the line
+that says it is running:
+
+.. code-block:: console
+
+    (.venv) $ python -m juturna launch --config assistant.json --auto \
+                                       --timeout 60 --log-level INFO
+    ...
+    ... | INFO     | jt.voice_assistant      | pipe started
+
+If the stream starts before the pipeline, its first packets are lost without
+an error. From another terminal, send a recorded question as an RTP stream,
+in real time, with ffmpeg:
+
+.. code-block:: console
+
+    $ ffmpeg -i question.wav -af "apad=pad_dur=2,arealtime" \
+             -ac 1 -ar 8000 -c:a pcm_mulaw -f rtp rtp://127.0.0.1:5004
+
+The question is transcribed and answered as before, and the answer is in
+``./run/answer/answer.wav``.
+
+``apad`` adds 2 seconds of silence at the end. The transcriber closes a
+sentence only after 0.8 seconds of silence, and a stream that just ends, like
+a call that hangs up, does not reliably give it that much: without the
+padding, the last sentence waits until the pipeline stops, and is answered
+only then. When the stream ends, ``AudioRtp`` logs ``source unavailable``
+errors while it waits for a new one: that is expected. Juturna does not yet tell the
+nodes that a stream has ended; it is on the roadmap.
+
 From demo to production: guardrails
 -----------------------------------
 
