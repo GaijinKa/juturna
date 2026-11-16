@@ -85,12 +85,17 @@ runs reuse the files already there.
     * - Pronunciation lexicon ``lexicon-en-us.txt``
       - ``SynthesizerSherpa``
       - 6.3 MB
-      - None stated: generated from CMUdict, downloaded from the sherpa-onnx
-        release
+      - Not stated upstream, see below
     * - ``qwen2.5:1.5b``
       - ``PrompterOllama``
       - 986 MB
       - Apache-2.0
+
+The lexicon needs a word of caution. sherpa-onnx publishes it without a
+license. Its header lists CMUdict (BSD) and ``en_list``, the English word
+list of espeak-ng (GPL-3.0), among its sources: the prudent reading is to
+treat it as GPL-3.0 if you redistribute it. The node downloads it on your machine, and
+Juturna does not ship it.
 
 To use models you already have, point the ``model_dir`` argument of the two
 sherpa nodes to their folders, and ``lexicon`` to the lexicon file.
