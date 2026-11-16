@@ -1,38 +1,57 @@
 Build a voice assistant
 =======================
 
-This guide builds a small assistant that answers spoken questions with a
-synthetic voice. You give it a recorded question, ``question.wav``, and it
-writes the spoken answer to ``answer.wav``:
+This guide builds a small assistant you talk to: press Enter, ask a question
+in English, press Enter again, and it answers with a synthetic voice.
 
 .. code-block:: text
 
-    question.wav ─► stt ─► llm ─► tts ─► answer.wav
-                     │      │
-                     └──────┴──► console
+    microphone ─► stt ─► llm ─► tts ─► speaker
+                   │      │
+                   └──────┴──► console
 
+- ``MicSource`` records from the microphone, between two presses of Enter;
 - ``TranscriberSherpa`` turns the question into text;
 - ``PrompterOllama`` asks a language model served by Ollama;
 - ``SynthesizerSherpa`` speaks the answer;
-- ``AudioWriter`` writes it to a WAV file;
+- ``SpeakerSink`` plays it;
 - ``NotifierConsole`` prints the question and the answer on the terminal.
 
 Everything runs on the CPU, without PyTorch. Once the models are downloaded,
 nothing leaves the machine: speech recognition, the language model and the
 voice all run locally.
 
+Before you start
+----------------
+
+It is a demo, and it has limits:
+
+- it needs a microphone and a speaker on the machine that runs the pipeline:
+  it does not work over SSH or on a server without audio;
+- push-to-talk does not work on Windows, as it waits for Enter with
+  ``select`` on the standard input;
+- speech recognition is not precise, and a small language model gets facts
+  wrong;
+- the voice skips the words missing from its pronunciation lexicon, which
+  includes most names.
+
 Install
 -------
 
 .. code-block:: console
 
-    (.venv) $ pip install juturna "juturna-nodes[av,sherpa]"
+    (.venv) $ pip install juturna "juturna-nodes[sherpa,sound]"
 
-The two groups bring PyAV, to read audio files, and sherpa-onnx, for speech
-recognition and synthesis.
+``sherpa`` brings sherpa-onnx, for speech recognition and synthesis, and
+``sound`` brings sounddevice, for the microphone and the speaker. On Linux,
+sounddevice also needs PortAudio from the system:
+
+.. code-block:: console
+
+    $ sudo apt install libportaudio2
 
 The language model is served by `Ollama <https://ollama.com>`_. Install it,
-then pull the default model:
+then pull the model of the example:
 
 .. code-block:: console
 
@@ -74,15 +93,8 @@ the voice and its pronunciation lexicon into a ``models`` folder:
       - 398 MB
       - Apache-2.0
 
-Words missing from the lexicon are not spoken, and that includes most names.
-
 Write the configuration
 -----------------------
-
-Record a question in English and save it as ``question.wav``: any format and
-sampling rate PyAV can read will do, telephone audio at 8 kHz included.
-Leave a second of silence at the end, because the transcriber closes a
-sentence only after 0.8 seconds without speech.
 
 Save this as ``assistant.json``, next to the ``models`` folder:
 
@@ -97,8 +109,8 @@ Save this as ``assistant.json``, next to the ``models`` folder:
         "nodes": [
           {
             "name": "question",
-            "type": "AudioFile",
-            "configuration": { "file_source": "question.wav", "block_size": 1 }
+            "type": "MicSource",
+            "configuration": { "push_to_talk": true }
           },
           {
             "name": "stt",
@@ -122,8 +134,8 @@ Save this as ``assistant.json``, next to the ``models`` folder:
           },
           {
             "name": "answer",
-            "type": "AudioWriter",
-            "configuration": { "file_name": "answer.wav" }
+            "type": "SpeakerSink",
+            "configuration": {}
           },
           {
             "name": "console",
@@ -144,37 +156,49 @@ Save this as ``assistant.json``, next to the ``models`` folder:
 
 ``stt`` and ``llm`` both send their messages to ``console`` as well: a node
 can feed any number of others, and each gets the same message without a
-copy.
+copy. ``MicSource`` and ``SpeakerSink`` use the default devices of the
+system; ``python -m sounddevice`` lists the others, to pick with their
+``device`` argument.
 
 Run it
 ------
 
+Run the pipeline in a terminal:
+
 .. code-block:: console
 
     (.venv) $ python -m juturna validate --config assistant.json
-    (.venv) $ python -m juturna launch --config assistant.json --auto --timeout 20 \
-                                  --log-level WARNING
+    (.venv) $ python -m juturna launch --config assistant.json --auto \
+                                       --timeout 120 --log-level WARNING
+    [question] press Enter to talk
+    [question] listening, press Enter to stop
+    [question] stopped, press Enter to talk
     [stt] what is the capital of italy
     [llm] The capital of Italy is Rome.
 
-``--log-level WARNING`` keeps the pipeline logs out of the way. The
-transcriber sends one message per sentence, when the speaker stops: you
-see the final text only, never partial guesses. The spoken answer is in
-``./run/answer/answer.wav``.
+Press Enter, ask your question, press Enter again: the transcribed question
+and the answer appear on the terminal, and the answer plays on the speaker.
+Ask as many questions as you like; after ``--timeout`` seconds the pipeline
+stops.
 
-The file source stops at the end of the file, but the other nodes keep
-waiting for more, so ``--timeout`` is what ends the run: make it longer than
-the question plus a few seconds.
+``--auto`` matters: without it, the launcher itself reads Enter to start and
+stop the pipeline, and the microphone never gets it. ``--log-level WARNING``
+keeps the pipeline logs out of the way.
+
+The microphone only sends audio between the two presses of Enter, so the
+assistant does not hear itself through the speaker. When you stop talking,
+it sends a second of silence, and the transcriber closes the sentence at
+once. You see the final text of each question only, never partial guesses.
 
 How long it takes
 -----------------
 
-On a laptop CPU (Intel Core i7-10850H), the answer is ready about 2 seconds
-after the question ends:
+After the second Enter, the answer needs the time of the language model and
+of the voice. On a laptop CPU (Intel Core i7-10850H), measured on a recorded
+question:
 
-- 0.8 seconds of silence, before the transcriber closes the sentence;
 - 0.1 to 0.3 seconds for ``qwen2.5:0.5b`` to answer;
-- about 1 second to synthesise this one-sentence answer, with the default
+- about 1 second to synthesise a one-sentence answer, with the default
   2 threads.
 
 ``PrompterOllama`` and ``SynthesizerSherpa`` add their own time to the
@@ -185,7 +209,7 @@ Choose a model
 --------------
 
 Any model served by Ollama works: pull it and change ``model_name``, nothing
-else in the pipeline changes. The default is the smallest download, and it
+else in the pipeline changes. The example uses the smallest download, and it
 gets things wrong: in our tests ``qwen2.5:0.5b`` once named Florence as the
 capital of Italy. Larger models answer more reliably, and take longer and
 more memory for each answer.
@@ -221,7 +245,8 @@ conversation. The ``system_prompt`` argument of ``PrompterOllama`` sets how
 it answers, by default in one or two short sentences.
 
 The node pages tell the arguments and the message formats of each node:
+:ref:`MicSource <node-mic-source>`,
 :ref:`TranscriberSherpa <node-transcriber-sherpa>`,
 :ref:`PrompterOllama <node-prompter-ollama>`,
 :ref:`SynthesizerSherpa <node-synthesizer-sherpa>`,
-:ref:`AudioWriter <node-audio-writer>`.
+:ref:`SpeakerSink <node-speaker-sink>`.
