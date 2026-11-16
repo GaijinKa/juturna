@@ -327,8 +327,7 @@ The question is transcribed and answered as before, and the answer is in
 sentence only after 0.8 seconds of silence, and a stream that just ends, like
 a call that hangs up, does not reliably give it that much: without the
 padding, the last sentence waits until the pipeline stops, and is answered
-only then. When the stream ends, ``AudioRtp`` logs ``source unavailable``
-errors while it waits for a new one: that is expected. Juturna does not yet tell the
+only then. Juturna does not yet tell the
 nodes that a stream has ended; it is on the roadmap.
 
 From demo to production: guardrails
