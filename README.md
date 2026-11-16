@@ -28,15 +28,41 @@ Among its many features, there are a few keypoints to highlight about Juturna:
 
 ## Quick start
 
+> **About this example.** A minimal example: it shows how nodes compose into
+> a pipeline that does something real, in a few minutes. Its limits are
+> deliberate: it runs on the CPU with small models, and has no guardrails or
+> hardening, so its quality and latency are not those of a tuned deployment.
+> To adapt it, follow the [guides](https://meetecho.github.io/juturna/how_to/index.html);
+> to extend it, pick nodes from the
+> [node catalogue](https://meetecho.github.io/juturna/catalog/nodes/overview.html);
+> to take it to production, with tuned performance, hardware sized to the
+> workload and scaling,
+> [work with Meetecho](https://meetecho.github.io/juturna/work_with_meetecho.html).
+
 Transcribe an audio file: Juturna reads it in blocks, a voice activity
 detector cuts it into speech segments, Whisper transcribes them and the
 text is printed on the terminal. Juturna needs Python 3.12 or newer.
 
 ```bash
-pip install juturna "juturna-nodes[av,audio-ml]"
+pip install juturna "juturna-nodes[av,audio-ml]" \
+    --index-url https://download.pytorch.org/whl/cpu \
+    --extra-index-url https://pypi.org/simple
 ```
 
-The `audio-ml` group pulls in PyTorch, so the install is a large download.
+The `audio-ml` group pulls in PyTorch. On Linux, the PyTorch wheels on PyPI
+pull in the CUDA libraries: the two index options install the CPU-only build,
+and the whole environment takes about 1.4 GB. With uv, add
+`--index-strategy unsafe-best-match`:
+
+```bash
+uv pip install juturna "juturna-nodes[av,audio-ml]" \
+    --index-url https://download.pytorch.org/whl/cpu \
+    --extra-index-url https://pypi.org/simple \
+    --index-strategy unsafe-best-match
+```
+
+On macOS and Windows the PyTorch wheels on PyPI carry no CUDA libraries, so
+`pip install juturna "juturna-nodes[av,audio-ml]"` is enough.
 
 A pipeline is a JSON file that lists nodes and the links between them. Save
 this as `pipeline.json`, and point `file_source` to an audio file in English

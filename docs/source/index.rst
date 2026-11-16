@@ -103,6 +103,8 @@ The same pipeline also runs in a browser tab, on Pyodide: see
 Quick start
 -----------
 
+.. include:: _includes/about_example.rst
+
 Transcribe an audio file: Juturna reads it in blocks, a voice activity
 detector cuts it into speech segments, Whisper transcribes them and the text
 is printed on the terminal. Install Juturna (Python 3.12 or newer) and the
@@ -110,9 +112,24 @@ nodes the pipeline uses:
 
 .. code-block:: console
 
-    $ pip install juturna "juturna-nodes[av,audio-ml]"
+    $ pip install juturna "juturna-nodes[av,audio-ml]" \
+          --index-url https://download.pytorch.org/whl/cpu \
+          --extra-index-url https://pypi.org/simple
 
-The ``audio-ml`` group pulls in PyTorch, so the install is a large download.
+The ``audio-ml`` group pulls in PyTorch. On Linux, the PyTorch wheels on PyPI
+pull in the CUDA libraries: the two index options install the CPU-only build,
+and the whole environment takes about 1.4 GB. With uv, add
+``--index-strategy unsafe-best-match``:
+
+.. code-block:: console
+
+    $ uv pip install juturna "juturna-nodes[av,audio-ml]" \
+          --index-url https://download.pytorch.org/whl/cpu \
+          --extra-index-url https://pypi.org/simple \
+          --index-strategy unsafe-best-match
+
+On macOS and Windows the PyTorch wheels on PyPI carry no CUDA libraries, so
+``pip install juturna "juturna-nodes[av,audio-ml]"`` is enough.
 
 A pipeline is a list of nodes and the links between them. Save this as
 ``pipeline.json``, and point ``file_source`` to an audio file in English:
