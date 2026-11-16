@@ -11,9 +11,11 @@ breaking changes between releases, so you can upgrade with confidence.
 
 ## At a glance
 
-**Juturna** is a data pipeline library written in Python. It is particularly
-useful for fast prototyping multimedia, **real-time** data applications, as
-well as exploring and testing AI models, in a modular and flexible fashion.
+**Juturna** is a data pipeline library written in Python, built for fast
+prototyping that doesn't stop at the prototype: a JSON file and a few Python
+nodes give you a working **real-time** pipeline in minutes, and the same
+pipeline then runs behind an HTTP service, with its heaviest nodes on other
+machines, without being rewritten.
 
 Among its many features, there are a few keypoints to highlight about Juturna:
 
