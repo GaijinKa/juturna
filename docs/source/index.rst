@@ -104,8 +104,8 @@ file, and Juturna runs the graph: each node in worker threads of its own,
 with messages frozen on the way out so several nodes can read the same
 payload without copying it. The pipeline you try out in one process is the
 one you deploy: it also runs behind an HTTP service, or with its heaviest
-nodes moved to other machines, such as a model on a GPU, without being
-rewritten.
+nodes moved to other machines, such as a model on a GPU, without rewriting
+its nodes.
 
 The same pipeline also runs in a browser tab, on Pyodide: see
 :doc:`browser/index`.

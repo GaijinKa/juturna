@@ -13,9 +13,10 @@ From spike to production
 
 A JSON file and a few nodes give you a working pipeline in minutes: the
 :doc:`quick start </index>` transcribes an audio file. When the spike works,
-the same file goes further without being rewritten: behind an HTTP service
-(:doc:`/how_to/serve_pipelines`), and with its heaviest nodes on other
-machines (:doc:`/how_to/remotise_node`). Releases follow semantic versioning.
+the same pipeline goes further without rewriting its nodes: the same file runs
+behind an HTTP service (:doc:`/how_to/serve_pipelines`), and moving its
+heaviest nodes to other machines only adds their address to the configuration
+(:doc:`/how_to/remotise_node`). Releases follow semantic versioning.
 
 A pipeline is a JSON file
 -------------------------

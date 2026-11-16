@@ -15,7 +15,7 @@ breaking changes between releases, so you can upgrade with confidence.
 prototyping that doesn't stop at the prototype: a JSON file and a few Python
 nodes give you a working **real-time** pipeline in minutes, and the same
 pipeline then runs behind an HTTP service, with its heaviest nodes on other
-machines, without being rewritten.
+machines, without rewriting its nodes.
 
 Among its many features, there are a few keypoints to highlight about Juturna:
 
