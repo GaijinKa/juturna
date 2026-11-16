@@ -55,23 +55,17 @@ then pull the model of the example:
 
 .. code-block:: console
 
-    $ ollama pull qwen2.5:0.5b
+    $ ollama pull qwen2.5:1.5b
 
-Download the models
--------------------
+Models
+------
 
-The sherpa nodes do not download models. Fetch the speech recognition model,
-the voice and its pronunciation lexicon into a ``models`` folder:
-
-.. code-block:: console
-
-    $ mkdir models && cd models
-    $ curl -LO https://github.com/k2-fsa/sherpa-onnx/releases/download/asr-models/sherpa-onnx-streaming-zipformer-en-2023-06-26.tar.bz2
-    $ tar xjf sherpa-onnx-streaming-zipformer-en-2023-06-26.tar.bz2
-    $ curl -LO https://github.com/k2-fsa/sherpa-onnx/releases/download/tts-models/kitten-nano-en-v0_8-int8.tar.bz2
-    $ tar xjf kitten-nano-en-v0_8-int8.tar.bz2
-    $ curl -LO https://github.com/k2-fsa/sherpa-onnx/releases/download/tts-models/lexicon-en-us.txt
-    $ cd ..
+The speech models need no setup: on the first run, ``TranscriberSherpa`` and
+``SynthesizerSherpa`` download them, about 107 MB in all, into
+``~/.cache/juturna/models/`` (or under ``$XDG_CACHE_HOME``). The two models
+come from Hugging Face at a pinned revision, the lexicon from a sherpa-onnx
+release; every download is checked against its size and SHA-256, and later
+runs reuse the files already there.
 
 .. list-table::
     :header-rows: 1
@@ -82,21 +76,29 @@ the voice and its pronunciation lexicon into a ``models`` folder:
       - License
     * - English streaming zipformer
       - ``TranscriberSherpa``
-      - 68 MB of int8 files
+      - 73 MB
       - Apache-2.0
     * - Kitten nano int8
       - ``SynthesizerSherpa``
-      - 29 MB, plus 6 MB of lexicon
+      - 28 MB
       - Apache-2.0
-    * - ``qwen2.5:0.5b``
+    * - Pronunciation lexicon ``lexicon-en-us.txt``
+      - ``SynthesizerSherpa``
+      - 6.3 MB
+      - None stated: generated from CMUdict, downloaded from the sherpa-onnx
+        release
+    * - ``qwen2.5:1.5b``
       - ``PrompterOllama``
-      - 398 MB
+      - 986 MB
       - Apache-2.0
+
+To use models you already have, point the ``model_dir`` argument of the two
+sherpa nodes to their folders, and ``lexicon`` to the lexicon file.
 
 Write the configuration
 -----------------------
 
-Save this as ``assistant.json``, next to the ``models`` folder:
+Save this as ``assistant.json``:
 
 .. code-block:: json
 
@@ -115,22 +117,17 @@ Save this as ``assistant.json``, next to the ``models`` folder:
           {
             "name": "stt",
             "type": "TranscriberSherpa",
-            "configuration": {
-              "model_dir": "./models/sherpa-onnx-streaming-zipformer-en-2023-06-26"
-            }
+            "configuration": {}
           },
           {
             "name": "llm",
             "type": "PrompterOllama",
-            "configuration": { "model_name": "qwen2.5:0.5b" }
+            "configuration": { "model_name": "qwen2.5:1.5b" }
           },
           {
             "name": "tts",
             "type": "SynthesizerSherpa",
-            "configuration": {
-              "model_dir": "./models/kitten-nano-en-v0_8-int8",
-              "lexicon": "./models/lexicon-en-us.txt"
-            }
+            "configuration": {}
           },
           {
             "name": "answer",
@@ -182,8 +179,8 @@ Ask as many questions as you like; after ``--timeout`` seconds the pipeline
 stops.
 
 ``--auto`` matters: without it, the launcher itself reads Enter to start and
-stop the pipeline, and the microphone misses the presses meant for it. ``--log-level WARNING``
-keeps the pipeline logs out of the way.
+stop the pipeline, and the microphone misses the presses meant for it.
+``--log-level WARNING`` keeps the pipeline logs out of the way.
 
 The microphone only sends audio between the two presses of Enter, so the
 assistant does not hear itself through the speaker. When you stop talking,
@@ -194,10 +191,10 @@ How long it takes
 -----------------
 
 After the second Enter, the answer needs the time of the language model and
-of the voice. On a laptop CPU (Intel Core i7-10850H), measured on a recorded
-question:
+of the voice. On a laptop CPU, measured on recorded questions:
 
-- 0.1 to 0.3 seconds for ``qwen2.5:0.5b`` to answer;
+- about 0.5 seconds for ``qwen2.5:1.5b`` to answer (0.46 s median over 60
+  questions);
 - about 1 second to synthesise a one-sentence answer, with the default
   2 threads.
 
@@ -209,10 +206,13 @@ Choose a model
 --------------
 
 Any model served by Ollama works: pull it and change ``model_name``, nothing
-else in the pipeline changes. The example uses the smallest download, and it
-gets things wrong: in our tests ``qwen2.5:0.5b`` once named Florence as the
-capital of Italy. Larger models answer more reliably, and take longer and
-more memory for each answer.
+else in the pipeline changes. Larger models answer more reliably, and take
+longer and more memory for each answer. On 20 short questions asked three
+times each, on CPU:
+
+- ``qwen2.5:0.5b`` answered 44 of 60 correctly, in 0.28 s (median);
+- ``qwen2.5:1.5b``, the default of ``PrompterOllama``, answered 55 of 60
+  correctly, in 0.46 s (median).
 
 .. list-table::
     :header-rows: 1
@@ -236,13 +236,14 @@ more memory for each answer.
       - 4.7 GB
       - Apache-2.0
 
-Sizes and licenses are those listed by the Ollama registry; only
-``qwen2.5:0.5b`` has been measured. Check the license of the model you pick
+Sizes and licenses are those listed by the Ollama registry; only the two
+``qwen2.5`` models above have been measured. Check the license of the model you pick
 before shipping it in a product.
 
 Each question is sent on its own: the assistant keeps no memory of the
 conversation. The ``system_prompt`` argument of ``PrompterOllama`` sets how
-it answers, by default in one or two short sentences.
+it answers: by default in one or two short sentences, with numbers written
+as words, because the voice cannot read digits.
 
 The node pages tell the arguments and the message formats of each node:
 :ref:`MicSource <node-mic-source>`,
