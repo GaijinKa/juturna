@@ -102,9 +102,10 @@ Juturna is a Python library for real-time pipelines of audio, video and data.
 You write the processing steps as nodes, describe how they connect in a JSON
 file, and Juturna runs the graph: each node in worker threads of its own,
 with messages frozen on the way out so several nodes can read the same
-payload without copying it. A pipeline runs in one process, behind an HTTP
-service, or with its heaviest nodes moved to other machines, such as a model
-on a GPU.
+payload without copying it. The pipeline you try out in one process is the
+one you deploy: it also runs behind an HTTP service, or with its heaviest
+nodes moved to other machines, such as a model on a GPU, without being
+rewritten.
 
 The same pipeline also runs in a browser tab, on Pyodide: see
 :doc:`browser/index`.
