@@ -266,10 +266,10 @@ real-time media since 2009.
 Taking a pipeline to production? We write the nodes you are missing, tune
 performance, and offer consulting and support.
 
-.. button-link:: https://www.meetecho.com/
+.. button-link:: https://www.meetecho.com/en/#contact
     :color: primary
 
-    Ping the maintainers
+    Talk to the Meetecho team
 
 Juturna is open source under the MIT license: the code is on
 `GitHub <https://github.com/meetecho/juturna>`_, and the

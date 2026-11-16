@@ -43,7 +43,7 @@ follow the `security policy <https://github.com/meetecho/juturna/blob/main/SECUR
 privately and how Meetecho, as the open-source software steward of Juturna
 under the EU Cyber Resilience Act, handles and discloses them.
 
-.. button-link:: https://www.meetecho.com/
+.. button-link:: https://www.meetecho.com/en/#contact
     :color: primary
 
-    Ping the maintainers
+    Talk to the Meetecho team
