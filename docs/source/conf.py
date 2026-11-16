@@ -169,3 +169,25 @@ html_theme_options = {
 rst_prolog = f"""
 .. |version-badge| replace:: :bdg-secondary-line:`version {version}`
 """
+
+
+def _skip_reexported(app, what, name, obj, skip, options):
+    # a package re-exports in __all__ the classes of its public subpackages,
+    # which sphinx-apidoc gives their own page: document them only there
+    if what != 'module':
+        return None
+    module = getattr(obj, '__module__', None) or ''
+    home = []
+    for part in module.split('.'):
+        if part.startswith('_'):
+            break
+        home.append(part)
+    current = app.env.temp_data.get('autodoc:module') or ''
+    if current and '.'.join(home).startswith(current + '.'):
+        return True
+    return None
+
+
+def setup(app):
+    """Register the build hooks of the documentation."""
+    app.connect('autodoc-skip-member', _skip_reexported)
