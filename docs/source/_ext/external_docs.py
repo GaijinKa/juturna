@@ -18,6 +18,21 @@ from sphinx.errors import ConfigError
 
 
 _NODE_SECTIONS = ('nodes', 'contribute')
+
+# nodes missing from the juturna-nodes release on PyPI (0.1.0): their pages
+# and their rows in the overview get the next release marker of conf.py
+_NEXT_RELEASE = {
+    'audio_writer',
+    'detection_events',
+    'detector_yolox',
+    'mic_source',
+    'notifier_console',
+    'prompter_ollama',
+    'speaker_sink',
+    'synthesizer_sherpa',
+    'transcriber_sherpa',
+    'video_capture',
+}
 _NODE_INCLUDE_ROOT = '../../../src/'
 
 _BROWSER_REPO = 'https://github.com/meetecho/juturna-browser'
@@ -65,9 +80,8 @@ def _copy_nodes(srcdir: pathlib.Path):
             out.parent.mkdir(parents=True, exist_ok=True)
             # the pages include each node's config.toml relative to their repo
             rel = os.path.relpath(src, out.parent)
-            out.write_text(
-                page.read_text().replace(_NODE_INCLUDE_ROOT, f'{rel}/')
-            )
+            text = page.read_text().replace(_NODE_INCLUDE_ROOT, f'{rel}/')
+            out.write_text(_mark_next_release(page.stem, text))
 
     missing = sorted(
         d.name[1:]
@@ -82,6 +96,27 @@ def _copy_nodes(srcdir: pathlib.Path):
 
     # juturna is a pkgutil namespace: the nodes join it for autodoc
     juturna.__path__.append(str(src / 'juturna'))
+
+
+def _mark_next_release(stem: str, text: str) -> str:
+    if stem == 'overview':
+        for node in _NEXT_RELEASE:
+            label = '<node-' + node.replace('_', '-') + '>`'
+            text = text.replace(label, label + ' |next-release|')
+
+        return text
+
+    if stem not in _NEXT_RELEASE:
+        return text
+
+    # after the badges under the title, or after the title
+    lines = text.split('\n')
+    at = next(i for i, line in enumerate(lines) if line.startswith('==')) + 1
+    if at + 1 < len(lines) and lines[at + 1].startswith(':bdg'):
+        at += 2
+    lines[at:at] = ['', '.. include:: /_includes/next_release.rst']
+
+    return '\n'.join(lines)
 
 
 def _copy_browser(srcdir: pathlib.Path):

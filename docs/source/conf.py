@@ -166,8 +166,13 @@ html_theme_options = {
     ],
 }
 
+# nodes and extras newer than the juturna-nodes release on PyPI are marked with
+# these; external_docs.py lists the nodes. Remove both after the release
 rst_prolog = f"""
 .. |version-badge| replace:: :bdg-secondary-line:`version {version}`
+.. |next-release| replace:: :bdg-warning-line:`next release`
+.. |next-release-note| replace:: Available from the next juturna-nodes
+   release: version 0.1.0, the one on PyPI today, does not include it.
 """
 
 

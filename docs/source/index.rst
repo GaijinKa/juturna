@@ -114,6 +114,11 @@ Quick start
 
 .. include:: _includes/about_example.rst
 
+.. note::
+
+    ``NotifierConsole``, which prints the text in this quick start:
+    |next-release-note|
+
 Transcribe an audio file: Juturna reads it in blocks, a voice activity
 detector cuts it into speech segments, Whisper transcribes them and the text
 is printed on the terminal. Install Juturna (Python 3.12 or newer) and the
