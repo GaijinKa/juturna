@@ -1,7 +1,7 @@
 .. _tutorial:
 
-Your first pipeline
-===================
+Write your first nodes
+======================
 
 In this tutorial we build a small pipeline from scratch and run it. It takes
 about ten minutes, and needs nothing but Python 3.12 (or newer) and Juturna

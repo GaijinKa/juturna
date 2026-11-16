@@ -108,8 +108,8 @@ arrives, so a sentence grows line after line until a whole block without
 speech starts the next one. `only_local: false` lets Whisper download the model on the first run,
 and `device: cpu` runs it without a GPU.
 
-The documentation has a tutorial that builds a pipeline from scratch, nodes
-included, and a guide to upgrade from Juturna 2.x.
+The documentation has more examples, a tutorial that writes your first nodes,
+and a guide to upgrade from Juturna 2.x.
 
 Documentation: [https://meetecho.github.io/juturna/index.html](https://meetecho.github.io/juturna/index.html)
 

@@ -3,7 +3,6 @@
    :hidden:
    :caption: Start
 
-   tutorials/first_pipeline
    how_to/install
    how_to/migrate_from_2
 
@@ -69,6 +68,7 @@
    catalog/nodes/sources
    catalog/nodes/processing
    catalog/nodes/sinks
+   tutorials/first_pipeline
    how_to/create_nodes
    catalog/contribute/new_node
 
@@ -179,8 +179,9 @@ is done.
 The text comes out as lines like ``[whisper] <the transcribed text>``, one
 more each time Whisper transcribes its latest blocks of speech.
 
-To write nodes of your own, follow the :ref:`tutorial <tutorial>`: it builds
-a pipeline from scratch in about ten minutes.
+For complete pipelines to run and adapt, see the :ref:`examples <examples>`.
+To write nodes of your own, follow :ref:`Write your first nodes <tutorial>`:
+it builds a pipeline from scratch in about ten minutes.
 
 Explore the documentation
 -------------------------
@@ -189,11 +190,12 @@ Explore the documentation
     :gutter: 3
 
     .. grid-item-card:: ``jt/start``
-        :link: tutorial
-        :link-type: ref
+        :link: how_to/install
+        :link-type: doc
 
-        New to Juturna? Install it and build your first pipeline, one step
-        at a time. Coming from 2.x? The migration guide is here too.
+        New to Juturna? Install it with the optional groups you need, then
+        run the quick start above. Coming from 2.x? The migration guide is
+        here too.
 
     .. grid-item-card:: ``jt/deploy``
         :link: explain/where_it_runs

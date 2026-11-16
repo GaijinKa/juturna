@@ -5,7 +5,8 @@ How-to guides
 
 These guides are recipes: each one takes you through a task you are likely to
 meet when working with Juturna. They assume you know the basics; if you do
-not, start from the :ref:`tutorial <tutorial>`.
+not, start from the :doc:`quick start </index>`, and from
+:ref:`Write your first nodes <tutorial>` to write nodes of your own.
 
 - :doc:`install` Juturna and its optional groups
 - :doc:`write and package a node <create_nodes>`
