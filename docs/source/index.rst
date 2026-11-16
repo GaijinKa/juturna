@@ -198,6 +198,14 @@ Explore the documentation
         run the quick start above. Coming from 2.x? The migration guide is
         here too.
 
+    .. grid-item-card:: ``jt/examples``
+        :link: examples
+        :link-type: ref
+
+        Complete pipelines to run and adapt: a voice assistant, object
+        detection on a video. Each one with its install, configuration and
+        expected output.
+
     .. grid-item-card:: ``jt/deploy``
         :link: explain/where_it_runs
         :link-type: doc
