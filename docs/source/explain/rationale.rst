@@ -45,7 +45,8 @@ The same pipeline, in different places
 
 The same configuration runs in one process with ``python -m juturna
 launch``, behind an HTTP service with ``python -m juturna serve``, or in a
-browser tab on Pyodide. See :doc:`where_it_runs`.
+browser tab on Pyodide. See :doc:`where_it_runs` and
+:doc:`/how_to/serve_pipelines`.
 
 A small core
 ------------
