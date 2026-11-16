@@ -24,6 +24,7 @@
 
    how_to/index
    how_to/create_pipelines
+   how_to/voice_assistant
    how_to/environment
    how_to/observe
    troubleshooting

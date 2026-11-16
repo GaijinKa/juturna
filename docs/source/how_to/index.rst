@@ -10,6 +10,7 @@ not, start from the :ref:`tutorial <tutorial>`.
 - :doc:`install` Juturna and its optional groups
 - :doc:`write and package a node <create_nodes>`
 - :doc:`write, check and run a pipeline <create_pipelines>`
+- :doc:`build a voice assistant <voice_assistant>` that answers spoken questions
 - :doc:`use environment variables <environment>` in a configuration
 - :doc:`run pipelines behind an HTTP service <serve_pipelines>`
 - :doc:`run a node on another machine <remotise_node>`
