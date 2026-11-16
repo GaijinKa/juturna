@@ -21,6 +21,8 @@ Everything runs on the CPU, without PyTorch. Once the models are downloaded,
 nothing leaves the machine: speech recognition, the language model and the
 voice all run locally.
 
+.. include:: /_includes/about_example.rst
+
 Before you start
 ----------------
 
