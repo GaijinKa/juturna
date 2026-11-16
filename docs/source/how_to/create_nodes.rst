@@ -106,6 +106,13 @@ in your environment:
 
     (.venv) $ pip install ultralytics opencv-python
 
+.. note::
+
+    ``ultralytics`` is distributed under the AGPL-3.0 license: check that its
+    terms are compatible with your project before your node depends on it.
+    :ref:`DetectorYolox <node-detector-yolox>`, which runs YOLOX models on
+    ONNX Runtime, is a permissive alternative.
+
 Juturna does not install the dependencies of a node for you: they come with
 the package the node is in.
 
