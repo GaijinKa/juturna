@@ -312,7 +312,11 @@ that says it is running:
     ... | INFO     | jt.voice_assistant      | pipe started
 
 If the stream starts before the pipeline, its first packets are lost without
-an error. From another terminal, send a recorded question as an RTP stream,
+an error. If the log repeats ``source unavailable`` every 2 seconds, another
+process holds port 5004: find it with ``ss -lunp | grep 5004``, or pick
+another port, both in ``port`` and in the ``rtp://`` address of the ffmpeg
+command below. The node keeps trying, and starts receiving as soon as the
+port is free. From another terminal, send a recorded question as an RTP stream,
 in real time, with ffmpeg:
 
 .. code-block:: console
