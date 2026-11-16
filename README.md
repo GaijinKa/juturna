@@ -30,7 +30,7 @@ Among its many features, there are a few keypoints to highlight about Juturna:
 
 > **About this example.** A minimal example: it shows how nodes compose into
 > a pipeline that does something real, in a few minutes. Its limits are
-> deliberate: it runs on the CPU with small models, and has no guardrails or
+> deliberate: it needs no GPU and uses small models, and has no guardrails or
 > hardening, so its quality and latency are not those of a tuned deployment.
 > To adapt it, follow the [guides](https://meetecho.github.io/juturna/how_to/index.html);
 > to extend it, pick nodes from the
