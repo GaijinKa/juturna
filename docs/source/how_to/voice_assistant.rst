@@ -299,7 +299,9 @@ these two:
 
 The node listens on ``127.0.0.1:5004`` (``host`` and ``port``) for G.711
 μ-law audio at 8 kHz, payload type 0: the codec of telephone calls. It hands
-the transcriber blocks of 1 second.
+the transcriber blocks of 1 second. The node pages tell the arguments and the
+message formats of the two nodes: :ref:`AudioRtp <node-audio-rtp>`,
+:ref:`AudioWriter <node-audio-writer>`.
 
 Start the pipeline first, this time with the logs on, and wait for the line
 that says it is running:
