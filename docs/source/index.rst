@@ -3,6 +3,7 @@
    :hidden:
    :caption: Start
 
+   Home <self>
    how_to/install
    how_to/migrate_from_2
 
