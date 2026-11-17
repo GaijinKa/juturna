@@ -9,6 +9,9 @@
 <a href="https://github.com/meetecho/juturna/blob/main/LICENSE"><img alt="License MIT" src="https://img.shields.io/github/license/meetecho/juturna?style=for-the-badge"></a>
 <a href="https://github.com/astral-sh/ruff"><img alt="Ruff" src="https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json&amp;style=for-the-badge"></a>
 <a href="https://www.meetecho.com/en/?utm_source=github-readme&amp;utm_medium=docs&amp;utm_campaign=juturna3"><img alt="By Meetecho" src="https://img.shields.io/badge/by-Meetecho-1a6dad?style=for-the-badge"></a>
+<br>
+<a href="https://github.com/meetecho/juturna-browser"><img alt="juturna-browser on GitHub" src="https://img.shields.io/badge/github-juturna--browser-181717?style=for-the-badge&amp;logo=github"></a>
+<a href="https://meetecho.github.io/juturna/browser/demos.html"><img alt="Browser demos" src="https://img.shields.io/badge/browser-demos-1a6dad?style=for-the-badge"></a>
 </p>
 
 ## Important to know
