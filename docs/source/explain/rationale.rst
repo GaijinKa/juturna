@@ -3,10 +3,11 @@
 Why Juturna
 ===========
 
-Juturna runs real-time data through pipelines: audio, video, text or any
-other payload enters a source node, crosses the processing nodes and leaves
-through a sink, while every node works on its own. This page lists the
-choices behind it, and where each one is documented.
+Juturna is a Python framework for real-time AI pipelines on audio, video and
+data, built for fast prototyping that doesn't stop at the prototype. Data
+enters a source node, crosses the processing nodes and leaves through a sink,
+while every node works on its own. This page lists the choices behind it,
+and where each one is documented.
 
 From spike to production
 ------------------------

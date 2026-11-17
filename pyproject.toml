@@ -1,7 +1,7 @@
 [project]
 name = "juturna"
 version = "3.0.0"
-description = "Juturna core library"
+description = "Python framework for real-time AI pipelines on audio, video and data"
 authors = [
     { name = "Antonio Bevilacqua", email = "b3by.in.th3.sky@gmail.com" },
     { name = "Paolo Saviano", email = "psaviano@meetecho.com" }

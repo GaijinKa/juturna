@@ -98,7 +98,8 @@
 Juturna
 =======
 
-Juturna is a Python library for real-time pipelines of audio, video and data.
+Juturna is a Python framework for real-time AI pipelines on audio, video and
+data, built for fast prototyping that doesn't stop at the prototype.
 You write the processing steps as nodes, describe how they connect in a JSON
 file, and Juturna runs the graph: each node in worker threads of its own,
 with messages frozen on the way out so several nodes can read the same

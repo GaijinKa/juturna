@@ -1,4 +1,4 @@
-# Juturna – Real-time AI Pipeline Framework
+# Juturna – Python framework for real-time AI pipelines
 <p align="center"><img src="https://raw.githubusercontent.com/meetecho/juturna/main/docs/source/_static/img/logo_dark_alt.svg" width="30%">
 <br>
 <img src="https://img.shields.io/github/license/meetecho/juturna?style=for-the-badge"> <img src="https://img.shields.io/github/stars/meetecho/juturna?style=for-the-badge"> <img src="https://img.shields.io/github/forks/meetecho/juturna?style=for-the-badge"> <img src="https://img.shields.io/github/issues/meetecho/juturna?style=for-the-badge">
@@ -11,11 +11,11 @@ breaking changes between releases, so you can upgrade with confidence.
 
 ## At a glance
 
-**Juturna** is a data pipeline library written in Python, built for fast
-prototyping that doesn't stop at the prototype: a JSON file and a few Python
-nodes give you a working **real-time** pipeline in minutes, and the same
-pipeline then runs behind an HTTP service, with its heaviest nodes on other
-machines, without rewriting its nodes.
+**Juturna** is a Python framework for **real-time AI pipelines** on audio,
+video and data, built for fast prototyping that doesn't stop at the
+prototype: a JSON file and a few Python nodes give you a working pipeline in
+minutes, and the same pipeline then runs behind an HTTP service, with its
+heaviest nodes on other machines, without rewriting its nodes.
 
 Among its many features, there are a few keypoints to highlight about Juturna:
 
