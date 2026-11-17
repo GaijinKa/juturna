@@ -3,7 +3,7 @@
 Work with Meetecho
 ==================
 
-Juturna is written and maintained by `Meetecho <https://www.meetecho.com/>`_,
+Juturna is written and maintained by `Meetecho <https://www.meetecho.com/en/?utm_source=juturna-docs&utm_medium=docs&utm_campaign=juturna3>`_,
 a spin-off of the University of Napoli Federico II that has built real-time
 media systems since 2009, and the team behind the Janus® WebRTC server. When
 a pipeline has to reach production, the people who wrote the library can
@@ -43,7 +43,7 @@ follow the `security policy <https://github.com/meetecho/juturna/blob/main/SECUR
 privately and how Meetecho, as the open-source software steward of Juturna
 under the EU Cyber Resilience Act, handles and discloses them.
 
-.. button-link:: https://www.meetecho.com/en/#contact
+.. button-link:: https://www.meetecho.com/en/?utm_source=juturna-docs&utm_medium=docs&utm_campaign=juturna3#contact
     :color: primary
 
     Talk to the Meetecho team

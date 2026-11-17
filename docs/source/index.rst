@@ -269,12 +269,12 @@ Explore the documentation
 Brewed by Meetecho
 ------------------
 
-Juturna is brewed by `Meetecho <https://www.meetecho.com/>`_, hacking on
+Juturna is brewed by `Meetecho <https://www.meetecho.com/en/?utm_source=juturna-docs&utm_medium=docs&utm_campaign=juturna3>`_, hacking on
 real-time media since 2009.
 Taking a pipeline to production? We write the nodes you are missing, tune
 performance, and offer consulting and support.
 
-.. button-link:: https://www.meetecho.com/en/#contact
+.. button-link:: https://www.meetecho.com/en/?utm_source=juturna-docs&utm_medium=docs&utm_campaign=juturna3#contact
     :color: primary
 
     Talk to the Meetecho team

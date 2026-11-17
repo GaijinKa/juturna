@@ -117,7 +117,7 @@ Documentation: [https://meetecho.github.io/juturna/index.html](https://meetecho.
 
 Contribute: [https://github.com/meetecho/juturna/blob/main/CONTRIBUTING.md](https://github.com/meetecho/juturna/blob/main/CONTRIBUTING.md)
 
-Meetecho: [https://www.meetecho.com/en/](https://www.meetecho.com/en/)
+Meetecho: [https://www.meetecho.com/en/](https://www.meetecho.com/en/?utm_source=github-readme&utm_medium=docs&utm_campaign=juturna3)
 
 ## Contributing
 
