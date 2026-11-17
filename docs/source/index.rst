@@ -1,3 +1,9 @@
+:og:title: Juturna · Python framework for real-time AI pipelines
+:og:description: Juturna is a Python framework for real-time AI pipelines on audio, video and data, built for fast prototyping that doesn't stop at the prototype: the same pipeline then runs behind an HTTP service or with its heaviest nodes on other machines.
+
+.. meta::
+   :description: Juturna is a Python framework for real-time AI pipelines on audio, video and data, built for fast prototyping that doesn't stop at the prototype: the same pipeline then runs behind an HTTP service or with its heaviest nodes on other machines.
+
 .. toctree::
    :maxdepth: 2
    :hidden:

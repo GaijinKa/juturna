@@ -37,7 +37,14 @@ extensions = [
     'sphinx_new_tab_link',
     'myst_parser',
     'external_docs',
+    'sphinxext.opengraph',
 ]
+
+# Open Graph tags and the meta description of every page
+ogp_site_url = 'https://meetecho.github.io/juturna/'
+ogp_site_name = 'Juturna'
+ogp_image = 'https://meetecho.github.io/juturna/_static/img/juturna_og.png'
+ogp_image_alt = 'Juturna logo'
 
 templates_path = ['_templates']
 exclude_patterns = ['_build', '_includes', 'Thumbs.db', '.DS_Store']

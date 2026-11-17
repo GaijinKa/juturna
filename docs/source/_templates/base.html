@@ -1,0 +1,9 @@
+{% extends "!base.html" %}
+
+{%- block htmltitle -%}
+  {% if pagename == master_doc %}
+    <title>Juturna · Python framework for real-time AI pipelines</title>
+  {% else %}
+    {{ super() }}
+  {% endif %}
+{%- endblock -%}
