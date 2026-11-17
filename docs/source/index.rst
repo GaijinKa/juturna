@@ -122,11 +122,6 @@ Quick start
 
 .. include:: _includes/about_example.rst
 
-.. note::
-
-    ``NotifierConsole``, which prints the text in this quick start:
-    |next-release-note|
-
 Transcribe an audio file: Juturna reads it in blocks, a voice activity
 detector cuts it into speech segments, Whisper transcribes them and the text
 is printed on the terminal. Install Juturna (Python 3.12 or newer) and the
@@ -152,6 +147,11 @@ and the whole environment takes about 1.4 GB. With uv, add
 
 On macOS and Windows the PyTorch wheels on PyPI carry no CUDA libraries, so
 ``pip install juturna "juturna-nodes[av,audio-ml]"`` is enough.
+
+.. note::
+
+    ``NotifierConsole``, which prints the text in this quick start:
+    |next-release-note|
 
 A pipeline is a list of nodes and the links between them. Save this as
 ``pipeline.json``, and point ``file_source`` to an audio file in English:
