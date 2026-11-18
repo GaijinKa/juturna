@@ -24,7 +24,7 @@
 <text class="t s" x="372.0" y="202.0" text-anchor="middle">PrompterOllama</text>
 <rect class="bx core" x="272" y="219" width="200" height="48" rx="12"/>
 <text class="t" x="372.0" y="238.0" text-anchor="middle">object detection</text>
-<text class="t s" x="372.0" y="258.0" text-anchor="middle">DetectorYolo</text>
+<text class="t s" x="372.0" y="258.0" text-anchor="middle">DetectorYolox</text>
 <path class="ln acc" d="M476 186 H 516" marker-end="url(#what_juturna_is-aha)"/>
 <text class="t lab" x="620" y="64" text-anchor="middle">DESTINATIONS</text>
 <rect class="bx" x="520" y="80" width="200" height="48" rx="12"/>

@@ -25,7 +25,7 @@ machines only adds their address to the configuration
    .. raw:: html
       :file: ../diagrams/spike_to_production.svg
 
-   **Figure 1.** One ``pipeline.json`` from a laptop to production, each step adding one thing; the browser edition is a separate path.
+   **Figure 1.** One ``pipeline.json`` from a laptop to production, each step adding one thing (``launch``, ``serve`` and ``remotize`` run as ``python -m juturna <command>``); the browser edition is a separate path.
 
 Pipelines also run in a browser tab, on Pyodide, between ``BrowserInput`` and
 ``BrowserOutput`` and with nodes that work there: see :doc:`/browser/index`.
