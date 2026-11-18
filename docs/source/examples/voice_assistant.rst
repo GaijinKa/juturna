@@ -1,7 +1,10 @@
 Build a voice assistant
 =======================
 
-.. include:: /_includes/about_example.rst
+.. note::
+
+    A minimal example: no GPU, small models, not tuned for quality or latency.
+    For production, :doc:`work with Meetecho </work_with_meetecho>`.
 
 This example builds a small assistant you talk to: press Enter, ask a question
 in English, press Enter again, and it answers with a synthetic voice.

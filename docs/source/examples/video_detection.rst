@@ -1,7 +1,10 @@
 Detect objects in a video
 =========================
 
-.. include:: /_includes/about_example.rst
+.. note::
+
+    A minimal example: no GPU, small models, not tuned for quality or latency.
+    For production, :doc:`work with Meetecho </work_with_meetecho>`.
 
 Read a video, detect the objects in it, and send a JSON event to a webhook
 when a class of object shows up:
