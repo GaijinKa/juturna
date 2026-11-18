@@ -1,0 +1,25 @@
+<svg viewBox="0 0 800 170" role="img" aria-label="One call through Juturna. A call on Janus or Asterisk forwards its audio as an RTP stream to AudioRtp, the source of a Juturna pipeline; a transcriber and other AI nodes process it, and NotifierHTTP posts the results to your systems.">
+<defs><marker id="janus_call-ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="ah" d="M0 0 L10 5 L0 10 z"/></marker><marker id="janus_call-aha" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path class="ah acc" d="M0 0 L10 5 L0 10 z"/></marker></defs>
+<rect class="bx" x="4" y="56" width="130" height="64" rx="12"/>
+<text class="t" x="69.0" y="83.0" text-anchor="middle">a call</text>
+<text class="t s" x="69.0" y="103.0" text-anchor="middle">Janus® or Asterisk</text>
+<rect class="bx grp" x="168" y="10" width="480" height="140" rx="14"/><text class="t lab" x="184" y="34">JUTURNA PIPELINE</text>
+<rect class="bx core" x="188" y="56" width="130" height="64" rx="12"/>
+<text class="t m" x="253.0" y="83.0" text-anchor="middle">AudioRtp</text>
+<text class="t s" x="253.0" y="103.0" text-anchor="middle">source</text>
+<rect class="bx" x="350" y="56" width="136" height="64" rx="12"/>
+<text class="t" x="418.0" y="83.0" text-anchor="middle">transcription</text>
+<text class="t s" x="418.0" y="103.0" text-anchor="middle">and other AI nodes</text>
+<rect class="bx" x="518" y="56" width="122" height="64" rx="12"/>
+<text class="t m" x="579.0" y="83.0" text-anchor="middle">NotifierHTTP</text>
+<text class="t s" x="579.0" y="103.0" text-anchor="middle">HTTP POST</text>
+<rect class="bx" x="704" y="56" width="92" height="64" rx="12"/>
+<text class="t" x="750.0" y="83.0" text-anchor="middle">your</text>
+<text class="t s" x="750.0" y="103.0" text-anchor="middle">systems</text>
+<path class="ln acc" d="M134 88 H 184" marker-end="url(#janus_call-aha)"/>
+<text class="t s acc" x="151" y="78" text-anchor="middle">RTP</text>
+<path class="ln" d="M318 88 H 346" marker-end="url(#janus_call-ah)"/>
+<path class="ln" d="M486 88 H 514" marker-end="url(#janus_call-ah)"/>
+<path class="ln acc" d="M640 88 H 700" marker-end="url(#janus_call-aha)"/>
+<text class="t s acc" x="676" y="78" text-anchor="middle">results</text>
+</svg>

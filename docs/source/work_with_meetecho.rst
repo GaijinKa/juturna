@@ -43,6 +43,16 @@ follow the `security policy <https://github.com/meetecho/juturna/blob/main/SECUR
 privately and how Meetecho, as the open-source software steward of Juturna
 under the EU Cyber Resilience Act, handles and discloses them.
 
+A typical start is a call on Janus: its audio reaches a Juturna pipeline as
+an RTP stream, and the results go back to your systems.
+
+.. container:: jt-figure
+
+   .. raw:: html
+      :file: diagrams/janus_call.svg
+
+   **Figure 1.** One call: Janus or Asterisk forwards the audio as RTP to ``AudioRtp``, AI nodes process it, ``NotifierHTTP`` posts the results.
+
 .. button-link:: https://www.meetecho.com/en/?utm_source=juturna-docs&utm_medium=docs&utm_campaign=juturna3#contact
     :color: primary
 
