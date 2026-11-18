@@ -81,6 +81,9 @@ def _copy_nodes(srcdir: pathlib.Path):
             # the pages include each node's config.toml relative to their repo
             rel = os.path.relpath(src, out.parent)
             text = page.read_text().replace(_NODE_INCLUDE_ROOT, f'{rel}/')
+            readme = src / 'juturna' / 'nodes' / f'_{page.stem}' / 'README.md'
+            if readme.is_file():
+                text = _add_readme_sections(text, readme.read_text(), out)
             out.write_text(_mark_next_release(page.stem, text))
 
     missing = sorted(
@@ -96,6 +99,44 @@ def _copy_nodes(srcdir: pathlib.Path):
 
     # juturna is a pkgutil namespace: the nodes join it for autodoc
     juturna.__path__.append(str(src / 'juturna'))
+
+
+def _readme_section(readme: str, *titles: str) -> str:
+    lines = readme.split('\n')
+    for i, line in enumerate(lines):
+        if line.startswith('## ') and line[3:].strip() in titles:
+            end = next(
+                (j for j in range(i + 1, len(lines)) if lines[j][:3] == '## '),
+                len(lines),
+            )
+            return '\n'.join(lines[i + 1 : end]).strip()
+
+    return ''
+
+
+def _add_readme_sections(text: str, readme: str, out: pathlib.Path) -> str:
+    # the README holds the licences and, for some nodes, the only example
+    sections = [('License', 'license', ('License', 'License note'))]
+    if 'Pipeline usage\n---' not in text:
+        sections.append(('Pipeline usage', 'usage', ('Example',)))
+
+    added = ''
+    for title, slug, names in sections:
+        body = _readme_section(readme, *names)
+        if not body:
+            continue
+        # .inc is not a source suffix: Sphinx reads it only through include
+        snippet = out.with_name(f'{out.stem}.{slug}.inc')
+        snippet.write_text(body + '\n')
+        added += (
+            f'{title}\n{"-" * len(title)}\n\n'
+            f'.. include:: {snippet.name}\n'
+            '    :parser: myst_parser.sphinx_\n\n'
+        )
+
+    at = text.find('Reference\n---')
+
+    return text + '\n' + added if at < 0 else text[:at] + added + text[at:]
 
 
 def _mark_next_release(stem: str, text: str) -> str:
