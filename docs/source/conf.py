@@ -77,6 +77,9 @@ pygments_dark_style = 'meetecho_pygments.MeetechoDarkStyle'
 
 html_static_path = ['_static']
 
+# pages moved in 3.0.0: the old URLs redirect to the new ones
+html_extra_path = ['_redirects']
+
 # long signatures (the node constructors) get one parameter per line
 maximum_signature_line_length = 70
 # the page already says which module a class comes from
