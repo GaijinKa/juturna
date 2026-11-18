@@ -206,7 +206,7 @@ changes, use ``message.copy()``:
 6. The pipeline service
 -----------------------
 
-If you have clients of ``juturna serve``:
+If you have clients of ``python -m juturna serve``:
 
 - every request needs ``Authorization: Bearer <token>``, with the token of
   the ``JUTURNA_SERVICE_TOKEN`` variable of the service

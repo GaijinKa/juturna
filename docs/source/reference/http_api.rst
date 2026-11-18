@@ -3,7 +3,7 @@
 HTTP API of the pipeline service
 ================================
 
-The requests accepted by the service started with ``juturna serve``. For a
+The requests accepted by the service started with ``python -m juturna serve``. For a
 guided tour, see :doc:`../how_to/serve_pipelines`.
 
 Authentication
@@ -41,7 +41,7 @@ Request bodies are JSON. ``{id}`` is the id the service gave the pipeline.
      - The status of every pipeline, as ``{"pipelines": [{id: status}]}``:
        a list with one object, keyed by pipeline id.
    * - ``POST /pipelines/validate``
-     - Checks a configuration as ``juturna validate`` does and returns the
+     - Checks a configuration as ``python -m juturna validate`` does and returns the
        report. Nothing is created. Node types are resolved, so their
        packages are imported.
    * - ``POST /pipelines/new``

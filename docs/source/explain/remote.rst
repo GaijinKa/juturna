@@ -133,7 +133,7 @@ connect to it can send messages to the node and read what comes back, and
 whoever can read the traffic sees everything, sessions included. The session
 keeps well-behaved clients apart; it is not a password.
 
-For this reason ``juturna remotize`` listens on ``127.0.0.1`` by default,
+For this reason ``python -m juturna remotize`` listens on ``127.0.0.1`` by default,
 reachable from the same machine only. To serve pipelines on other machines,
 pass the address to listen on with ``--host`` (``0.0.0.0`` for every
 interface), and do it **on trusted networks only**: a private network between
@@ -167,7 +167,7 @@ progress or waiting for a worker, and refuses the others with the same
 status. A request whose warp node cancels it or disconnects is not processed
 if it is still waiting.
 
-``juturna remotize`` exits with status 1 when the node cannot be built or the
+``python -m juturna remotize`` exits with status 1 when the node cannot be built or the
 address is already in use: two services never share a port.
 
 Developer notes

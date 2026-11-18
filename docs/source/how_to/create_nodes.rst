@@ -92,7 +92,7 @@ it, and two thresholds:
     [meta]
 
 A pipeline configuration can override any of them. Keys that are not declared
-here are dropped (``juturna validate`` warns about them), so every argument
+here are dropped (``python -m juturna validate`` warns about them), so every argument
 needs a default.
 
 Add dependencies

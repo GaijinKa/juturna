@@ -61,9 +61,9 @@ Optional groups
 
 Some features of Juturna need extra packages, collected in optional groups:
 
-- ``httpwrapper``: the pipeline service (``juturna serve``)
-- ``pipebuilder``: the interactive pipeline builder (``juturna create``)
-- ``warp``: the remote node service (``juturna remotize``)
+- ``httpwrapper``: the pipeline service (``python -m juturna serve``)
+- ``pipebuilder``: the interactive pipeline builder (``python -m juturna create``)
+- ``warp``: the remote node service (``python -m juturna remotize``)
 
 .. code-block:: console
 

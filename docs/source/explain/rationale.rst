@@ -58,7 +58,7 @@ Heavy nodes can run elsewhere
 -----------------------------
 
 A node that needs a GPU, or dependencies that clash with the rest of the
-pipeline, can run as a remote service started with ``juturna remotize``. The
+pipeline, can run as a remote service started with ``python -m juturna remotize``. The
 pipeline marks it as ``warped`` and gives the address of the service; the
 other nodes do not change. See :doc:`remote` and :doc:`/how_to/remotise_node`.
 
