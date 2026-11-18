@@ -29,7 +29,7 @@ Install
 
 .. code-block:: console
 
-    $ pip install "juturna==3.0.0" "juturna-nodes[av,onnx]"
+    $ pip install juturna "juturna-nodes[av,onnx]"
 
 ``av`` reads the video with PyAV, ``onnx`` runs the model with ONNX Runtime.
 No PyTorch and no GPU are needed.
