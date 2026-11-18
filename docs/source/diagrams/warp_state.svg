@@ -1,0 +1,46 @@
+<svg viewBox="0 0 760 400" role="img" aria-label="Where the state of a warped node lives. Sticky, the default: the remote service keeps the state; the warp node sends each message and gets back the result with a copy of the state, and sends that copy only when the service answers that it does not know it, after a restart or once an idle state was dropped. It must always reach the same service. Not sticky: the service keeps nothing; the warp node sends the state with every message and gets it back, updated, with the result, so any replica can serve any request, behind a load balancer of yours. The state travels on every request, so keep it small.">
+<defs><marker id="warp_state-ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="ah" d="M0 0 L10 5 L0 10 z"/></marker><marker id="warp_state-aha" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path class="ah acc" d="M0 0 L10 5 L0 10 z"/></marker></defs>
+<text class="t lab acc" x="185" y="22" text-anchor="middle">STICKY (DEFAULT)</text>
+<text class="t lab" x="575" y="22" text-anchor="middle">NOT STICKY</text>
+<path class="ln life" d="M380 10 V 390"/>
+<rect class="bx grp" x="20" y="40" width="330" height="90" rx="14"/><text class="t lab" x="36" y="64">PIPELINE</text>
+<rect class="bx" x="40" y="70" width="150" height="50" rx="12"/>
+<text class="t" x="115.0" y="100.0" text-anchor="middle">warp node</text>
+<rect class="bx rem" x="214" y="74" width="120" height="42" rx="12"/>
+<text class="t" x="274.0" y="100.0" text-anchor="middle">copy of state</text>
+<rect class="bx grp" x="20" y="220" width="330" height="110" rx="14"/><text class="t lab" x="36" y="244">ONE REMOTE SERVICE</text>
+<rect class="bx" x="40" y="252" width="150" height="56" rx="12"/>
+<text class="t" x="115.0" y="285.0" text-anchor="middle">concrete node</text>
+<rect class="bx core" x="214" y="248" width="120" height="64" rx="12"/>
+<text class="t" x="274.0" y="275.0" text-anchor="middle">state</text>
+<text class="t s" x="274.0" y="295.0" text-anchor="middle">kept here</text>
+<path class="ln acc" d="M90 124 V 216" marker-end="url(#warp_state-aha)"/>
+<text class="t s acc" x="84" y="166" text-anchor="end">message</text>
+<path class="ln" d="M140 220 V 124" marker-end="url(#warp_state-ah)"/>
+<text class="t s" x="146" y="166" text-anchor="start">result</text>
+<text class="t s" x="146" y="184" text-anchor="start">+ copy of state</text>
+<path class="ln dash" d="M300 120 V 244" marker-end="url(#warp_state-ah)"/>
+<text class="t s" x="306" y="196" text-anchor="start">copy, only</text>
+<text class="t s" x="306" y="212" text-anchor="start">on "unknown"</text>
+<text class="t" x="185" y="362" text-anchor="middle">always the same service</text>
+<rect class="bx grp" x="410" y="40" width="330" height="90" rx="14"/><text class="t lab" x="426" y="64">PIPELINE</text>
+<rect class="bx" x="430" y="70" width="150" height="50" rx="12"/>
+<text class="t" x="505.0" y="100.0" text-anchor="middle">warp node</text>
+<rect class="bx core" x="604" y="70" width="120" height="50" rx="12"/>
+<text class="t" x="664.0" y="90.0" text-anchor="middle">state</text>
+<text class="t s" x="664.0" y="110.0" text-anchor="middle">travels</text>
+<rect class="bx grp" x="410" y="220" width="330" height="110" rx="14"/><text class="t lab" x="426" y="244">ANY REPLICA (YOUR LOAD BALANCER)</text>
+<rect class="bx" x="430" y="252" width="140" height="56" rx="12"/>
+<text class="t" x="500.0" y="275.0" text-anchor="middle">replica</text>
+<text class="t s" x="500.0" y="295.0" text-anchor="middle">keeps nothing</text>
+<rect class="bx" x="590" y="252" width="134" height="56" rx="12"/>
+<text class="t" x="657.0" y="275.0" text-anchor="middle">replica</text>
+<text class="t s" x="657.0" y="295.0" text-anchor="middle">keeps nothing</text>
+<path class="ln acc" d="M480 124 V 216" marker-end="url(#warp_state-aha)"/>
+<text class="t s acc" x="474" y="166" text-anchor="end">message</text>
+<text class="t s acc" x="474" y="184" text-anchor="end">+ state</text>
+<path class="ln" d="M530 220 V 124" marker-end="url(#warp_state-ah)"/>
+<text class="t s" x="536" y="166" text-anchor="start">result</text>
+<text class="t s" x="536" y="184" text-anchor="start">+ updated state</text>
+<text class="t" x="575" y="362" text-anchor="middle">keep the state small</text>
+</svg>

@@ -68,25 +68,18 @@ node gets its own state on the remote side, even when one remote service serves
 several pipelines, and the ``sticky`` flag of the warped node tells where that
 state lives:
 
-- **sticky** (the default): the remote service keeps the state of each warp
-  node, and sends a copy back with every response. The warp node must always
-  reach the same service. It sends its copy only when the service answers that
-  it does not know it, after a restart or once an idle state was dropped, and
-  the service starts again from that copy.
-- **not sticky**: the remote service keeps nothing. The warp node sends its
-  state with every request, the remote node updates it, and the response brings
-  it back. Any replica behind a load balancer can serve any request, and a
-  replica going down loses no state. The state travels on every request, so
-  keep it small.
+.. container:: jt-figure
 
-A warp node makes a random **session** identifier every time it warms up, and
-sends it with every request. The service keeps a sticky state under the
-pipeline id, the name of the warp node and that session. So another client
-that only knows the pipeline id and the node name gets a state of its own,
-and a pipeline that is started again does not continue from the state of its
-previous run: it is asked for its copy, like any client the service does not
-know. When a sticky warp node is destroyed it tells the service, which drops
-its state at once.
+   .. raw:: html
+      :file: ../diagrams/warp_state.svg
+
+   **Figure 2.** ``sticky`` (the default) keeps the state on one remote service; without it the state travels with every request, and any replica can answer.
+
+A sticky state is kept under the pipeline id, the name of the warp node and a
+random **session** that the warp node makes at every warmup, so another client
+gets a state of its own and a pipeline started again does not continue from
+its previous run. A sticky warp node that is destroyed tells the service,
+which drops its state at once.
 
 In both cases the remote service answers when ``update()`` returns. A message
 that the node keeps in its state without transmitting anything gets an empty
