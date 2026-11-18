@@ -1,0 +1,57 @@
+<svg viewBox="0 0 820 470" role="img" aria-label="The voice assistant on a desk and on real traffic. On the desk MicSource feeds stt (TranscriberSherpa), llm (PrompterOllama) and tts (SynthesizerSherpa), which feeds SpeakerSink; stt and llm also feed console (NotifierConsole); model_name of the llm takes any model served by Ollama. On real traffic AudioRtp receives a call as RTP, G.711 at 8 kHz, from Janus or Asterisk, and AudioWriter writes the answers to answer.wav. stt, llm, tts and console are the same in both: only the type and the configuration of the two end nodes change, and the optional group they need.">
+<defs><marker id="voice_assistant_swap-ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="ah" d="M0 0 L10 5 L0 10 z"/></marker><marker id="voice_assistant_swap-aha" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path class="ah acc" d="M0 0 L10 5 L0 10 z"/></marker></defs>
+<rect class="bx grp" x="4" y="10" width="812" height="210" rx="14"/><text class="t lab" x="20" y="34">ON YOUR DESK · pipeline.json</text>
+<rect class="bx core" x="20" y="56" width="140" height="80" rx="12"/>
+<text class="t m" x="90.0" y="81.0" text-anchor="middle">MicSource</text>
+<text class="t s" x="90.0" y="101.0" text-anchor="middle">microphone</text>
+<text class="t s" x="90.0" y="121.0" text-anchor="middle">extra: sound</text>
+<rect class="bx" x="196" y="62" width="140" height="68" rx="12"/>
+<text class="t m" x="266.0" y="91.0" text-anchor="middle">stt</text>
+<text class="t s" x="266.0" y="111.0" text-anchor="middle">TranscriberSherpa</text>
+<rect class="bx" x="360" y="62" width="140" height="68" rx="12"/>
+<text class="t m" x="430.0" y="91.0" text-anchor="middle">llm</text>
+<text class="t s" x="430.0" y="111.0" text-anchor="middle">PrompterOllama</text>
+<rect class="bx" x="524" y="62" width="140" height="68" rx="12"/>
+<text class="t m" x="594.0" y="91.0" text-anchor="middle">tts</text>
+<text class="t s" x="594.0" y="111.0" text-anchor="middle">SynthesizerSherpa</text>
+<rect class="bx core" x="694" y="56" width="116" height="80" rx="12"/>
+<text class="t m" x="752.0" y="81.0" text-anchor="middle">SpeakerSink</text>
+<text class="t s" x="752.0" y="101.0" text-anchor="middle">speaker</text>
+<text class="t s" x="752.0" y="121.0" text-anchor="middle">extra: sound</text>
+<path class="ln acc" d="M160 96 H 192" marker-end="url(#voice_assistant_swap-aha)"/>
+<path class="ln" d="M336 96 H 356" marker-end="url(#voice_assistant_swap-ah)"/>
+<path class="ln" d="M500 96 H 520" marker-end="url(#voice_assistant_swap-ah)"/>
+<path class="ln acc" d="M664 96 H 690" marker-end="url(#voice_assistant_swap-aha)"/>
+<rect class="bx" x="370" y="158" width="120" height="50" rx="12"/>
+<text class="t m" x="430.0" y="188.0" text-anchor="middle">console</text>
+<path class="ln" d="M266 130 V 183 H 366" marker-end="url(#voice_assistant_swap-ah)"/>
+<path class="ln" d="M430 130 V 154" marker-end="url(#voice_assistant_swap-ah)"/>
+<rect class="bx grp" x="4" y="250" width="812" height="210" rx="14"/><text class="t lab acc" x="20" y="274">ON REAL TRAFFIC · pipeline_rtp.json</text>
+<rect class="bx core" x="20" y="296" width="140" height="80" rx="12"/>
+<text class="t m" x="90.0" y="321.0" text-anchor="middle">AudioRtp</text>
+<text class="t s" x="90.0" y="341.0" text-anchor="middle">RTP, G.711 8 kHz</text>
+<text class="t s" x="90.0" y="361.0" text-anchor="middle">extra: av</text>
+<rect class="bx" x="196" y="302" width="140" height="68" rx="12"/>
+<text class="t m" x="266.0" y="331.0" text-anchor="middle">stt</text>
+<text class="t s" x="266.0" y="351.0" text-anchor="middle">TranscriberSherpa</text>
+<rect class="bx" x="360" y="302" width="140" height="68" rx="12"/>
+<text class="t m" x="430.0" y="331.0" text-anchor="middle">llm</text>
+<text class="t s" x="430.0" y="351.0" text-anchor="middle">PrompterOllama</text>
+<rect class="bx" x="524" y="302" width="140" height="68" rx="12"/>
+<text class="t m" x="594.0" y="331.0" text-anchor="middle">tts</text>
+<text class="t s" x="594.0" y="351.0" text-anchor="middle">SynthesizerSherpa</text>
+<rect class="bx core" x="694" y="296" width="116" height="80" rx="12"/>
+<text class="t m" x="752.0" y="331.0" text-anchor="middle">AudioWriter</text>
+<text class="t s" x="752.0" y="351.0" text-anchor="middle">answer.wav</text>
+<path class="ln acc" d="M160 336 H 192" marker-end="url(#voice_assistant_swap-aha)"/>
+<path class="ln" d="M336 336 H 356" marker-end="url(#voice_assistant_swap-ah)"/>
+<path class="ln" d="M500 336 H 520" marker-end="url(#voice_assistant_swap-ah)"/>
+<path class="ln acc" d="M664 336 H 690" marker-end="url(#voice_assistant_swap-aha)"/>
+<rect class="bx" x="370" y="398" width="120" height="50" rx="12"/>
+<text class="t m" x="430.0" y="428.0" text-anchor="middle">console</text>
+<path class="ln" d="M266 370 V 423 H 366" marker-end="url(#voice_assistant_swap-ah)"/>
+<path class="ln" d="M430 370 V 394" marker-end="url(#voice_assistant_swap-ah)"/>
+<text class="t s" x="430" y="34" text-anchor="middle">same nodes, same configuration in both files</text>
+<text class="t s" x="502" y="184" text-anchor="start">llm: model_name takes any Ollama model</text>
+<text class="t s acc" x="410" y="240" text-anchor="middle">what changes: the "type" and "configuration" of the two ends, and their extra</text>
+</svg>

@@ -221,12 +221,16 @@ The node pages tell the arguments and the message formats of each node:
 Plug it into a real audio stream
 --------------------------------
 
-The microphone is for trying the assistant on your desk. On a server there is
-no microphone and no speaker, but there is audio coming over the network: a
-media server such as Janus or Asterisk can send the audio of a call as an RTP
-stream. The pipeline stays the same, you change two nodes in the JSON:
-``MicSource`` becomes ``AudioRtp``, which receives the stream, and
-``SpeakerSink`` becomes ``AudioWriter``, which writes the answers to a file.
+On a server there is no microphone and no speaker, but a media server such as
+Janus or Asterisk can send the audio of a call as an RTP stream. Only the two
+ends of the pipeline change:
+
+.. container:: jt-figure
+
+   .. raw:: html
+      :file: ../diagrams/voice_assistant_swap.svg
+
+   **Figure 1.** The same assistant on your desk and on real traffic: ``AudioRtp`` and ``AudioWriter`` take the place of ``MicSource`` and ``SpeakerSink``, the nodes in between stay as they are.
 
 ``AudioRtp`` reads the stream with PyAV, so add the ``av`` group:
 
@@ -234,8 +238,7 @@ stream. The pipeline stays the same, you change two nodes in the JSON:
 
     (.venv) $ pip install "juturna-nodes[av]"
 
-Save the same pipeline with ``AudioRtp`` in place of ``MicSource`` and
-``AudioWriter`` in place of ``SpeakerSink`` as ``pipeline_rtp.json``:
+Save it as ``pipeline_rtp.json``:
 
 .. literalinclude:: ../../../examples/voice_assistant/pipeline_rtp.json
     :language: json
