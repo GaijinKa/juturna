@@ -376,6 +376,14 @@ body {
     border-radius: var(--jt-radius);
 }
 
+/* a figure with a vertical version swaps to it on narrow screens */
+.jt-figure > svg.jt-narrow { display: none; }
+
+@media (max-width: 40em) {
+    .jt-figure > svg.jt-wide { display: none; }
+    .jt-figure > svg.jt-narrow { display: block; padding: 12px; }
+}
+
 .jt-figure > p {
     margin: 0;
     font-size: 14px;

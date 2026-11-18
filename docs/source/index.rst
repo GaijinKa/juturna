@@ -138,6 +138,9 @@ its nodes.
    .. raw:: html
       :file: diagrams/what_juturna_is.svg
 
+   .. raw:: html
+      :file: diagrams/what_juturna_is_narrow.svg
+
    **Figure 1.** A pipeline: sources, processing and AI nodes, and destinations, wired in one JSON file. Below, a lane the shipped nodes cover and one they do not: :ref:`write its nodes <tutorial>` or :doc:`have Meetecho build them <work_with_meetecho>`.
 
 Pipelines also run in a browser tab, on Pyodide, with nodes that work there:
