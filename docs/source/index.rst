@@ -133,8 +133,15 @@ one you deploy: it also runs behind an HTTP service, or with its heaviest
 nodes moved to other machines, such as a model on a GPU, without rewriting
 its nodes.
 
-The same pipeline also runs in a browser tab, on Pyodide: see
-:doc:`browser/index`.
+.. container:: jt-figure
+
+   .. raw:: html
+      :file: diagrams/what_juturna_is.svg
+
+   **Figure 1.** A pipeline: sources, processing and AI nodes, and destinations, wired in one JSON file.
+
+Pipelines also run in a browser tab, on Pyodide, with nodes that work there:
+see :doc:`browser/index`.
 
 Quick start
 -----------
