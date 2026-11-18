@@ -18,7 +18,7 @@ behind an HTTP service with ``python -m juturna serve``
 (:doc:`/how_to/serve_pipelines`), and moving its heaviest nodes to other
 machines only adds their address to the configuration
 (:doc:`/how_to/remotise_node`): the nodes are not rewritten. See
-:doc:`where_it_runs`. Releases follow semantic versioning.
+:doc:`/how_to/choose_where_it_runs`. Releases follow semantic versioning.
 
 .. container:: jt-figure
 

@@ -11,6 +11,7 @@
 
    Home <self>
    how_to/install
+   tutorials/first_pipeline
    how_to/migrate_from_2
 
 .. toctree::
@@ -25,38 +26,6 @@
 .. toctree::
    :maxdepth: 2
    :hidden:
-   :caption: Deploy
-
-   explain/where_it_runs
-   how_to/remotise_node
-   how_to/serve_pipelines
-   how_to/docker
-
-.. toctree::
-   :maxdepth: 2
-   :hidden:
-   :caption: Guides
-
-   how_to/index
-   how_to/create_pipelines
-   how_to/environment
-   how_to/observe
-   troubleshooting
-
-.. toctree::
-   :maxdepth: 2
-   :hidden:
-   :caption: Reference
-
-   reference/configuration
-   reference/cli
-   reference/http_api
-   reference/constants
-   apis/explore
-
-.. toctree::
-   :maxdepth: 2
-   :hidden:
    :caption: Explanation
 
    explain/rationale
@@ -64,7 +33,28 @@
    explain/pipelines
    explain/nodes
    explain/messages
+   explain/transports
    explain/remote
+
+.. toctree::
+   :maxdepth: 2
+   :hidden:
+   :caption: Deploy
+
+   how_to/choose_where_it_runs
+   how_to/serve_pipelines
+   how_to/remotise_node
+   how_to/docker
+
+.. toctree::
+   :maxdepth: 2
+   :hidden:
+   :caption: Guides
+
+   how_to/create_pipelines
+   how_to/environment
+   how_to/observe
+   troubleshooting
 
 .. toctree::
    :maxdepth: 2
@@ -75,7 +65,6 @@
    catalog/nodes/sources
    catalog/nodes/processing
    catalog/nodes/sinks
-   tutorials/first_pipeline
    how_to/create_nodes
    catalog/contribute/new_node
 
@@ -91,6 +80,17 @@
    browser/demos
    browser/api
    browser/development
+
+.. toctree::
+   :maxdepth: 2
+   :hidden:
+   :caption: Reference
+
+   reference/configuration
+   reference/cli
+   reference/http_api
+   reference/constants
+   apis/explore
 
 .. toctree::
    :maxdepth: 1
@@ -246,15 +246,15 @@ Explore the documentation
         expected output.
 
     .. grid-item-card:: ``jt/deploy``
-        :link: explain/where_it_runs
+        :link: how_to/choose_where_it_runs
         :link-type: doc
 
         Run pipelines behind a REST API, move a heavy node to another
         machine, ship it all in a container.
 
     .. grid-item-card:: ``jt/guides``
-        :link: howto
-        :link-type: ref
+        :link: how_to/create_pipelines
+        :link-type: doc
 
         Recipes for the tasks you will meet: building pipelines,
         environment variables, observing a running pipeline,
