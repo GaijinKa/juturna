@@ -13,11 +13,22 @@ From spike to production
 ------------------------
 
 A JSON file and a few nodes give you a working pipeline in minutes: the
-:doc:`quick start </index>` transcribes an audio file. When the spike works,
-the same pipeline goes further without rewriting its nodes: the same file runs
-behind an HTTP service (:doc:`/how_to/serve_pipelines`), and moving its
-heaviest nodes to other machines only adds their address to the configuration
-(:doc:`/how_to/remotise_node`). Releases follow semantic versioning.
+:doc:`quick start </index>` transcribes an audio file. The same file then runs
+behind an HTTP service with ``python -m juturna serve``
+(:doc:`/how_to/serve_pipelines`), and moving its heaviest nodes to other
+machines only adds their address to the configuration
+(:doc:`/how_to/remotise_node`): the nodes are not rewritten. See
+:doc:`where_it_runs`. Releases follow semantic versioning.
+
+.. container:: jt-figure
+
+   .. raw:: html
+      :file: ../diagrams/spike_to_production.svg
+
+   **Figure 1.** One ``pipeline.json`` from a laptop to production, each step adding one thing; the browser edition is a separate path.
+
+Pipelines also run in a browser tab, on Pyodide, between ``BrowserInput`` and
+``BrowserOutput`` and with nodes that work there: see :doc:`/browser/index`.
 
 A pipeline is a JSON file
 -------------------------
@@ -50,14 +61,6 @@ A node that needs a GPU, or dependencies that clash with the rest of the
 pipeline, can run as a remote service started with ``juturna remotize``. The
 pipeline marks it as ``warped`` and gives the address of the service; the
 other nodes do not change. See :doc:`remote` and :doc:`/how_to/remotise_node`.
-
-The same pipeline, in different places
---------------------------------------
-
-The same configuration runs in one process with ``python -m juturna
-launch``, behind an HTTP service with ``python -m juturna serve``, or in a
-browser tab on Pyodide. See :doc:`where_it_runs` and
-:doc:`/how_to/serve_pipelines`.
 
 A small core
 ------------
