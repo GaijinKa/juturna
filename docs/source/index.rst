@@ -138,13 +138,22 @@ its nodes.
    .. raw:: html
       :file: diagrams/what_juturna_is.svg
 
-   **Figure 1.** A pipeline: sources, processing and AI nodes, and destinations, wired in one JSON file.
+   **Figure 1.** A pipeline: sources, processing and AI nodes, and destinations, wired in one JSON file. Below, a lane the shipped nodes cover and one they do not: :ref:`write its nodes <tutorial>` or :doc:`have Meetecho build them <work_with_meetecho>`.
 
 Pipelines also run in a browser tab, on Pyodide, with nodes that work there:
 see :doc:`browser/index`.
 
 Quick start
 -----------
+
+.. button-ref:: browser/demos
+    :ref-type: doc
+    :color: primary
+    :outline:
+
+    Try it in your tab
+
+The browser demos run the models in the page: the audio stays on the device.
 
 .. include:: _includes/about_example.rst
 
