@@ -51,7 +51,7 @@
 <text class="t m" x="430.0" y="428.0" text-anchor="middle">console</text>
 <path class="ln" d="M266 370 V 423 H 366" marker-end="url(#voice_assistant_swap-ah)"/>
 <path class="ln" d="M430 370 V 394" marker-end="url(#voice_assistant_swap-ah)"/>
-<text class="t s" x="430" y="34" text-anchor="middle">same nodes, same configuration in both files</text>
+<text class="t s" x="430" y="34" text-anchor="middle">stt, llm, tts and console: the same in both files</text>
 <text class="t s" x="502" y="184" text-anchor="start">llm: model_name takes any Ollama model</text>
 <text class="t s acc" x="410" y="240" text-anchor="middle">what changes: the "type" and "configuration" of the two ends, and their extra</text>
 </svg>

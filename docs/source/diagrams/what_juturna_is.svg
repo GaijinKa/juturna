@@ -1,4 +1,4 @@
-<svg viewBox="0 0 760 330" role="img" aria-label="What Juturna is: one JSON file describes a graph of nodes. Sources, such as a file, a microphone, a camera or an RTP stream, feed processing and AI nodes, such as transcription, a language model or object detection, which feed destinations, such as a webhook, a file, a speaker or the console.">
+<svg viewBox="0 0 760 330" role="img" aria-label="What Juturna is: one JSON file describes a graph of nodes. Sources, such as a file, a microphone, a webcam or an RTP stream, feed processing and AI nodes, such as transcription, a language model or object detection, which feed destinations, such as a webhook, a file, a speaker or the console.">
 <defs><marker id="what_juturna_is-ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="ah" d="M0 0 L10 5 L0 10 z"/></marker><marker id="what_juturna_is-aha" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path class="ah acc" d="M0 0 L10 5 L0 10 z"/></marker></defs>
 <rect class="bx grp" x="4" y="10" width="752" height="310" rx="14"/><text class="t lab" x="20" y="34">PIPELINE.JSON · A GRAPH OF NODES</text>
 <text class="t lab" x="124" y="64" text-anchor="middle">SOURCES</text>
@@ -9,7 +9,7 @@
 <text class="t" x="124.0" y="155.0" text-anchor="middle">microphone</text>
 <text class="t s" x="124.0" y="175.0" text-anchor="middle">MicSource</text>
 <rect class="bx" x="24" y="192" width="200" height="48" rx="12"/>
-<text class="t" x="124.0" y="211.0" text-anchor="middle">camera</text>
+<text class="t" x="124.0" y="211.0" text-anchor="middle">webcam or video file</text>
 <text class="t s" x="124.0" y="231.0" text-anchor="middle">VideoCapture</text>
 <rect class="bx" x="24" y="248" width="200" height="48" rx="12"/>
 <text class="t" x="124.0" y="267.0" text-anchor="middle">RTP stream</text>

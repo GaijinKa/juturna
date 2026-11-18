@@ -2,7 +2,7 @@
 <defs><marker id="janus_call-ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="ah" d="M0 0 L10 5 L0 10 z"/></marker><marker id="janus_call-aha" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path class="ah acc" d="M0 0 L10 5 L0 10 z"/></marker></defs>
 <rect class="bx" x="4" y="56" width="130" height="64" rx="12"/>
 <text class="t" x="69.0" y="83.0" text-anchor="middle">a call</text>
-<text class="t s" x="69.0" y="103.0" text-anchor="middle">Janus® or Asterisk</text>
+<text class="t s" x="69.0" y="103.0" text-anchor="middle">Janus or Asterisk</text>
 <rect class="bx grp" x="168" y="10" width="480" height="140" rx="14"/><text class="t lab" x="184" y="34">JUTURNA PIPELINE</text>
 <rect class="bx core" x="188" y="56" width="130" height="64" rx="12"/>
 <text class="t m" x="253.0" y="83.0" text-anchor="middle">AudioRtp</text>

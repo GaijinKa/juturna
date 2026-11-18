@@ -238,7 +238,7 @@ ends of the pipeline change:
 
     (.venv) $ pip install "juturna-nodes[av]"
 
-Save it as ``pipeline_rtp.json``:
+Save the pipeline with the two ends swapped as ``pipeline_rtp.json``:
 
 .. literalinclude:: ../../../examples/voice_assistant/pipeline_rtp.json
     :language: json

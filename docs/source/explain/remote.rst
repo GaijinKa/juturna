@@ -75,6 +75,11 @@ state lives:
 
    **Figure 2.** ``sticky`` (the default) keeps the state on one remote service; without it the state travels with every request, and any replica can answer.
 
+A sticky service answers that it does not know a state after a restart, or
+once it dropped an idle one: the warp node then sends its copy, and the
+service starts again from it. Without ``sticky``, a replica going down loses
+no state.
+
 A sticky state is kept under the pipeline id, the name of the warp node and a
 random **session** that the warp node makes at every warmup, so another client
 gets a state of its own and a pipeline started again does not continue from
