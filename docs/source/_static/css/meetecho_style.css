@@ -430,3 +430,31 @@ body {
     color: var(--jt-surface);
     text-decoration: none;
 }
+
+/* project badges on the home page: one row per project */
+table.jt-badges {
+    border-collapse: collapse;
+    margin: 0 0 1.5rem;
+}
+table.jt-badges th {
+    padding: 0.2rem 1rem 0.2rem 0;
+    font-family: var(--font-stack--monospace);
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--jt-muted);
+    text-align: left;
+    white-space: nowrap;
+    vertical-align: top;
+    line-height: 28px;
+}
+table.jt-badges td {
+    padding: 0.2rem 0;
+}
+table.jt-badges td a {
+    display: inline-block;
+    margin: 0 0.25rem 0.25rem 0;
+}
+table.jt-badges img {
+    display: block;
+    height: 28px;
+}

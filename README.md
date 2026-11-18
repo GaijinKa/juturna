@@ -1,18 +1,24 @@
 # Juturna – Python framework for real-time AI pipelines
-<p align="center"><img src="https://raw.githubusercontent.com/meetecho/juturna/main/docs/source/_static/img/logo_dark_alt.svg" width="30%">
-<br>
-<a href="https://pypi.org/project/juturna/"><img alt="PyPI juturna" src="https://img.shields.io/pypi/v/juturna?style=for-the-badge&amp;label=juturna"></a>
-<a href="https://pypi.org/project/juturna-nodes/"><img alt="PyPI juturna-nodes" src="https://img.shields.io/pypi/v/juturna-nodes?style=for-the-badge&amp;label=juturna-nodes"></a>
-<a href="https://pypi.org/project/juturna/"><img alt="Python versions" src="https://img.shields.io/pypi/pyversions/juturna?style=for-the-badge"></a>
-<a href="https://github.com/meetecho/juturna/actions/workflows/unit-tests.yml"><img alt="Unit tests" src="https://img.shields.io/github/actions/workflow/status/meetecho/juturna/unit-tests.yml?branch=main&amp;style=for-the-badge&amp;label=tests"></a>
-<a href="https://github.com/meetecho/juturna/actions/workflows/gh-pages.yml"><img alt="Docs" src="https://img.shields.io/github/actions/workflow/status/meetecho/juturna/gh-pages.yml?branch=main&amp;style=for-the-badge&amp;label=docs"></a>
-<a href="https://github.com/meetecho/juturna/blob/main/LICENSE"><img alt="License MIT" src="https://img.shields.io/github/license/meetecho/juturna?style=for-the-badge"></a>
-<a href="https://github.com/astral-sh/ruff"><img alt="Ruff" src="https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json&amp;style=for-the-badge"></a>
-<a href="https://www.meetecho.com/en/?utm_source=github-readme&amp;utm_medium=docs&amp;utm_campaign=juturna3"><img alt="By Meetecho" src="https://img.shields.io/badge/by-Meetecho-1a6dad?style=for-the-badge"></a>
-<br>
-<a href="https://github.com/meetecho/juturna-browser"><img alt="juturna-browser on GitHub" src="https://img.shields.io/badge/github-juturna--browser-181717?style=for-the-badge&amp;logo=github"></a>
-<a href="https://meetecho.github.io/juturna/browser/demos.html"><img alt="Browser demos" src="https://img.shields.io/badge/browser-demos-1a6dad?style=for-the-badge"></a>
-</p>
+<p align="center"><img src="https://raw.githubusercontent.com/meetecho/juturna/main/docs/source/_static/img/logo_dark_alt.svg" width="30%"></p>
+
+<table align="center">
+  <tr><th>juturna</th><td>
+    <a href="https://pypi.org/project/juturna/"><img alt="PyPI juturna" src="https://img.shields.io/pypi/v/juturna?style=for-the-badge&amp;label=juturna"></a>
+    <a href="https://pypi.org/project/juturna/"><img alt="Python versions" src="https://img.shields.io/pypi/pyversions/juturna?style=for-the-badge"></a>
+    <a href="https://github.com/meetecho/juturna/actions/workflows/unit-tests.yml"><img alt="Unit tests" src="https://img.shields.io/github/actions/workflow/status/meetecho/juturna/unit-tests.yml?branch=main&amp;style=for-the-badge&amp;label=tests"></a>
+    <a href="https://github.com/meetecho/juturna/actions/workflows/gh-pages.yml"><img alt="Docs" src="https://img.shields.io/github/actions/workflow/status/meetecho/juturna/gh-pages.yml?branch=main&amp;style=for-the-badge&amp;label=docs"></a>
+    <a href="https://github.com/meetecho/juturna/blob/main/LICENSE"><img alt="License MIT" src="https://img.shields.io/github/license/meetecho/juturna?style=for-the-badge"></a>
+    <a href="https://github.com/astral-sh/ruff"><img alt="Ruff" src="https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json&amp;style=for-the-badge"></a>
+    <a href="https://www.meetecho.com/en/?utm_source=github-readme&amp;utm_medium=docs&amp;utm_campaign=juturna3"><img alt="By Meetecho" src="https://img.shields.io/badge/by-Meetecho-1a6dad?style=for-the-badge"></a>
+  </td></tr>
+  <tr><th>juturna-nodes</th><td>
+    <a href="https://pypi.org/project/juturna-nodes/"><img alt="PyPI juturna-nodes" src="https://img.shields.io/pypi/v/juturna-nodes?style=for-the-badge&amp;label=juturna-nodes"></a>
+  </td></tr>
+  <tr><th>juturna-browser</th><td>
+    <a href="https://github.com/meetecho/juturna-browser"><img alt="juturna-browser release" src="https://img.shields.io/github/v/tag/meetecho/juturna-browser?style=for-the-badge&amp;label=juturna-browser"></a>
+    <a href="https://meetecho.github.io/juturna/browser/demos.html"><img alt="Browser demos" src="https://img.shields.io/badge/browser-demos-1a6dad?style=for-the-badge"></a>
+  </td></tr>
+</table>
 
 ## Important to know
 Juturna is actively evolving with exciting new features and improvements being
