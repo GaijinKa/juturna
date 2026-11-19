@@ -1,0 +1,49 @@
+<svg class="jt-wide" viewBox="0 0 760 378" role="img" aria-label="What Juturna is: one JSON file describes a graph of nodes. Sources, such as a file, a microphone, a webcam or an RTP stream, feed processing and AI nodes, such as transcription, a language model or object detection, which feed destinations, such as a webhook, a file, a speaker or the console. Each column also has a custom node, drawn dashed: a custom source such as MQTT or sensors, a custom processor and a custom sink.">
+<defs><marker id="what_juturna_is-ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="ah" d="M0 0 L10 5 L0 10 z"/></marker><marker id="what_juturna_is-aha" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path class="ah acc" d="M0 0 L10 5 L0 10 z"/></marker></defs>
+<rect class="bx grp" x="4" y="10" width="752" height="358" rx="14"/><text class="t lab" x="20" y="34">PIPELINE.JSON · A GRAPH OF NODES</text>
+<text class="t lab" x="124" y="64" text-anchor="middle">SOURCES</text>
+<rect class="bx" x="24" y="80" width="200" height="48" rx="12"/>
+<text class="t" x="124" y="99" text-anchor="middle">file</text>
+<text class="t s" x="124" y="119" text-anchor="middle">AudioFile</text>
+<rect class="bx" x="24" y="136" width="200" height="48" rx="12"/>
+<text class="t" x="124" y="155" text-anchor="middle">microphone</text>
+<text class="t s" x="124" y="175" text-anchor="middle">MicSource</text>
+<rect class="bx" x="24" y="192" width="200" height="48" rx="12"/>
+<text class="t" x="124" y="211" text-anchor="middle">webcam or video file</text>
+<text class="t s" x="124" y="231" text-anchor="middle">VideoCapture</text>
+<rect class="bx" x="24" y="248" width="200" height="48" rx="12"/>
+<text class="t" x="124" y="267" text-anchor="middle">RTP stream</text>
+<text class="t s" x="124" y="287" text-anchor="middle">AudioRtp</text>
+<text class="t lab" x="372" y="64" text-anchor="middle">PROCESSING AND AI</text>
+<rect class="bx core" x="272" y="107" width="200" height="48" rx="12"/>
+<text class="t" x="372" y="126" text-anchor="middle">transcription</text>
+<text class="t s" x="372" y="146" text-anchor="middle">TranscriberWhisper</text>
+<rect class="bx core" x="272" y="163" width="200" height="48" rx="12"/>
+<text class="t" x="372" y="182" text-anchor="middle">language model</text>
+<text class="t s" x="372" y="202" text-anchor="middle">PrompterOllama</text>
+<rect class="bx core" x="272" y="219" width="200" height="48" rx="12"/>
+<text class="t" x="372" y="238" text-anchor="middle">object detection</text>
+<text class="t s" x="372" y="258" text-anchor="middle">DetectorYolox</text>
+<text class="t lab" x="620" y="64" text-anchor="middle">DESTINATIONS</text>
+<rect class="bx" x="520" y="80" width="200" height="48" rx="12"/>
+<text class="t" x="620" y="99" text-anchor="middle">webhook</text>
+<text class="t s" x="620" y="119" text-anchor="middle">NotifierHTTP</text>
+<rect class="bx" x="520" y="136" width="200" height="48" rx="12"/>
+<text class="t" x="620" y="155" text-anchor="middle">file</text>
+<text class="t s" x="620" y="175" text-anchor="middle">AudioWriter</text>
+<rect class="bx" x="520" y="192" width="200" height="48" rx="12"/>
+<text class="t" x="620" y="211" text-anchor="middle">speaker</text>
+<text class="t s" x="620" y="231" text-anchor="middle">SpeakerSink</text>
+<rect class="bx" x="520" y="248" width="200" height="48" rx="12"/>
+<text class="t" x="620" y="267" text-anchor="middle">console</text>
+<text class="t s" x="620" y="287" text-anchor="middle">NotifierConsole</text>
+<rect class="bx rem" x="24" y="304" width="200" height="48" rx="12"/>
+<text class="t rem" x="124" y="323" text-anchor="middle">custom source</text>
+<text class="t s" x="124" y="343" text-anchor="middle">e.g. MQTT, sensors</text>
+<rect class="bx rem" x="272" y="304" width="200" height="48" rx="12"/>
+<text class="t rem" x="372" y="333" text-anchor="middle">custom processor</text>
+<rect class="bx rem" x="520" y="304" width="200" height="48" rx="12"/>
+<text class="t rem" x="620" y="333" text-anchor="middle">custom sink</text>
+<path class="ln acc" d="M228 186 H 268" marker-end="url(#what_juturna_is-aha)"/>
+<path class="ln acc" d="M476 186 H 516" marker-end="url(#what_juturna_is-aha)"/>
+</svg>
