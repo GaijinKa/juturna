@@ -1,49 +1,491 @@
+/* fonts served with the site, so every browser gets the same ones:
+   Ubuntu and Ubuntu Mono, subset and renamed as the Ubuntu Font Licence
+   requires (fonts/UBUNTU-FONT-LICENCE.txt) */
+@font-face {
+    font-family: 'Ubuntu derivative Juturna';
+    src: url('../fonts/Ubuntu.woff2') format('woff2');
+    font-weight: 100 800;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Ubuntu derivative Juturna';
+    src: url('../fonts/Ubuntu-Italic.woff2') format('woff2');
+    font-weight: 100 800;
+    font-style: italic;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Ubuntu Mono derivative Juturna';
+    src: url('../fonts/UbuntuMono.woff2') format('woff2');
+    font-weight: 400 700;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Ubuntu Mono derivative Juturna';
+    src: url('../fonts/UbuntuMono-Italic.woff2') format('woff2');
+    font-weight: 400 700;
+    font-style: italic;
+    font-display: swap;
+}
+
+/* Meetecho reading style (meetecho-design-system/web.md) on top of Furo.
+   Furo colours are set in conf.py; these variables serve the components below. */
+
 body {
-    font-family: ui-sans-serif, system-ui, sans-serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol, Noto Color Emoji;
-    color: gray;
+    --jt-surface: #ffffff;
+    --jt-soft: #f5f8fb;
+    --jt-ink: #0f1d26;
+    --jt-muted: #4b5d6b;
+    --jt-line: #e2e9ef;
+    --jt-line-strong: #7d8f9d;
+    --jt-accent-strong: #1a6dad;
+    --jt-accent-soft: #eef6fd;
+    --jt-warn-bg: #fdf3e0;
+    --jt-warn-ink: #8a5a00;
+    --jt-ok-bg: #e6f6ea;
+    --jt-ok-ink: #1b7a33;
+    --jt-error-bg: #fdecec;
+    --jt-error-ink: #8a1c1c;
+    --jt-radius: 14px;
 }
 
-html {
-  font-size: 1em;
+@media (prefers-color-scheme: dark) {
+    body:not([data-theme="light"]) {
+        --jt-surface: #0f2433;
+        --jt-soft: #0c1e2a;
+        --jt-ink: #e4edf3;
+        --jt-muted: #a9bccb;
+        --jt-line: #1f3a4d;
+        --jt-line-strong: #5f7a8d;
+        --jt-accent-strong: #6cb6f0;
+        --jt-accent-soft: rgba(82, 168, 236, 0.14);
+        --jt-warn-bg: rgba(226, 160, 40, 0.16);
+        --jt-warn-ink: #f2c063;
+        --jt-ok-bg: rgba(46, 160, 67, 0.16);
+        --jt-ok-ink: #6fd88a;
+        --jt-error-bg: rgba(220, 60, 60, 0.16);
+        --jt-error-ink: #f29b9b;
+    }
 }
 
-.content {
-    width: 40em;
-    padding-left: 10em;
-    padding-top: 3em;
+body[data-theme="dark"] {
+    --jt-surface: #0f2433;
+    --jt-soft: #0c1e2a;
+    --jt-ink: #e4edf3;
+    --jt-muted: #a9bccb;
+    --jt-line: #1f3a4d;
+    --jt-line-strong: #5f7a8d;
+    --jt-accent-strong: #6cb6f0;
+    --jt-accent-soft: rgba(82, 168, 236, 0.14);
+    --jt-warn-bg: rgba(226, 160, 40, 0.16);
+    --jt-warn-ink: #f2c063;
+    --jt-ok-bg: rgba(46, 160, 67, 0.16);
+    --jt-ok-ink: #6fd88a;
+    --jt-error-bg: rgba(220, 60, 60, 0.16);
+    --jt-error-ink: #f29b9b;
 }
 
-h1 {
-    font-size: 1.7rem;
-    line-height: 1.1;
+/* type */
+/* on Furo's 17.6px base; one step below the design system's reading.css
+   (h2 28px, h3 21px), which is made for long reading pages */
+article h1,
+article h2 {
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    line-height: 1.15;
 }
 
-h2 {
-    font-size: 1.6rem;
-    line-height: 1;
+article h1 {
+    font-size: 2em;
 }
 
-.sd-card:hover {
-    opacity: 1;
-    transition: 0.3s;
+article h2 {
+    font-size: 1.5em;
+    margin-bottom: 0.9rem;
+}
+
+article h3 {
+    font-size: 1.2em;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+}
+
+article h4 {
+    font-size: 1.05em;
+}
+
+/* node pages: the class name in the title reads as a title, not as code,
+   also where the title is repeated (sidebar, previous/next links) */
+article h1 > code.literal,
+.sidebar-tree code.literal,
+.related-pages code.literal {
+    background: none;
+    border: 0;
+    padding: 0;
+    font: inherit;
+}
+
+/* node pages: node type, input, output and extra as a row of tiles */
+article > section > dl.field-list {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-rows: auto auto;
+    grid-auto-flow: column;
+    margin: 1.25rem 0;
+    border: 1px solid var(--jt-line);
+    border-radius: var(--jt-radius);
+    background: var(--jt-soft);
+    overflow: hidden;
+}
+
+article > section > dl.field-list > dt,
+article > section > dl.field-list > dd {
+    margin: 0;
+    padding: 0 16px;
+    border-left: 1px solid var(--jt-line);
+}
+
+article > section > dl.field-list > dt:first-of-type,
+article > section > dl.field-list > dd:first-of-type {
+    border-left: 0;
+}
+
+article > section > dl.field-list > dt {
+    padding-top: 12px;
+    color: var(--jt-muted);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+article > section > dl.field-list > dt .colon {
+    display: none;
+}
+
+article > section > dl.field-list > dd {
+    padding-bottom: 12px;
+    font-weight: 600;
+}
+
+article > section > dl.field-list > dd p {
+    margin: 4px 0 0;
+}
+
+@media (max-width: 40em) {
+    article > section > dl.field-list {
+        grid-template-columns: auto 1fr;
+        grid-template-rows: none;
+        grid-auto-flow: row;
+    }
+
+    article > section > dl.field-list > dt,
+    article > section > dl.field-list > dd {
+        border-left: 0;
+        padding: 8px 16px;
+    }
+}
+
+:focus-visible {
+    outline: 3px solid var(--color-brand-primary);
+    outline-offset: 2px;
+}
+
+/* sidebar and page contents, as the .toc of the release notes */
+.sidebar-tree .caption,
+.toc-title {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--jt-muted);
+}
+
+.sidebar-tree .reference,
+.toc-tree a.reference {
+    border-left: 3px solid transparent;
+    border-radius: 8px;
+}
+
+.sidebar-tree .reference:hover,
+.toc-tree a.reference:hover {
+    background: var(--jt-soft);
+    color: var(--jt-ink);
+}
+
+.sidebar-tree .current-page > .reference,
+.toc-tree .scroll-current > .reference {
+    background: var(--jt-accent-soft);
+    border-left-color: var(--jt-accent-strong);
+    color: var(--jt-ink);
+    font-weight: 600;
+}
+
+/* code */
+code.literal {
+    background: var(--jt-soft);
+    border: 1px solid var(--jt-line);
+    border-radius: 6px;
+    padding: 1px 5px;
+}
+
+div.highlight,
+.highlight pre {
+    border-radius: var(--jt-radius);
+}
+
+.highlight pre {
+    padding: 20px 22px;
+    font-size: 14.5px;
+    line-height: 1.6;
+}
+
+/* tables, as .tbl */
+.table-wrapper {
+    border: 1px solid var(--jt-line);
+    border-radius: var(--jt-radius);
+    background: var(--jt-surface);
+    overflow-x: auto;
+}
+
+.table-wrapper table.docutils {
+    border: 0;
+    border-collapse: collapse;
+    box-shadow: none;
+    width: 100%;
+    margin: 0;
+}
+
+table.docutils th {
+    background: var(--jt-soft);
+    color: var(--jt-muted);
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    text-align: left;
+    padding: 12px 16px;
+    border: 0;
+    border-bottom: 1px solid var(--jt-line);
+}
+
+table.docutils td {
+    padding: 14px 16px;
+    border: 0;
+    border-bottom: 1px solid var(--jt-line);
+    vertical-align: top;
+}
+
+table.docutils tr:last-child td {
+    border-bottom: 0;
+}
+
+/* admonitions, as .note: Furo's own title variables carry the status ink */
+body {
+    --color-admonition-title: var(--jt-accent-strong);
+    --color-admonition-title--note: var(--jt-accent-strong);
+    --color-admonition-title--seealso: var(--jt-accent-strong);
+    --color-admonition-title--admonition-todo: var(--jt-accent-strong);
+    --color-admonition-title--caution: var(--jt-warn-ink);
+    --color-admonition-title--warning: var(--jt-warn-ink);
+    --color-admonition-title--tip: var(--jt-ok-ink);
+    --color-admonition-title--hint: var(--jt-ok-ink);
+    --color-admonition-title--important: var(--jt-ok-ink);
+    --color-admonition-title--danger: var(--jt-error-ink);
+    --color-admonition-title--error: var(--jt-error-ink);
+    --color-admonition-title--attention: var(--jt-error-ink);
+    --color-admonition-title-background: transparent;
+    --color-admonition-title-background--note: transparent;
+    --color-admonition-title-background--seealso: transparent;
+    --color-admonition-title-background--admonition-todo: transparent;
+    --color-admonition-title-background--caution: transparent;
+    --color-admonition-title-background--warning: transparent;
+    --color-admonition-title-background--tip: transparent;
+    --color-admonition-title-background--hint: transparent;
+    --color-admonition-title-background--important: transparent;
+    --color-admonition-title-background--danger: transparent;
+    --color-admonition-title-background--error: transparent;
+    --color-admonition-title-background--attention: transparent;
+}
+
+.admonition {
+    --jt-note-bg: var(--jt-accent-soft);
+    --jt-note-ink: var(--jt-accent-strong);
+    background: var(--jt-note-bg);
+    border: 0;
+    border-radius: var(--jt-radius);
+    box-shadow: none;
+}
+
+.admonition.warning,
+.admonition.caution {
+    --jt-note-bg: var(--jt-warn-bg);
+    --jt-note-ink: var(--jt-warn-ink);
+}
+
+.admonition.tip,
+.admonition.hint,
+.admonition.important {
+    --jt-note-bg: var(--jt-ok-bg);
+    --jt-note-ink: var(--jt-ok-ink);
+}
+
+.admonition.danger,
+.admonition.error,
+.admonition.attention {
+    --jt-note-bg: var(--jt-error-bg);
+    --jt-note-ink: var(--jt-error-ink);
+}
+
+.content .admonition > .admonition-title {
+    color: var(--jt-note-ink);
+    font-weight: 700;
+}
+
+/* cards on the home page */
+.sd-card {
+    background: var(--jt-surface);
+    border: 1px solid var(--jt-line);
+    border-radius: var(--jt-radius);
+    box-shadow: none;
 }
 
 .sd-card:hover .sd-card-title {
-    color: #65aaffff;
-    transition: 0.3s;
+    color: var(--color-brand-content);
 }
 
-.sd-card-title .fa-meetecho {
-    width: 2em;
-    height: 2em;
+/* a card that must stand out from the grid: the accent of the home figure */
+.sd-card.jt-cta {
+    background: var(--jt-accent-soft);
+    border: 2px solid var(--jt-accent-strong);
 }
 
-.fa-meetecho {
-    width: 2em;
-    height: 2em;
+/* the button and the link after it on one line */
+.jt-cta .sd-card-text:has(> .sd-btn),
+.jt-cta .sd-card-text:has(> .sd-btn) + .sd-card-text {
+    display: inline-block;
+    margin: 0.25rem 1.25rem 0 0;
+    vertical-align: middle;
 }
 
-.sd-card:hover .fa-meetecho {
-    color: #65aaffff;
-    transition: 0.3s;
+/* figures: the diagram on a soft panel, the caption under it */
+.jt-figure {
+    display: grid;
+    gap: 10px;
+    margin: 1.5rem 0;
+}
+
+.jt-figure > svg {
+    display: block;
+    width: 100%;
+    height: auto;
+    box-sizing: border-box;
+    padding: 20px;
+    background: var(--jt-soft);
+    border: 1px solid var(--jt-line);
+    border-radius: var(--jt-radius);
+}
+
+/* a figure with a vertical version swaps to it on narrow screens */
+.jt-figure > svg.jt-narrow { display: none; }
+
+@media (max-width: 40em) {
+    .jt-figure > svg.jt-wide { display: none; }
+    .jt-figure > svg.jt-narrow { display: block; padding: 12px; }
+}
+
+/* the small diagrams in the cards of the examples index */
+.jt-mini { margin: 0.75rem 0 0; }
+.jt-mini > svg { padding: 0; background: none; border: 0; overflow: visible; }
+
+.sd-card-footer {
+    font-size: 14px;
+    color: var(--jt-muted);
+}
+
+.jt-figure > p {
+    margin: 0;
+    font-size: 14px;
+    color: var(--jt-muted);
+}
+
+.jt-figure > p strong {
+    color: var(--jt-ink);
+}
+
+.jt-figure .bx { fill: var(--jt-surface); stroke: var(--jt-line-strong); stroke-width: 1.5; }
+.jt-figure .bx.core { stroke: var(--jt-accent-strong); stroke-width: 3; fill: var(--jt-accent-soft); }
+.jt-figure .bx.rem { fill: none; stroke-dasharray: 6 5; }
+.jt-figure .bx.grp { fill: none; stroke: var(--jt-line-strong); stroke-dasharray: 2 4; }
+.jt-figure .bx.final { stroke: var(--jt-accent-strong); stroke-width: 3; }
+.jt-figure .t { fill: var(--jt-ink); font: 600 15px var(--font-stack); }
+.jt-figure .t.m { font-family: var(--font-stack--monospace); font-size: 14px; }
+.jt-figure .t.s { fill: var(--jt-muted); font-weight: 400; font-size: 13px; }
+.jt-figure .t.rem { fill: var(--jt-muted); }
+.jt-figure .t.lab { fill: var(--jt-muted); font-weight: 700; font-size: 12px; letter-spacing: 0.08em; }
+.jt-figure .t.acc { fill: var(--jt-accent-strong); }
+.jt-figure .ln { stroke: var(--jt-line-strong); stroke-width: 1.8; fill: none; }
+.jt-figure .ln.acc { stroke: var(--jt-accent-strong); stroke-width: 3; }
+.jt-figure .ln.dash { stroke-dasharray: 6 5; }
+.jt-figure .ah { fill: var(--jt-line-strong); }
+.jt-figure .ah.acc { fill: var(--jt-accent-strong); }
+
+@media (prefers-reduced-motion: no-preference) {
+    html {
+        scroll-behavior: smooth;
+    }
+}
+
+/* "Try it" buttons of the juturna-browser demos (plain links on GitHub) */
+.try-it {
+    display: inline-block;
+    margin: 0.15rem 0.4rem 0.15rem 0;
+    padding: 0.3rem 0.85rem;
+    border: 1px solid var(--jt-accent-strong);
+    border-radius: 999px;
+    background: var(--jt-accent-soft);
+    color: var(--jt-accent-strong);
+    font-size: 0.9em;
+    font-weight: 600;
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.try-it:hover,
+.try-it:focus-visible {
+    background: var(--jt-accent-strong);
+    color: var(--jt-surface);
+    text-decoration: none;
+}
+
+/* project badges on the home page: one row per project */
+table.jt-badges {
+    border-collapse: collapse;
+    margin: 0 0 1.5rem;
+}
+table.jt-badges th {
+    padding: 0.2rem 1rem 0.2rem 0;
+    font-family: var(--font-stack--monospace);
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--jt-muted);
+    text-align: left;
+    white-space: nowrap;
+    vertical-align: top;
+    line-height: 28px;
+}
+table.jt-badges td {
+    padding: 0.2rem 0;
+}
+table.jt-badges td a {
+    display: inline-block;
+    margin: 0 0.25rem 0.25rem 0;
+}
+table.jt-badges img {
+    display: block;
+    height: 28px;
 }
