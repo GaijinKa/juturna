@@ -3,43 +3,37 @@
 Remote components
 =================
 
-When creating a juturna pipeline, all its components are instantiated locally.
-Whilst this is ideal when developing new nodes and checking that everything
-works fine on your own machine or container, in many production scenarios having
-the ability to leverage remote resources, such as GPUs, is not a plus but a
-must. For this reason, juturna offers the basic infrastructure to deploy nodes
-remotely, while still using them as if they were local entities. We call this
-**warping**.
+A pipeline builds all its nodes in the process that runs it. That is what
+you want while you write and check nodes on your own machine, but in
+production some nodes need resources the machine does not have, such as a
+GPU. Juturna can run such a node on another machine and still use it as if it
+were local: this is **warping**.
 
-Warping a node enables the remote execution of that node, included in a local
-pipe. You can deploy specific nodes as remote services that communicate with the
-main pipe over the network using gRPC and Protocol Buffers (Google's
-`protobuf <https://github.com/protocolbuffers/protobuf>`_).
+A warped node runs in a remote service, and the pipeline talks to it over the
+network with gRPC and `Protocol Buffers
+<https://github.com/protocolbuffers/protobuf>`_. The remote service manages
+the lifecycle of the node and passes the messages of its input and output
+queues.
 
-This architecture allows a local pipe to offload processing to remote node
-handlers, which manage the node lifecycle and act as message brokers for
-incoming and outgoing queues.
-
-The warping mechanism addresses common topics in several deployment scenarios.
-To name a few, remote nodes are deployed with dependency isolation, so they do
-not clash with conflicting dependencies from other nodes in the same pipeline.
-Also, sharing and scaling are strong suits of remote nodes, as they can serve
-multiple pipelines simultaneously, or be made redundant and masked by a load
-balancer.
+Warping helps in several deployments. A remote node has its own
+dependencies, so they cannot clash with those of the other nodes in the
+pipeline. A remote service can also serve several pipelines at once, or run
+as several replicas behind a load balancer.
 
 .. admonition:: Remotisation is young
     :class: :WARNING:
 
-    The infrastructure to deploy juturna nodes remotely is still under
-    active development. The remote service has no authentication and no
-    encryption (see `Who can reach the service`_), so it is meant for trusted
-    networks only.
+    The infrastructure to run Juturna nodes remotely is still under active
+    development. The remote service has no authentication and no encryption
+    (see `Who can reach the service`_), so it is meant for trusted networks
+    or a VPN only. TLS and client authentication are tracked in
+    `issue #270 <https://github.com/meetecho/juturna/issues/270>`_.
 
 Warping fundamentals
 --------------------
 
 When a node is configured for remote execution, two components work together. On
-the local side (that is, the `main` juturna process) a node intended for remote
+the local side (the main Juturna process) a node intended for remote
 deployment is masked by a **warp node**. A warp node is a simple processing node
 acting as local client or proxy for the remote node. Warp nodes are responsible
 for managing the communication with the remote service behind which the concrete
@@ -51,7 +45,7 @@ On the remote side runs the **remote service**, a standalone gRPC server that
 holds the concrete node doing the actual computation work, acting as a
 publish/subscribe broker for its input and output queues. Similarly to the warp
 node, the remote service manages the marshalling and unmarshalling of the data
-received from the local pipe.
+received from the local pipeline.
 
 .. container:: jt-figure
 
@@ -139,13 +133,14 @@ pass the address to listen on with ``--host`` (``0.0.0.0`` for every
 interface), and do it **on trusted networks only**: a private network between
 your own machines, or behind a proxy or a tunnel that authenticates and
 encrypts. The service logs a warning when it listens on anything but the
-loopback address.
+loopback address. TLS and client authentication are tracked in
+`issue #270 <https://github.com/meetecho/juturna/issues/270>`_.
 
 Protocol version
 ----------------
 
 The warp node and the remote service must speak the same version of the remote
-protocol, which is version 1 in juturna 3.0. Every request and response carries
+protocol, which is version 1 in Juturna 3.0. Every request and response carries
 it. The service refuses a request of another version with the
 ``UNIMPLEMENTED`` status, and the warp node refuses a response of another
 version, so two sides that do not match fail on the first message with an
@@ -153,7 +148,7 @@ error that says so. A message whose payload is of a type the receiver does not
 know is refused too, on both sides.
 
 The version changes whenever an older peer would not understand the new one.
-Install matching versions of juturna on both sides: on the local side that is
+Install matching versions of Juturna on both sides: on the local side that is
 the version ``juturna-nodes`` was installed with.
 
 Limits
@@ -173,7 +168,7 @@ address is already in use: two services never share a port.
 Developer notes
 ---------------
 
-Juturna installation includes pre-compiled protobuf classes, ready to use out of
+Juturna comes with pre-compiled protobuf classes, ready to use out of
 the box. However, if you need to modify the .proto definitions or recompile them
 for development purposes, two utility scripts are provided:
 
@@ -184,4 +179,4 @@ for development purposes, two utility scripts are provided:
   dependency.
 
 These scripts should only be needed when modifying the protocol definitions or
-contributing to the Warp node implementation.
+contributing to the warp node.

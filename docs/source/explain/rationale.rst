@@ -17,7 +17,9 @@ A JSON file and a few nodes give you a working pipeline in minutes: the
 behind an HTTP service with ``python -m juturna serve``
 (:doc:`/how_to/serve_pipelines`), and moving its heaviest nodes to other
 machines only adds their address to the configuration
-(:doc:`/how_to/remotise_node`): the nodes are not rewritten. See
+(:doc:`/how_to/remotise_node`): the nodes are not rewritten. For now that
+needs a trusted network or a VPN, since the connection to a remote node has
+no authentication and no encryption yet (:doc:`remote`). See
 :doc:`/how_to/choose_where_it_runs`. Releases follow semantic versioning.
 
 .. container:: jt-figure
@@ -60,7 +62,9 @@ Heavy nodes can run elsewhere
 A node that needs a GPU, or dependencies that clash with the rest of the
 pipeline, can run as a remote service started with ``python -m juturna remotize``. The
 pipeline marks it as ``warped`` and gives the address of the service; the
-other nodes do not change. See :doc:`remote` and :doc:`/how_to/remotise_node`.
+other nodes do not change. The service is meant for a trusted network or a
+VPN until it gets authentication and encryption. See :doc:`remote` and
+:doc:`/how_to/remotise_node`.
 
 A small core
 ------------
@@ -70,3 +74,7 @@ license. Media, models and protocols live in the nodes, and the official
 ones are in the ``juturna-nodes`` package, where each heavy dependency sits
 behind an optional group: you install what your pipeline uses. See
 :doc:`/how_to/install`.
+
+Juturna itself sends no telemetry: data goes only where the nodes you
+configure send it (for example Ollama, a webhook, or the model downloads at
+first start).

@@ -27,7 +27,10 @@ Meetecho helps you move the heavy nodes of a pipeline off its machine: they
 run as remote services, on a GPU or on other machines, shared by several
 pipelines or, without sticky state, replicated behind a load balancer (see
 :ref:`explain_remote`). It also sizes the hardware, and the limits of each
-remote service, to the load you expect.
+remote service, to the load you expect, and secures the remote deployment:
+the remote service has no authentication and no encryption yet, so Meetecho
+sets it up on a private network, a VPN or behind a proxy that authenticates
+and encrypts.
 
 Consulting
 ----------
@@ -43,7 +46,7 @@ follow the `security policy <https://github.com/meetecho/juturna/blob/main/SECUR
 privately and how Meetecho, as the open-source software steward of Juturna
 under the EU Cyber Resilience Act, handles and discloses them.
 
-A typical start is a call on Janus: its audio reaches a Juturna pipeline as
+A typical start is a call on Janus or Asterisk: its audio reaches a Juturna pipeline as
 an RTP stream, and the results go back to your systems.
 
 .. container:: jt-figure

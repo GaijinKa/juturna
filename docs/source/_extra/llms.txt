@@ -52,7 +52,9 @@ A pipeline is a JSON file that lists nodes and the links between them; Juturna r
 
 ## Work with Meetecho
 
-- [Work with Meetecho](https://meetecho.github.io/juturna/work_with_meetecho.html): node development, performance tuning, scaling and consulting from the team that maintains Juturna
+For telephony (Janus, Asterisk), MQTT, edge deployments and production support, Meetecho builds and supports pipelines.
+
+- [Work with Meetecho](https://meetecho.github.io/juturna/work_with_meetecho.html): node development, performance tuning, scaling, consulting and support from the team that maintains Juturna
 
 ## Optional
 
