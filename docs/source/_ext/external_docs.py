@@ -87,32 +87,32 @@ def _copy_nodes(srcdir: pathlib.Path):
     juturna.__path__.append(str(src / 'juturna'))
 
 
-def _readme_section(readme: str, *titles: str) -> str:
-    lines = readme.split('\n')
-    for i, line in enumerate(lines):
-        if line.startswith('## ') and line[3:].strip() in titles:
-            end = next(
-                (j for j in range(i + 1, len(lines)) if lines[j][:3] == '## '),
-                len(lines),
-            )
-            return '\n'.join(lines[i + 1 : end]).strip()
+# README headings that the catalogue page names differently
+_README_TITLES = {'Example': 'Pipeline usage', 'License note': 'License'}
 
-    return ''
+
+def _readme_sections(readme: str) -> list[tuple[str, str]]:
+    # the part before the first ## repeats the header of the catalogue page
+    chunks = ('\n' + readme).split('\n## ')[1:]
+    sections = []
+    for chunk in chunks:
+        title, _, body = chunk.partition('\n')
+        title = title.strip()
+        # "Node type: source" and the like are in the page header already
+        if title.startswith('Node ') and ':' in title:
+            continue
+        sections.append((_README_TITLES.get(title, title), body.strip()))
+
+    return sections
 
 
 def _add_readme_sections(text: str, readme: str, out: pathlib.Path) -> str:
-    # the README holds the licences and, for some nodes, the only example
-    sections = [('License', 'license', ('License', 'License note'))]
-    if 'Pipeline usage\n---' not in text:
-        sections.append(('Pipeline usage', 'usage', ('Example',)))
-
     added = ''
-    for title, slug, names in sections:
-        body = _readme_section(readme, *names)
-        if not body:
+    for i, (title, body) in enumerate(_readme_sections(readme)):
+        if not body or f'\n{title}\n---' in text:
             continue
         # .inc is not a source suffix: Sphinx reads it only through include
-        snippet = out.with_name(f'{out.stem}.{slug}.inc')
+        snippet = out.with_name(f'{out.stem}.readme{i}.inc')
         snippet.write_text(body + '\n')
         added += (
             f'{title}\n{"-" * len(title)}\n\n'
@@ -120,9 +120,12 @@ def _add_readme_sections(text: str, readme: str, out: pathlib.Path) -> str:
             '    :parser: myst_parser.sphinx_\n\n'
         )
 
-    at = text.find('Reference\n---')
+    for anchor in ('Configuration\n---', 'Reference\n---'):
+        at = text.find(anchor)
+        if at >= 0:
+            return text[:at] + added + text[at:]
 
-    return text + '\n' + added if at < 0 else text[:at] + added + text[at:]
+    return text + '\n' + added
 
 
 def _copy_browser(srcdir: pathlib.Path):
