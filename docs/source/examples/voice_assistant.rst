@@ -42,7 +42,7 @@ It is a demo, and it has limits:
 - speech recognition is not precise, and a small language model gets facts
   wrong;
 - the voice skips the words missing from its pronunciation lexicon, which
-  includes most names.
+  leaves out most names.
 
 Install
 -------
@@ -159,8 +159,9 @@ How long it takes
 After the second Enter, the answer needs the time of the language model and
 of the voice. On a laptop CPU, measured on recorded questions:
 
-- about 0.5 seconds for ``qwen2.5:1.5b`` to answer (0.46 s median over 60
-  questions);
+- about 0.5 seconds for ``qwen2.5:1.5b`` to return the whole answer, from the
+  request to Ollama to the last word, as the node does not stream (0.46 s
+  median over 60 questions);
 - about 1 second to synthesise a one-sentence answer, with the default
   2 threads.
 
@@ -217,71 +218,6 @@ The node pages tell the arguments and the message formats of each node:
 :ref:`PrompterOllama <node-prompter-ollama>`,
 :ref:`SynthesizerSherpa <node-synthesizer-sherpa>`,
 :ref:`SpeakerSink <node-speaker-sink>`.
-
-Plug it into a real audio stream
---------------------------------
-
-On a server there is no microphone and no speaker, but a media server such as
-Janus or Asterisk can send the audio of a call as an RTP stream. Only the two
-ends of the pipeline change:
-
-.. container:: jt-figure
-
-   .. raw:: html
-      :file: ../diagrams/voice_assistant_swap.svg
-
-   **Figure 2.** The same assistant on your desk and on real traffic: ``AudioRtp`` and ``AudioWriter`` take the place of ``MicSource`` and ``SpeakerSink``, the nodes in between stay as they are.
-
-``AudioRtp`` reads the stream with PyAV, so add the ``av`` group:
-
-.. code-block:: console
-
-    (.venv) $ pip install "juturna-nodes[av]"
-
-Save the pipeline with the two ends swapped as ``pipeline_rtp.json``:
-
-.. literalinclude:: ../../../examples/voice_assistant/pipeline_rtp.json
-    :language: json
-    :emphasize-lines: 10,36
-
-The node listens on ``127.0.0.1:5004`` (``host`` and ``port``) for G.711
-μ-law audio at 8 kHz, payload type 0: the codec of telephone calls. It hands
-the transcriber blocks of 1 second. The node pages tell the arguments and the
-message formats of the two nodes: :ref:`AudioRtp <node-audio-rtp>`,
-:ref:`AudioWriter <node-audio-writer>`.
-
-Start the pipeline first, this time with the logs on, and wait for the line
-that says it is running:
-
-.. code-block:: console
-
-    (.venv) $ python -m juturna launch --config pipeline_rtp.json --auto \
-                                       --timeout 60 --log-level INFO
-    ...
-    ... | INFO     | jt.voice_assistant      | pipe started
-
-If the stream starts before the pipeline, its first packets are lost without
-an error. If the log repeats ``source unavailable`` every 2 seconds, another
-process holds port 5004: find it with ``ss -lunp | grep 5004``, or pick
-another port, both in ``port`` and in the ``rtp://`` address of the ffmpeg
-command below. The node keeps trying, and starts receiving as soon as the
-port is free. From another terminal, send a recorded question as an RTP stream,
-in real time, with ffmpeg:
-
-.. code-block:: console
-
-    $ ffmpeg -i question.wav -af "apad=pad_dur=2,arealtime" \
-             -ac 1 -ar 8000 -c:a pcm_mulaw -f rtp rtp://127.0.0.1:5004
-
-The question is transcribed and answered as before, and the answer is in
-``./run/answer/answer.wav``.
-
-``apad`` adds 2 seconds of silence at the end. The transcriber closes a
-sentence only after 0.8 seconds of silence, and a stream that just ends, like
-a call that hangs up, does not reliably give it that much: without the
-padding, the last sentence waits until the pipeline stops, and is answered
-only then. Juturna does not yet tell the
-nodes that a stream has ended; it is on the roadmap.
 
 From demo to production
 -----------------------

@@ -55,7 +55,7 @@ What each example needs
      - Hardware
      - OS
    * - :doc:`voice_assistant`
-     - ``sherpa``, ``sound``; ``av`` for the RTP step
+     - ``sherpa``, ``sound``
      - about 240 MB of packages, 107 MB of speech models, and the 986 MB
        language model through Ollama
      - CPU, microphone and speaker
@@ -69,6 +69,8 @@ What each example needs
 The download is the size of a fresh virtual environment with the example
 installed, plus the model and the test input fetched on the first run.
 
-**Need another pipeline?** Transcribing phone calls from Janus or Asterisk,
-reading sensors over MQTT, running on edge devices:
-:doc:`work with Meetecho </work_with_meetecho>` and we build it for you.
+**Taking a pipeline to production?** The catalogue goes beyond these
+examples: :ref:`AudioRtp <node-audio-rtp>`, for one, receives the calls of
+Janus or Asterisk. Production is another job: one pipeline for each call,
+many calls at once, scaling and tuning on your hardware. For that, and for
+MQTT sources or edge devices, :doc:`work with Meetecho </work_with_meetecho>`.
