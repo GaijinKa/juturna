@@ -220,9 +220,20 @@ more each time Whisper transcribes its latest blocks of speech.
 The quick start is audio only: for video, see
 :doc:`examples/video_detection`.
 
-Pipelines also run in a browser tab, on Pyodide, with nodes that work there
-(:doc:`browser/index`). :doc:`Try it in your tab <browser/demos>`: the demos
-run the models in the page, and the audio stays on the device.
+.. card:: Run it in your browser tab
+    :class-card: jt-cta
+
+    Juturna pipelines run on Pyodide, inside the page, with the nodes that
+    work there. Nothing to install: the demos run the models in your tab and
+    the audio stays on the device.
+
+    .. button-ref:: browser/demos
+        :ref-type: doc
+        :color: primary
+
+        Try the demos
+
+    :doc:`Read how it works <browser/index>`
 
 For complete pipelines to run and adapt, see the :ref:`examples <examples>`.
 To write nodes of your own, follow :ref:`Write your first nodes <tutorial>`:
@@ -291,7 +302,7 @@ Explore the documentation
         :link: browser/index
         :link-type: doc
 
-        The same pipelines on Pyodide, in the Web Workers of a page, with
+        Juturna pipelines on Pyodide, in the Web Workers of a page, with
         demos to try.
 
 Brewed by Meetecho

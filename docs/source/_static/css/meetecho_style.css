@@ -358,6 +358,20 @@ body {
     color: var(--color-brand-content);
 }
 
+/* a card that must stand out from the grid: the accent of the home figure */
+.sd-card.jt-cta {
+    background: var(--jt-accent-soft);
+    border: 2px solid var(--jt-accent-strong);
+}
+
+/* the button and the link after it on one line */
+.jt-cta .sd-card-text:has(> .sd-btn),
+.jt-cta .sd-card-text:has(> .sd-btn) + .sd-card-text {
+    display: inline-block;
+    margin: 0.25rem 1.25rem 0 0;
+    vertical-align: middle;
+}
+
 /* figures: the diagram on a soft panel, the caption under it */
 .jt-figure {
     display: grid;
