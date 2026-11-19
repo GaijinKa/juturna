@@ -1,12 +1,15 @@
 Write and package a node
 ========================
 
-This guide shows how to write a custom node and make it available to your
-pipelines. As an example we build ``RedCatDetector``, a processing node that
-uses a YOLO model to detect red cats in the images it receives.
+This guide is for a node that lives in a package of your own, outside
+``juturna-nodes``: it covers the layout, the arguments, the dependencies, the
+code and the packaging. As an example we build ``RedCatDetector``, a
+processing node that finds the orange cats in the images it receives, with a
+YOLOX model on ONNX Runtime.
 
 If you have never written a node, the :ref:`tutorial <tutorial>` is a gentler
-start.
+start. To add a node to the ``juturna-nodes`` collection itself, see
+:ref:`new-node`.
 
 Where nodes live
 ----------------
@@ -78,33 +81,42 @@ Declare the arguments
 ---------------------
 
 The arguments a node accepts, with their default values, are declared in its
-``config.toml``. Our detector needs to know which model to use, where to run
-it, and two thresholds:
+``config.toml``. Our detector needs to know which YOLOX model to use, where to
+run it, and two thresholds:
 
 .. code-block:: toml
 
     [arguments]
-    model = "yolo11x.pt"
-    device = "cuda"
+    model = "yolox_nano"
+    device = "cpu"
     cat_min_confidence = 0.4
-    orangeness_threshold = 0.6
+    orangeness_threshold = 0.3
 
     [meta]
 
 A pipeline configuration can override any of them. Keys that are not declared
-here are dropped (``juturna validate`` warns about them), so every argument
+here are dropped (``python -m juturna validate`` warns about them), so every argument
 needs a default.
 
 Add dependencies
 ----------------
 
-The node uses `YOLO <https://docs.ultralytics.com/>`_ and OpenCV. List them in
-the dependencies of your package (see `Package the nodes`_), and install them
-in your environment:
+The node builds on :ref:`DetectorYolox <node-detector-yolox>`, which runs
+YOLOX models on ONNX Runtime and comes with the ``onnx`` group of
+``juturna-nodes``. List it in the dependencies of your package (see
+`Package the nodes`_), and install it in your environment:
 
 .. code-block:: console
 
-    (.venv) $ pip install ultralytics opencv-python
+    (.venv) $ pip install "juturna-nodes[onnx]"
+
+.. note::
+
+    The YOLOX code and weights are released under the Apache-2.0 license,
+    ONNX Runtime under MIT: none of them is copyleft. The
+    :ref:`DetectorYolox <node-detector-yolox>` page lists the sources. Check
+    the license of any other model or library before your node depends on
+    it.
 
 Juturna does not install the dependencies of a node for you: they come with
 the package the node is in.
@@ -114,23 +126,21 @@ Implement the node
 
 The arguments of ``config.toml`` reach the node as arguments of ``__init__``.
 Everything else (the node name, the pipeline name) travels in ``kwargs`` and
-goes to the base class.
+goes to the base class. Our node extends ``DetectorYolox``, so it passes the
+model arguments on and keeps the threshold of its own:
 
 .. code-block:: python
 
     import typing
 
-    import cv2
     import numpy as np
 
-    from ultralytics import YOLO
-
     from juturna.components import Message
-    from juturna.components import Node
+    from juturna.nodes import DetectorYolox
     from juturna.payloads import ImagePayload
 
 
-    class RedCatDetector(Node[ImagePayload, ImagePayload]):
+    class RedCatDetector(DetectorYolox):
         def __init__(
             self,
             model: str,
@@ -139,98 +149,80 @@ goes to the base class.
             orangeness_threshold: float,
             **kwargs,
         ):
-            super().__init__(**kwargs)
+            super().__init__(
+                model=model,
+                targets=['cat'],
+                confidence=cat_min_confidence,
+                nms=0.45,
+                device=device,
+                **kwargs,
+            )
 
-            self.model_name = model
-            self.device = device
-            self.cat_min_confidence = cat_min_confidence
             self.orangeness_threshold = orangeness_threshold
 
-            self.model = None
-            self._target_class = list()
+``DetectorYolox`` is a ``Node[ImagePayload, ImagePayload]``: the two type
+parameters of ``Node`` are the payload the node receives and the one it
+transmits, here images in and images out. A node written from scratch
+extends ``Node`` directly.
 
-The two type parameters of ``Node`` are the payload the node receives and the
-one it transmits: here images in, annotated images out.
-
-Loading the model takes time and memory, so it belongs in ``warmup()``, which
-the pipeline calls once before starting:
-
-.. code-block:: python
-
-    def warmup(self):
-        self.model = YOLO(self.model_name)
-        self.model.to(self.device)
-
-        # we only care about cats
-        self._target_class = [
-            k for k, v in self.model.names.items() if v == 'cat'
-        ]
-
-        self.logger.info('model ready')
+Loading a model takes time and memory, so it belongs in ``warmup()``, which
+the pipeline calls once before starting. ``DetectorYolox`` already does it:
+its ``warmup()`` downloads the model on first use and opens an ONNX Runtime
+session, so ours does not override it. A node that loads a model of its own
+does the same in its ``warmup()``.
 
 The work happens in ``update()``, called once for every message received:
 
-- run the image through the model;
+- run the image through the model, with ``detect()``;
 - keep the cats that are orange enough;
-- transmit an annotated image when at least one is found.
+- transmit the image, with the orange cats in its ``meta``, when at least one
+  is found.
 
-.. image:: ../_static/img/tutorial_create_node_flow_diagram.svg
-   :alt: node flow
-   :width: 100%
-   :align: center
+.. container:: jt-figure
+
+   .. raw:: html
+      :file: ../diagrams/tutorial_create_node_flow_diagram.svg
+
+   **Figure 1.** What ``update()`` does with each image: it transmits only when at least one cat is orange enough.
 
 .. code-block:: python
 
     def update(self, message: Message[ImagePayload], **kwargs):
         image = message.payload.image
 
-        results = self.model.predict(
-            image,
-            verbose=False,
-            conf=self.cat_min_confidence,
-            classes=self._target_class,
-        )
-
-        orange_cats = list()
-
-        for idx, box in enumerate(results[0].boxes):
-            x1, y1, x2, y2 = map(int, box.xyxy[0])
-
-            if self._is_cat_orange(image[y1:y2, x1:x2]):
-                orange_cats.append(idx)
+        # one {"label", "confidence", "bbox"} per cat, bbox as [x1, y1, x2, y2]
+        orange_cats = [
+            cat
+            for cat in self.detect(image)
+            if self._is_cat_orange(image, cat['bbox'])
+        ]
 
         # no cat, or none of them orange enough: nothing to send
         if not orange_cats:
             return
 
-        results[0].boxes = results[0].boxes[orange_cats]
-        annotated = results[0].plot()
-
         to_send = Message[ImagePayload](
             creator=self.name,
             version=message.version,
-            payload=ImagePayload(
-                image=annotated,
-                width=annotated.shape[1],
-                height=annotated.shape[0],
-                depth=annotated.shape[2],
-                pixel_format=message.payload.pixel_format,
-                timestamp=message.payload.timestamp,
-            ),
+            payload=message.payload,
             timers_from=message,
         )
 
-        to_send.meta['orange_cats'] = len(orange_cats)
+        to_send.meta['orange_cats'] = orange_cats
 
         self.transmit(to_send)
 
-    def _is_cat_orange(self, crop_rgb: np.ndarray) -> bool:
-        hsv = cv2.cvtColor(crop_rgb, cv2.COLOR_RGB2HSV)
-        mask = cv2.inRange(
-            hsv, np.array([5, 50, 50]), np.array([25, 255, 255])
-        )
+    def _is_cat_orange(self, image: np.ndarray, bbox: list) -> bool:
+        x1, y1, x2, y2 = bbox
+        crop = image[y1:y2, x1:x2].astype(int)
 
-        return np.count_nonzero(mask) / mask.size > self.orangeness_threshold
+        if crop.size == 0:
+            return False
+
+        r, g, b = crop[..., 0], crop[..., 1], crop[..., 2]
+        orange = (r > 120) & (g > r * 0.3) & (g < r * 0.8) & (b < g)
+
+        return orange.mean() > self.orangeness_threshold
 
 A few rules worth remembering:
 
@@ -292,9 +284,7 @@ To let a property change while the pipeline is running, implement
 .. code-block:: python
 
     def set_on_config(self, prop: str, value: typing.Any):
-        if prop == 'cat_min_confidence':
-            self.cat_min_confidence = value
-        elif prop == 'orangeness_threshold':
+        if prop == 'orangeness_threshold':
             self.orangeness_threshold = value
         else:
             self.logger.warning(f'cannot update property {prop}')
@@ -303,7 +293,7 @@ It is called through the pipeline:
 
 .. code-block:: python
 
-    pipeline.update_node('detector', 'cat_min_confidence', 0.7)
+    pipeline.update_node('detector', 'orangeness_threshold', 0.5)
 
 The call runs in the thread of the caller, possibly while ``update()`` is
 working: if the two touch more than a simple value, protect it with a lock.
@@ -320,7 +310,7 @@ using ``hatchling``:
     name = "catwatch-nodes"
     version = "0.1.0"
     requires-python = ">=3.12"
-    dependencies = ["juturna>=3.0.0", "ultralytics", "opencv-python"]
+    dependencies = ["juturna>=3.0.0", "juturna-nodes[onnx]"]
 
     [build-system]
     requires = ["hatchling"]
@@ -350,7 +340,7 @@ In a pipeline configuration, the node is:
       "name": "detector",
       "type": "contrib.catwatch.nodes.RedCatDetector",
       "configuration": {
-        "model": "./models/yolo11x.pt",
+        "model": "yolox_s",
         "cat_min_confidence": 0.5
       }
     }

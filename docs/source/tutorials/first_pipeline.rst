@@ -1,11 +1,13 @@
 .. _tutorial:
 
-Your first pipeline
-===================
+Write your first nodes
+======================
 
-In this tutorial we build a small pipeline from scratch and run it. It takes
-about ten minutes, and needs nothing but Python 3.12 (or newer) and Juturna
-itself.
+This tutorial is the place to start: we write three small nodes in one
+folder, wire them into a pipeline and run it. It takes about ten minutes, and
+needs nothing but Python 3.12 (or newer) and Juturna itself. To package a node
+of your own, see :doc:`/how_to/create_nodes`; to add one to the
+``juturna-nodes`` collection, see :ref:`new-node`.
 
 The pipeline has three nodes:
 
