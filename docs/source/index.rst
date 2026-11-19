@@ -144,9 +144,6 @@ connection has no authentication and no encryption yet.
 
    **Figure 1.** A pipeline: sources, processing and AI nodes, and destinations, wired in one JSON file. The dashed nodes are yours: write your node or let Meetecho build it for you (:ref:`Write your first nodes <tutorial>`, :doc:`Work with Meetecho <work_with_meetecho>`).
 
-When the node you need is not in the catalogue, write your node or let
-Meetecho build it for you.
-
 Quick start
 -----------
 
@@ -207,13 +204,14 @@ A pipeline is a list of nodes and the links between them. Save this as
       }
     }
 
-Check it and run it: press enter to start, and again to stop once the file
-is done.
+Check it and run it. ``--auto`` starts the pipeline without waiting for
+enter, and ``--timeout`` stops it after that many seconds: give it a little
+longer than your audio file.
 
 .. code-block:: console
 
     $ python -m juturna validate --config pipeline.json
-    $ python -m juturna launch --config pipeline.json
+    $ python -m juturna launch --config pipeline.json --auto --timeout 60
 
 The text comes out as lines like ``[whisper] <the transcribed text>``, one
 more each time Whisper transcribes its latest blocks of speech.
@@ -226,7 +224,7 @@ The quick start is audio only: for video, see
 
     Juturna pipelines run on Pyodide, inside the page, with nodes written for
     the browser. Nothing to install: the demos run the models in your tab and
-    the audio stays on the device.
+    the audio stays on the device. They need Chrome 137 or later (JSPI).
 
     .. button-ref:: browser/demos
         :ref-type: doc
@@ -309,8 +307,7 @@ Explore the documentation
 Brewed by Meetecho
 ------------------
 
-Juturna is brewed by `Meetecho <https://www.meetecho.com/en/?utm_source=juturna-docs&utm_medium=docs&utm_campaign=juturna3>`_, hacking on
-real-time media since 2009.
+Juturna is brewed by `Meetecho <https://www.meetecho.com/en/?utm_source=juturna-docs&utm_medium=docs&utm_campaign=juturna3>`_, the team behind the Janus® WebRTC server and a 2009 spin-off of the University of Napoli Federico II.
 Taking a pipeline to production? We write the nodes you are missing, tune
 performance, and offer consulting and support.
 
