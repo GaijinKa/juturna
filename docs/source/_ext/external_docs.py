@@ -153,9 +153,10 @@ def _copy_browser(srcdir: pathlib.Path):
         # the README links the other pages under docs/
         if source == 'README.md':
             text = text.replace('](docs/', '](')
-            text = text.replace(
-                '](LICENSE)', f']({_BROWSER_REPO}/blob/main/LICENSE)'
-            )
+            for name in ('LICENSE', 'CONTRIBUTING.md', 'SECURITY.md'):
+                text = text.replace(
+                    f']({name})', f']({_BROWSER_REPO}/blob/main/{name})'
+                )
 
         # the demos are published with the site (docs/build_demos.sh), under
         # demos/ next to browser/
