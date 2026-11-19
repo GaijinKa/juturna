@@ -42,8 +42,8 @@ extensions = [
 ]
 
 # Open Graph tags and the meta description of every page
-# the site is published under docs/ of the gh-pages branch
-html_baseurl = 'https://meetecho.github.io/juturna/docs/'
+# Pages serves the docs/ folder of the gh-pages branch at the site root
+html_baseurl = 'https://meetecho.github.io/juturna/'
 ogp_site_url = 'https://meetecho.github.io/juturna/'
 ogp_site_name = 'Juturna'
 ogp_image = 'https://meetecho.github.io/juturna/_static/img/juturna_og.png'
