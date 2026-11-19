@@ -1,0 +1,29 @@
+<svg viewBox="0 0 700 300" role="img" aria-label="Inside a node: upstream nodes call put(), which fills the inbound queue; _worker() takes one message at a time and calls update() with the node state; update() transmits to the destinations. Source nodes also run _source(), which calls put() on the same queue.">
+<defs><marker id="node-ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="ah" d="M0 0 L10 5 L0 10 z"/></marker><marker id="node-aha" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path class="ah acc" d="M0 0 L10 5 L0 10 z"/></marker></defs>
+<rect class="bx grp" x="113" y="40" width="443" height="250" rx="14"/><text class="t lab" x="129" y="64">NODE</text>
+<rect class="bx" x="4" y="110" width="90" height="60" rx="12"/>
+<text class="t" x="49.0" y="145.0" text-anchor="middle">upstream</text>
+<rect class="bx" x="131" y="110" width="108" height="60" rx="12"/>
+<text class="t m" x="185.0" y="137.0" text-anchor="middle">_queue</text><text class="t s " x="185.0" y="157.0" text-anchor="middle">inbound, FIFO</text>
+<rect class="bx" x="276" y="110" width="96" height="60" rx="12"/>
+<text class="t m" x="324.0" y="145.0" text-anchor="middle">_worker()</text>
+<rect class="bx core" x="409" y="110" width="140" height="60" rx="12"/>
+<text class="t m" x="479.0" y="137.0" text-anchor="middle">update()</text><text class="t s " x="479.0" y="157.0" text-anchor="middle">message, state</text>
+<rect class="bx" x="586" y="110" width="110" height="60" rx="12"/>
+<text class="t" x="641.0" y="145.0" text-anchor="middle">destinations</text>
+<path class="ln" d="M94 140 H 127" marker-end="url(#node-ah)"/>
+<text class="t s" x="107" y="100" text-anchor="end">put()</text>
+<path class="ln" d="M239 140 H 272" marker-end="url(#node-ah)"/>
+<text class="t s" x="257" y="100" text-anchor="middle">get()</text>
+<path class="ln acc" d="M372 140 H 405" marker-end="url(#node-aha)"/>
+<path class="ln" d="M549 140 H 582" marker-end="url(#node-ah)"/>
+<text class="t s" x="562" y="100" text-anchor="start">transmit()</text>
+<rect class="bx rem" x="131" y="214" width="108" height="56" rx="12"/>
+<text class="t m rem" x="185.0" y="247.0" text-anchor="middle">_source()</text>
+<path class="ln dash" d="M185 214 V 174" marker-end="url(#node-ah)"/>
+<text class="t s" x="195" y="198" text-anchor="start">put()</text>
+<rect class="bx" x="404" y="214" width="150" height="56" rx="12"/>
+<text class="t m" x="479.0" y="239.0" text-anchor="middle">state</text><text class="t s " x="479.0" y="259.0" text-anchor="middle">kept by the pipeline</text>
+<path class="ln" d="M479 174 V 210" marker-start="url(#node-ah)" marker-end="url(#node-ah)"/>
+<text class="t s" x="249" y="246" text-anchor="start">source nodes only</text>
+</svg>
