@@ -23,7 +23,7 @@ A node on another machine
 
 A browser tab
     ``"transport": "browser"`` in the pipeline, run by ``juturna-browser`` in
-    the Web Workers of a page, on Pyodide. Guide: :doc:`/browser/guide`.
+    the Web Workers of a page, on Pyodide. Guide: :doc:`run a pipeline in a page </browser/guide>`.
 
 To ship any of them in a container, see :doc:`docker`. How the threads and
 the browser backends differ underneath is in :doc:`/explain/transports`.
