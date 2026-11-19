@@ -147,10 +147,17 @@ quickly as possible, please take a peek at our
 guide. It covers the essentials, including:
 
 * branching & PR workflow
-* code style & linting
-* issue triage (TBD)
-* issue & PR templates and a Code of Conduct are provided (TBD)
-* signing CRA
+* code style, linting and commit messages
+* the pre-commit hooks and the checks CI runs
+
+Bugs and feature requests have their
+[issue templates](https://github.com/meetecho/juturna/tree/main/.github/ISSUE_TEMPLATE),
+and pull requests a
+[template](https://github.com/meetecho/juturna/blob/main/.github/pull_request_template.md)
+of their own. Everyone taking part follows the
+[Code of Conduct](https://github.com/meetecho/juturna/blob/main/CODE_OF_CONDUCT.md).
+To report a vulnerability, follow the
+[security policy](https://github.com/meetecho/juturna/blob/main/SECURITY.md).
 
 If you are not sure where to start, feel free to open an issue to discuss your
 ideas first. We’re happy to help guide you through the process!
