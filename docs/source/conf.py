@@ -1,4 +1,5 @@
 import datetime
+import os
 import sys
 from pathlib import Path
 
@@ -225,6 +226,14 @@ def _finish_site(app, exception):
             f'utm_campaign=juturna3&amp;utm_content={rel[:-5]}',
         )
         page.write_text(tagged)
+
+    # the demos are built after Sphinx (docs/build_demos.sh), which copies
+    # the examples/ folder of juturna-browser to demos/examples/
+    browser = Path(os.environ['JUTURNA_BROWSER_DIR'])
+    pages += sorted(
+        f'demos/{demo.relative_to(browser).as_posix()}'
+        for demo in browser.glob('examples/**/*.html')
+    )
 
     urls = ''.join(
         f'  <url><loc>{html_baseurl}{rel}</loc></url>\n' for rel in pages
