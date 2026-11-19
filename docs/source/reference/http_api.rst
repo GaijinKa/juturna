@@ -3,7 +3,7 @@
 HTTP API of the pipeline service
 ================================
 
-The requests accepted by the service started with ``juturna serve``. For a
+The requests accepted by the service started with ``python -m juturna serve``. For a
 guided tour, see :doc:`../how_to/serve_pipelines`.
 
 Authentication
@@ -41,7 +41,7 @@ Request bodies are JSON. ``{id}`` is the id the service gave the pipeline.
      - The status of every pipeline, as ``{"pipelines": [{id: status}]}``:
        a list with one object, keyed by pipeline id.
    * - ``POST /pipelines/validate``
-     - Checks a configuration as ``juturna validate`` does and returns the
+     - Checks a configuration as ``python -m juturna validate`` does and returns the
        report. Nothing is created. Node types are resolved, so their
        packages are imported.
    * - ``POST /pipelines/new``
@@ -86,8 +86,9 @@ Errors of the service carry a ``message`` (the ``401`` and ``413`` answers
 carry a ``detail`` instead):
 
 - ``404``: no pipeline with that id, or no such file in its folder;
-- ``409``: the call is not allowed in the current status of the pipeline, or
-  another lifecycle call is in progress;
+- ``409``: the call is not allowed in the current status of the pipeline,
+  another lifecycle call is in progress, or the telemetry is requested from a
+  pipeline that has none;
 - ``403``: the configuration reads an environment variable that is neither
   in the environment file of the service nor allowed by it;
 - ``422``: the configuration is refused (the body says which part), or a

@@ -60,9 +60,11 @@ validate
 --------
 
 Check a configuration file without building any node. The checks, in order:
-the JSON is well formed, the structure is right, nodes and links are well
-formed, transport and telemetry are valid, node types are installed and
-accept their configuration, the graph has no cycle.
+the JSON is well formed, ``pipeline`` has a ``name`` and the ``nodes`` and
+``links`` lists, nodes and links are well formed, transport and telemetry are
+valid, node types are installed (configuration keys a node does not know are
+reported as warnings), the graph has no cycle. ``id`` and ``folder`` are not
+checked: a configuration without them is valid but does not launch.
 
 The command prints one line per check, with warnings below it, then ``valid``
 or ``invalid``. It exits with status 0 when every check passes, 1 otherwise.

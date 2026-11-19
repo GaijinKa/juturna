@@ -52,7 +52,7 @@ This will generate logging entries split by node:
 
 .. code-block:: console
 
-    2026-02-12 15:05:20 | INFO     | jt.my_pipe.node_0       | init sources: []
+    2026-02-12 15:03:54 | INFO     | jt.my_pipe.node_0       | init sources: []
     2026-02-12 15:03:54 | INFO     | jt.my_pipe.node_0       | trx created, model id 123197287926000
     2026-02-12 15:03:55 | INFO     | jt.my_pipe.node_1       | audio loaded
     2026-02-12 15:03:55 | INFO     | jt.my_pipe.node_1       | duration: 149.942875
@@ -88,7 +88,7 @@ This time, the logs will look like:
 
 .. code-block:: console
 
-    2026-02-12 15:05:20 | INFO     | jt.my_pipe.node_0       | init sources: []
+    2026-02-12 15:03:54 | INFO     | jt.my_pipe.node_0       | init sources: []
     2026-02-12 15:03:54 | INFO     | jt.my_pipe.node_0       | trx created, model id 123197287926000
     2026-02-12 15:03:55 | INFO     | jt.my_pipe              | warmed up node node_0
     2026-02-12 15:03:55 | ERROR    | jt.my_pipe.node_1       | model not found, defaulting
@@ -212,8 +212,8 @@ Reading the four lines: source node ``A`` received its own message 0 and
 transmitted it; node ``B`` received it and, a second later, transmitted
 message 1, made while processing message 0 (``src_id``).
 
-Use ``{"name": "memory"}`` to keep the records in memory instead, which is
-what the pipeline service needs to return them from
+Use ``{"name": "memory"}`` to keep the records in memory instead. The
+pipeline service returns the records of either manager from
 ``GET /pipelines/{id}/telemetry``.
 
 The managers, their options and the meaning of every field are in

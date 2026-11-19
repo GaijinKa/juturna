@@ -51,18 +51,18 @@ an integer. For a boolean argument, ``true``, ``1`` and ``yes`` (in any case)
 mean true, anything else means false.
 
 A variable that is not set makes the warm up fail with an error naming it.
-``juturna validate`` only warns, as the variable may be set where the pipeline
+``python -m juturna validate`` only warns, as the variable may be set where the pipeline
 will run.
 
 Limit what a configuration can read
 -----------------------------------
 
-A pipeline you build yourself, or launch with ``juturna launch``, can read any
+A pipeline you build yourself, or launch with ``python -m juturna launch``, can read any
 variable of the environment. This is not what you want when the configuration
 comes from somebody else, who could point a node at any secret of your
 process.
 
-For this reason the pipeline service (``juturna serve``) reads no variable by
+For this reason the pipeline service (``python -m juturna serve``) reads no variable by
 default: a configuration that references one is refused with ``403``. There
 are two ways to give its clients the variables they need.
 
