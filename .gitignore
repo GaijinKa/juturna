@@ -179,3 +179,7 @@ cython_debug/
 
 # PyPI configuration file
 .pypirc
+
+# pages copied from juturna-nodes and juturna-browser at build time
+docs/source/catalog/
+docs/source/browser/
