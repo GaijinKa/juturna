@@ -131,7 +131,8 @@ with messages frozen on the way out so several nodes can read the same
 payload without copying it. The pipeline you try out in one process is the
 one you deploy: it also runs behind an HTTP service, or with its heaviest
 nodes moved to other machines, such as a model on a GPU, without rewriting
-its nodes.
+its nodes. For now, remote nodes need a trusted network or a VPN: their
+connection has no authentication and no encryption yet.
 
 .. container:: jt-figure
 
