@@ -68,3 +68,7 @@ What each example needs
 
 The download is the size of a fresh virtual environment with the example
 installed, plus the model and the test input fetched on the first run.
+
+**Need another pipeline?** Transcribing phone calls from Janus or Asterisk,
+reading sensors over MQTT, running on edge devices:
+:doc:`work with Meetecho </work_with_meetecho>` and we build it for you.
