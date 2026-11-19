@@ -36,6 +36,21 @@ _BROWSER_PAGES = {
 }
 
 
+# meta descriptions of the pages whose first lines make a poor one
+_BROWSER_META = {
+    'demos.md': 'Juturna pipelines running in a browser tab, on Pyodide: '
+    'background blur, noise suppression, live transcription and '
+    'translation. The models run in the page, the audio stays on the device.',
+}
+
+
+def _front_matter(description: str) -> str:
+    return (
+        f'---\nmyst:\n  html_meta:\n    description: "{description}"\n'
+        f'og:description: "{description}"\n---\n\n'
+    )
+
+
 def _checkout(variable: str, what: str) -> pathlib.Path:
     path = os.environ.get(variable)
 
@@ -146,6 +161,8 @@ def _copy_browser(srcdir: pathlib.Path):
         # demos/ next to browser/
         text = text.replace('http://localhost:8765/', _DEMOS_URL)
         text = text.replace('href="../examples/', 'href="../demos/examples/')
+        if page in _BROWSER_META:
+            text = _front_matter(_BROWSER_META[page]) + text
         (target / page).write_text(text)
 
     # figures are <picture> elements, which Sphinx does not copy: see setup()
