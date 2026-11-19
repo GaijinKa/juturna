@@ -48,10 +48,9 @@ Security fixes are provided, on a best-effort basis, for:
 | Older / unmaintained releases     | ❌        |
 
 Juturna follows [Semantic Versioning](https://semver.org). Supported
-release lines are also listed in `CHANGELOG.md`. The project is still
-evolving toward production-readiness (see `README.md`), so the set of
-actively patched versions may change between minor releases. This table
-is kept up to date.
+release lines are also listed in `CHANGELOG.md`. Juturna evolves quickly,
+so the set of actively patched versions may change between minor
+releases. This table is kept up to date.
 
 ## 3. How to report a vulnerability
 
@@ -159,5 +158,5 @@ the Git history of this file for prior versions.
 
 ---
 
-Last updated: [DATE]. Maintained by Meetecho as open-source software
+Last updated: 2026-11-17. Maintained by Meetecho as open-source software
 steward of Juturna, pursuant to Article 24 of Regulation (EU) 2024/2847.
