@@ -1,0 +1,33 @@
+<svg viewBox="0 0 800 330" role="img" aria-label="The same pipeline.json from a spike to production. On a laptop, python -m juturna launch runs it. On a server, python -m juturna serve runs it behind an HTTP API that asks for a bearer token. With its heaviest node warped, the pipeline adds &quot;warped&quot; and the address of a remote service started with python -m juturna remotize on a GPU machine. Then Work with Meetecho, for help in production. Aside, the browser edition runs pipelines between BrowserInput and BrowserOutput, with nodes that work in Pyodide.">
+<defs><marker id="spike_to_production-ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="ah" d="M0 0 L10 5 L0 10 z"/></marker><marker id="spike_to_production-aha" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path class="ah acc" d="M0 0 L10 5 L0 10 z"/></marker></defs>
+<rect class="bx grp" x="4" y="10" width="190" height="190" rx="14"/><text class="t lab" x="20" y="34">LAPTOP</text>
+<rect class="bx" x="24" y="40" width="150" height="50" rx="12"/>
+<text class="t m" x="99.0" y="70.0" text-anchor="middle">pipeline.json</text>
+<rect class="bx" x="24" y="104" width="150" height="50" rx="12"/>
+<text class="t m" x="99.0" y="134.0" text-anchor="middle">launch</text>
+<text class="t s" x="99" y="180" text-anchor="middle">runs it in one process</text>
+<path class="ln acc" d="M194 105 H 210" marker-end="url(#spike_to_production-aha)"/>
+<rect class="bx grp" x="214" y="10" width="190" height="190" rx="14"/><text class="t lab" x="230" y="34">SERVER</text>
+<rect class="bx" x="234" y="40" width="150" height="50" rx="12"/>
+<text class="t m" x="309.0" y="70.0" text-anchor="middle">pipeline.json</text>
+<rect class="bx core" x="234" y="104" width="150" height="50" rx="12"/>
+<text class="t m" x="309.0" y="134.0" text-anchor="middle">serve</text>
+<text class="t s" x="309" y="180" text-anchor="middle">adds an HTTP API + token</text>
+<path class="ln acc" d="M404 105 H 420" marker-end="url(#spike_to_production-aha)"/>
+<rect class="bx grp" x="424" y="10" width="190" height="190" rx="14"/><text class="t lab" x="440" y="34">SERVER + GPU</text>
+<rect class="bx" x="444" y="40" width="150" height="50" rx="12"/>
+<text class="t m" x="519.0" y="60.0" text-anchor="middle">pipeline.json</text>
+<text class="t s" x="519.0" y="80.0" text-anchor="middle">"warped" + address</text>
+<rect class="bx core" x="444" y="104" width="150" height="50" rx="12"/>
+<text class="t m" x="519.0" y="134.0" text-anchor="middle">remotize</text>
+<text class="t s" x="519" y="180" text-anchor="middle">adds a remote node</text>
+<path class="ln" d="M614 105 H 626" marker-end="url(#spike_to_production-ah)"/>
+<rect class="bx final" x="630" y="75" width="166" height="60" rx="12"/>
+<text class="t" x="713.0" y="100.0" text-anchor="middle">Work with Meetecho</text>
+<text class="t s" x="713.0" y="120.0" text-anchor="middle">help in production</text>
+<rect class="bx rem" x="24" y="252" width="440" height="60" rx="12"/>
+<text class="t" x="244.0" y="277.0" text-anchor="middle">browser edition</text>
+<text class="t s" x="244.0" y="297.0" text-anchor="middle">BrowserInput / BrowserOutput, nodes that work in Pyodide</text>
+<path class="ln dash" d="M99 200 V 248" marker-end="url(#spike_to_production-ah)"/>
+<text class="t s" x="108" y="230" text-anchor="start">aside, not the same file</text>
+</svg>

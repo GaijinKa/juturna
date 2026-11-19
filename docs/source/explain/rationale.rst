@@ -1,40 +1,72 @@
 .. _rationale:
 
-Rationale
-=========
+Why Juturna
+===========
 
-Before we delve into the nitty-gritty details of the Juturna internals, it is
-essential to clear the air about what Juturna is, and whom it is designed for.
+Juturna is a Python framework for real-time AI pipelines on audio, video and
+data, built for fast prototyping that doesn't stop at the prototype. Data
+enters a source node, crosses the processing nodes and leaves through a sink,
+while every node works on its own. This page lists the choices behind it,
+and where each one is documented.
 
-Put simply, Juturna is a library for **real-time**, **multimedia**
-**fast prototyping**. There are some concepts to unpack here, so let's do that
-and get this out of the way.
+From spike to production
+------------------------
 
-Real-time
----------
+A JSON file and a few nodes give you a working pipeline in minutes: the
+:doc:`quick start </index>` transcribes an audio file. The same file then runs
+behind an HTTP service with ``python -m juturna serve``
+(:doc:`/how_to/serve_pipelines`), and moving its heaviest nodes to other
+machines only adds their address to the configuration
+(:doc:`/how_to/remotise_node`): the nodes are not rewritten. See
+:doc:`/how_to/choose_where_it_runs`. Releases follow semantic versioning.
 
-The main idea behind Juturna is to catch and process data as soon as they are
-available, allowing different components to transform them independently from
-one another. To do so, Juturna leverages the concept of pipeline, which should
-not require much explaining (but will be discussed further in this documentation
-nonetheless). In short, data enter and traverse a Juturna pipeline in real-time,
-and the nodes within that pipeline work asynchronously.
+.. container:: jt-figure
 
-Multimedia
-----------
+   .. raw:: html
+      :file: ../diagrams/spike_to_production.svg
 
-Juturna comes with a collection of officially supported nodes, the
-``juturna-nodes`` package, and anybody can publish more. Among all this, a
-robust group of key nodes is entirely devoted to handling multimedia data. This
-of course includes audio and video sourcing (from both remote and local
-sources), and audio and video processing.
+   **Figure 1.** One ``pipeline.json`` from a laptop to production, each step adding one thing (``launch``, ``serve`` and ``remotize`` run as ``python -m juturna <command>``); the browser edition is a separate path.
 
-Fast-prototyping
-----------------
+Pipelines also run in a browser tab, on Pyodide, between ``BrowserInput`` and
+``BrowserOutput`` and with nodes written for it: see :doc:`/browser/index`.
 
-Well, ok, the concept of how fast prototyping *really* is can be subjective. At
-the end of the day, it all boils down to how familiar you are with the tools
-of the trade you decide to pick up. In this regard, Juturna keeps an ace up the
-sleeve: the core library has almost no dependencies (``numpy`` is the only
-one), and only a handful of concepts. This means an overview of those
-concepts is virtually everything you need to be up and running!
+A pipeline is a JSON file
+-------------------------
+
+A pipeline is a configuration file that lists nodes and the links between
+them. Juturna checks that the links form a directed acyclic graph, builds the
+nodes and starts them, sinks first. ``python -m juturna validate`` checks a
+file before it runs. See :doc:`pipelines` and :doc:`/reference/configuration`.
+
+A node is a Python class
+------------------------
+
+A node is a plain Python class: its logic is one ``update()`` method that
+receives a message and transmits new ones. Sources, processing nodes and
+sinks are the same type, and a node package is an ordinary Python package
+(``python -m juturna stub`` writes the skeleton). See :doc:`nodes` and
+:doc:`/how_to/create_nodes`.
+
+Messages are shared, not copied
+-------------------------------
+
+A node freezes a message when it transmits it, and every destination gets the
+same frozen object: a frame sent to three nodes is not copied three times. A
+node that needs a modified version asks for a copy. See :doc:`messages`.
+
+Heavy nodes can run elsewhere
+-----------------------------
+
+A node that needs a GPU, or dependencies that clash with the rest of the
+pipeline, can run as a remote service started with ``python -m juturna remotize``. The
+pipeline marks it as ``warped`` and gives the address of the service; the
+other nodes do not change. See :doc:`remote` and :doc:`/how_to/remotise_node`.
+
+A small core
+------------
+
+The core library depends on ``numpy`` only, and is released under the MIT
+license. Media, models and protocols live in the nodes, and the official
+ones are in the ``juturna-nodes`` package, where each heavy dependency sits
+behind an optional group: you install what your pipeline uses. See
+:doc:`/how_to/install`.

@@ -89,10 +89,12 @@ A pipeline object is always in one of five states:
 - a ``DESTROYED`` pipeline released everything it held, and is of no further
   use.
 
-.. image:: ../_static/img/pipeline_lifecycle.svg
-   :alt: pipeline
-   :width: 80%
-   :align: center
+.. container:: jt-figure
+
+   .. raw:: html
+      :file: ../diagrams/pipeline_lifecycle.svg
+
+   **Figure 1.** Pipeline states and the calls that move between them. ``Pipeline(config)`` creates a ``NEW`` pipeline; a stopped pipeline is final.
 
 These methods move a pipeline through its lifecycle:
 

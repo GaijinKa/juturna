@@ -1,0 +1,25 @@
+<svg viewBox="0 0 700 540" role="img" aria-label="The pipeline reads its configuration and builds the nodes of its worker. Nodes take queues, events and worker threads from the TransportBackend; the pipeline asks it for node_scope() and remote_destination(). Two backends implement it: ThreadingTransport with OS threads, and BrowserTransport with Web Workers in Pyodide.">
+<defs><marker id="transport_layers-ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="ah" d="M0 0 L10 5 L0 10 z"/></marker><marker id="transport_layers-aha" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path class="ah acc" d="M0 0 L10 5 L0 10 z"/></marker></defs>
+<rect class="bx" x="160" y="20" width="280" height="60" rx="12"/>
+<text class="t m" x="300.0" y="47.0" text-anchor="middle">pipeline.json</text><text class="t s " x="300.0" y="67.0" text-anchor="middle">nodes, links, transport</text>
+<rect class="bx" x="160" y="120" width="280" height="60" rx="12"/>
+<text class="t m" x="300.0" y="147.0" text-anchor="middle">Pipeline</text><text class="t s " x="300.0" y="167.0" text-anchor="middle">config, worker</text>
+<rect class="bx" x="160" y="220" width="280" height="60" rx="12"/>
+<text class="t m" x="300.0" y="247.0" text-anchor="middle">Node</text><text class="t s " x="300.0" y="267.0" text-anchor="middle">update(), _worker, _source</text>
+<rect class="bx core" x="160" y="340" width="280" height="64" rx="12"/>
+<text class="t m" x="300.0" y="369.0" text-anchor="middle">TransportBackend</text><text class="t s " x="300.0" y="389.0" text-anchor="middle">protocols in transport/_base.py</text>
+<path class="ln" d="M300 80 V 116" marker-end="url(#transport_layers-ah)"/>
+<path class="ln" d="M300 180 V 216" marker-end="url(#transport_layers-ah)"/>
+<text class="t s" x="312" y="202" text-anchor="start">builds the nodes of its worker</text>
+<path class="ln acc" d="M300 280 V 336" marker-end="url(#transport_layers-aha)"/>
+<text class="t s acc" x="312" y="314" text-anchor="start">queues, events, worker threads</text>
+<path class="ln dash" d="M440 150 C 520 150, 520 372, 444 372" marker-end="url(#transport_layers-ah)"/>
+<text class="t s" x="528" y="256" text-anchor="start">node_scope()</text>
+<text class="t s" x="528" y="274" text-anchor="start">remote_destination()</text>
+<rect class="bx" x="20" y="456" width="270" height="64" rx="12"/>
+<text class="t m" x="155.0" y="485.0" text-anchor="middle">ThreadingTransport</text><text class="t s " x="155.0" y="505.0" text-anchor="middle">OS threads · shared_fs</text>
+<rect class="bx" x="330" y="456" width="300" height="64" rx="12"/>
+<text class="t m" x="480.0" y="485.0" text-anchor="middle">BrowserTransport</text><text class="t s " x="480.0" y="505.0" text-anchor="middle">Web Workers in Pyodide · page_channel</text>
+<path class="ln" d="M300 404 C 300 430, 155 430, 155 452" marker-end="url(#transport_layers-ah)"/>
+<path class="ln" d="M300 404 C 300 430, 480 430, 480 452" marker-end="url(#transport_layers-ah)"/>
+</svg>

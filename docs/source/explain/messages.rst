@@ -25,10 +25,12 @@ This design favours:
   time, a message can be evaluated without extra information needed on its
   context).
 
-.. image:: ../_static/img/message.svg
-   :alt: message
-   :width: 60%
-   :align: center
+.. container:: jt-figure
+
+   .. raw:: html
+      :file: ../diagrams/message.svg
+
+   **Figure 1.** The fields of a message. The whole message becomes read-only when it is transmitted.
 
 Messages
 --------

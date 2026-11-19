@@ -32,10 +32,12 @@ the root node of our pipeline, a bunch of nodes moving forward processed and
 transformed data, and some destination (local or remote, it does not really
 make much difference).
 
-.. image:: ../_static/img/pipeline.svg
-   :alt: pipeline
-   :width: 100%
-   :align: center
+.. container:: jt-figure
+
+   .. raw:: html
+      :file: ../diagrams/pipeline.svg
+
+   **Figure 1.** A pipeline with one source node, highlighted. Data can split into branches and branches can join; each branch ends at its own destination.
 
 A Juturna pipeline can also be **multi-source**: several root nodes will feed
 different branches of the graph. This could be very useful when heterogeneous
@@ -46,10 +48,12 @@ transcribes and translates the audio, and produces the textual translation and
 a video stream with subtitles. For Juturna, this is a single pipeline entity,
 for which 2 source nodes are defined.
 
-.. image:: ../_static/img/pipeline_multisource.svg
-   :alt: pipeline
-   :width: 100%
-   :align: center
+.. container:: jt-figure
+
+   .. raw:: html
+      :file: ../diagrams/pipeline_multisource.svg
+
+   **Figure 2.** Two source nodes in one pipeline. ``stt`` feeds both ``translate`` and ``subtitles``, so the audio branch joins the video branch.
 
 Node
 ----
@@ -67,12 +71,14 @@ the task they are programmed to perform:
 **Source nodes** are root nodes that either consume external data (obtained from
 real-time streams, remote or local files, databases, HTTP or websocket
 requests...) or generate data, to ultimately push them downstream into the
-pipeline. In the above pipeline examples, source nodes are the green ones.
+pipeline. In the above pipeline examples, source nodes are the highlighted ones.
 
-.. image:: ../_static/img/node_source_overview.svg
-   :alt: pipeline
-   :width: 60%
-   :align: center
+.. container:: jt-figure
+
+   .. raw:: html
+      :file: ../diagrams/node_source_overview.svg
+
+   **Figure 3.** A source node: ``_source()`` brings data in, ``update()`` processes it and transmits it to every downstream node.
 
 **Processing nodes** (proc node if you are in a hurry) are intermediate nodes in
 the pipeline. A processing node receives data from all its upstream connections,
@@ -83,10 +89,12 @@ input and a single output, and ``subtitles`` is a proc node with multiple inputs
 and a single output. The missing configuration, multiple input / multiple
 output, is still possible albeit not depicted.
 
-.. image:: ../_static/img/node_proc_overview.svg
-   :alt: pipeline
-   :width: 60%
-   :align: center
+.. container:: jt-figure
+
+   .. raw:: html
+      :file: ../diagrams/node_proc_overview.svg
+
+   **Figure 4.** A processing node: messages from every upstream node reach ``update()`` one at a time; what has to wait for another input stays in the node state.
 
 **Sink nodes** deliver to remote or local destinations the data they receive
 from the nodes they are connected to. Remote destinations could be anything you
@@ -94,10 +102,12 @@ can think of: HTTP endpoints, websocket servers, databases or caches, RTP
 streams. Of course, if there is no node capable of transmitting to the
 destination you need to reach, you can still create a custom node for it!
 
-.. image:: ../_static/img/node_sink_overview.svg
-   :alt: pipeline
-   :width: 60%
-   :align: center
+.. container:: jt-figure
+
+   .. raw:: html
+      :file: ../diagrams/node_sink_overview.svg
+
+   **Figure 5.** A sink node: ``update()`` delivers what it receives to a destination outside the pipeline.
 
 When designing a pipeline, there are some alternatives for how to get the nodes
 you need:
