@@ -141,22 +141,13 @@ its nodes.
    .. raw:: html
       :file: diagrams/what_juturna_is_narrow.svg
 
-   **Figure 1.** A pipeline: sources, processing and AI nodes, and destinations, wired in one JSON file. Below, a lane the shipped nodes cover and one they do not: :ref:`write its nodes <tutorial>` or :doc:`have Meetecho build them <work_with_meetecho>`.
+   **Figure 1.** A pipeline: sources, processing and AI nodes, and destinations, wired in one JSON file. The dashed nodes are yours: write your node or let Meetecho build it for you (:ref:`Write your first nodes <tutorial>`, :doc:`Work with Meetecho <work_with_meetecho>`).
 
-Pipelines also run in a browser tab, on Pyodide, with nodes that work there:
-see :doc:`browser/index`.
+When the node you need is not in the catalogue, write your node or let
+Meetecho build it for you.
 
 Quick start
 -----------
-
-.. button-ref:: browser/demos
-    :ref-type: doc
-    :color: primary
-    :outline:
-
-    Try it in your tab
-
-The browser demos run the models in the page: the audio stays on the device.
 
 .. include:: _includes/about_example.rst
 
@@ -225,6 +216,13 @@ is done.
 
 The text comes out as lines like ``[whisper] <the transcribed text>``, one
 more each time Whisper transcribes its latest blocks of speech.
+
+The quick start is audio only: for video, see
+:doc:`examples/video_detection`.
+
+Pipelines also run in a browser tab, on Pyodide, with nodes that work there
+(:doc:`browser/index`). :doc:`Try it in your tab <browser/demos>`: the demos
+run the models in the page, and the audio stays on the device.
 
 For complete pipelines to run and adapt, see the :ref:`examples <examples>`.
 To write nodes of your own, follow :ref:`Write your first nodes <tutorial>`:

@@ -1,6 +1,6 @@
-<svg class="jt-narrow" viewBox="0 0 360 1338" role="img" aria-label="What Juturna is: one JSON file describes a graph of nodes. Sources, such as a file, a microphone, a webcam or an RTP stream, feed processing and AI nodes, such as transcription, a language model or object detection, which feed destinations, such as a webhook, a file, a speaker or the console. Below, two lanes: one the shipped nodes cover, JsonWebsocket to NotifierHTTP, and a dashed one they do not, MQTT, logs or packets into a classifier and an output: not shipped, write it or have Meetecho build it.">
+<svg class="jt-narrow" viewBox="0 0 360 1002" role="img" aria-label="What Juturna is: one JSON file describes a graph of nodes. Sources, such as a file, a microphone, a webcam or an RTP stream, feed processing and AI nodes, such as transcription, a language model or object detection, which feed destinations, such as a webhook, a file, a speaker or the console. Each column also has a custom node, drawn dashed: a custom source such as MQTT or sensors, a custom processor and a custom sink.">
 <defs><marker id="what_juturna_is_narrow-ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="ah" d="M0 0 L10 5 L0 10 z"/></marker><marker id="what_juturna_is_narrow-aha" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path class="ah acc" d="M0 0 L10 5 L0 10 z"/></marker></defs>
-<rect class="bx grp" x="4" y="10" width="352" height="806" rx="14"/>
+<rect class="bx grp" x="4" y="10" width="352" height="982" rx="14"/>
 <text class="t lab" x="20" y="34">PIPELINE.JSON · A GRAPH OF NODES</text>
 <text class="t lab" x="180" y="64" text-anchor="middle">SOURCES</text>
 <rect class="bx" x="30" y="76" width="300" height="48" rx="12"/>
@@ -15,52 +15,36 @@
 <rect class="bx" x="30" y="244" width="300" height="48" rx="12"/>
 <text class="t" x="180" y="263" text-anchor="middle">RTP stream</text>
 <text class="t s" x="180" y="283" text-anchor="middle">AudioRtp</text>
-<path class="ln acc" d="M180 296 V 322" marker-end="url(#what_juturna_is_narrow-aha)"/>
-<text class="t lab" x="180" y="346" text-anchor="middle">PROCESSING AND AI</text>
-<rect class="bx core" x="30" y="358" width="300" height="48" rx="12"/>
-<text class="t" x="180" y="377" text-anchor="middle">transcription</text>
-<text class="t s" x="180" y="397" text-anchor="middle">TranscriberWhisper</text>
-<rect class="bx core" x="30" y="414" width="300" height="48" rx="12"/>
-<text class="t" x="180" y="433" text-anchor="middle">language model</text>
-<text class="t s" x="180" y="453" text-anchor="middle">PrompterOllama</text>
-<rect class="bx core" x="30" y="470" width="300" height="48" rx="12"/>
-<text class="t" x="180" y="489" text-anchor="middle">object detection</text>
-<text class="t s" x="180" y="509" text-anchor="middle">DetectorYolox</text>
-<path class="ln acc" d="M180 522 V 548" marker-end="url(#what_juturna_is_narrow-aha)"/>
-<text class="t lab" x="180" y="572" text-anchor="middle">DESTINATIONS</text>
-<rect class="bx" x="30" y="584" width="300" height="48" rx="12"/>
-<text class="t" x="180" y="603" text-anchor="middle">webhook</text>
-<text class="t s" x="180" y="623" text-anchor="middle">NotifierHTTP</text>
-<rect class="bx" x="30" y="640" width="300" height="48" rx="12"/>
-<text class="t" x="180" y="659" text-anchor="middle">file</text>
-<text class="t s" x="180" y="679" text-anchor="middle">AudioWriter</text>
-<rect class="bx" x="30" y="696" width="300" height="48" rx="12"/>
-<text class="t" x="180" y="715" text-anchor="middle">speaker</text>
-<text class="t s" x="180" y="735" text-anchor="middle">SpeakerSink</text>
-<rect class="bx" x="30" y="752" width="300" height="48" rx="12"/>
-<text class="t" x="180" y="771" text-anchor="middle">console</text>
-<text class="t s" x="180" y="791" text-anchor="middle">NotifierConsole</text>
-<rect class="bx grp" x="4" y="832" width="352" height="188" rx="14"/>
-<text class="t lab" x="20" y="856">SHIPPED · JSON IN, WEBHOOK OUT</text>
-<rect class="bx" x="30" y="870" width="300" height="48" rx="12"/>
-<text class="t" x="180" y="889" text-anchor="middle">JSON over a websocket</text>
-<text class="t s" x="180" y="909" text-anchor="middle">JsonWebsocket</text>
-<path class="ln acc" d="M180 922 V 948" marker-end="url(#what_juturna_is_narrow-aha)"/>
-<rect class="bx" x="30" y="956" width="300" height="48" rx="12"/>
-<text class="t" x="180" y="975" text-anchor="middle">webhook</text>
-<text class="t s" x="180" y="995" text-anchor="middle">NotifierHTTP</text>
-<rect class="bx rem" x="4" y="1036" width="352" height="292" rx="14"/>
-<text class="t lab" x="20" y="1060">NOT SHIPPED: WRITE IT</text>
-<text class="t lab" x="20" y="1078">OR HAVE MEETECHO BUILD IT</text>
-<rect class="bx rem" x="30" y="1092" width="300" height="48" rx="12"/>
-<text class="t rem" x="180" y="1111" text-anchor="middle">MQTT / logs / packets</text>
-<text class="t s" x="180" y="1131" text-anchor="middle">your source</text>
-<path class="ln dash" d="M180 1144 V 1170" marker-end="url(#what_juturna_is_narrow-ah)"/>
-<rect class="bx rem" x="30" y="1178" width="300" height="48" rx="12"/>
-<text class="t rem" x="180" y="1197" text-anchor="middle">classifier</text>
-<text class="t s" x="180" y="1217" text-anchor="middle">your model</text>
-<path class="ln dash" d="M180 1230 V 1256" marker-end="url(#what_juturna_is_narrow-ah)"/>
-<rect class="bx rem" x="30" y="1264" width="300" height="48" rx="12"/>
-<text class="t rem" x="180" y="1283" text-anchor="middle">output</text>
-<text class="t s" x="180" y="1303" text-anchor="middle">your destination</text>
+<rect class="bx rem" x="30" y="300" width="300" height="48" rx="12"/>
+<text class="t rem" x="180" y="319" text-anchor="middle">custom source</text>
+<text class="t s" x="180" y="339" text-anchor="middle">e.g. MQTT, sensors</text>
+<path class="ln acc" d="M180 354 V 378" marker-end="url(#what_juturna_is_narrow-aha)"/>
+<text class="t lab" x="180" y="406" text-anchor="middle">PROCESSING AND AI</text>
+<rect class="bx core" x="30" y="418" width="300" height="48" rx="12"/>
+<text class="t" x="180" y="437" text-anchor="middle">transcription</text>
+<text class="t s" x="180" y="457" text-anchor="middle">TranscriberWhisper</text>
+<rect class="bx core" x="30" y="474" width="300" height="48" rx="12"/>
+<text class="t" x="180" y="493" text-anchor="middle">language model</text>
+<text class="t s" x="180" y="513" text-anchor="middle">PrompterOllama</text>
+<rect class="bx core" x="30" y="530" width="300" height="48" rx="12"/>
+<text class="t" x="180" y="549" text-anchor="middle">object detection</text>
+<text class="t s" x="180" y="569" text-anchor="middle">DetectorYolox</text>
+<rect class="bx rem" x="30" y="586" width="300" height="48" rx="12"/>
+<text class="t rem" x="180" y="615" text-anchor="middle">custom processor</text>
+<path class="ln acc" d="M180 640 V 664" marker-end="url(#what_juturna_is_narrow-aha)"/>
+<text class="t lab" x="180" y="692" text-anchor="middle">DESTINATIONS</text>
+<rect class="bx" x="30" y="704" width="300" height="48" rx="12"/>
+<text class="t" x="180" y="723" text-anchor="middle">webhook</text>
+<text class="t s" x="180" y="743" text-anchor="middle">NotifierHTTP</text>
+<rect class="bx" x="30" y="760" width="300" height="48" rx="12"/>
+<text class="t" x="180" y="779" text-anchor="middle">file</text>
+<text class="t s" x="180" y="799" text-anchor="middle">AudioWriter</text>
+<rect class="bx" x="30" y="816" width="300" height="48" rx="12"/>
+<text class="t" x="180" y="835" text-anchor="middle">speaker</text>
+<text class="t s" x="180" y="855" text-anchor="middle">SpeakerSink</text>
+<rect class="bx" x="30" y="872" width="300" height="48" rx="12"/>
+<text class="t" x="180" y="891" text-anchor="middle">console</text>
+<text class="t s" x="180" y="911" text-anchor="middle">NotifierConsole</text>
+<rect class="bx rem" x="30" y="928" width="300" height="48" rx="12"/>
+<text class="t rem" x="180" y="957" text-anchor="middle">custom sink</text>
 </svg>
