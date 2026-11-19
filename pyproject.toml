@@ -1,7 +1,7 @@
 [project]
 name = "juturna"
 version = "3.0.0"
-description = "Juturna core library"
+description = "Python framework for real-time AI pipelines on audio, video and data"
 authors = [
     { name = "Antonio Bevilacqua", email = "b3by.in.th3.sky@gmail.com" },
     { name = "Paolo Saviano", email = "psaviano@meetecho.com" }
@@ -63,7 +63,8 @@ doc = [
     "furo==2025.12.19",
     "sphinx-design==0.7.0",
     "myst-parser==5.2.0",
-    "sphinx_new_tab_link==0.8.2"
+    "sphinx_new_tab_link==0.8.2",
+    "sphinxext-opengraph==0.13.0"
 ]
 dev = [
     "pre-commit==4.6.2",

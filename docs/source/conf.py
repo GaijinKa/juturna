@@ -38,7 +38,16 @@ extensions = [
     'sphinx_new_tab_link',
     'myst_parser',
     'external_docs',
+    'sphinxext.opengraph',
 ]
+
+# Open Graph tags and the meta description of every page
+# Pages serves the docs/ folder of the gh-pages branch at the site root
+html_baseurl = 'https://meetecho.github.io/juturna/'
+ogp_site_url = 'https://meetecho.github.io/juturna/'
+ogp_site_name = 'Juturna'
+ogp_image = 'https://meetecho.github.io/juturna/_static/img/juturna_og.png'
+ogp_image_alt = 'Juturna logo'
 
 templates_path = ['_templates']
 exclude_patterns = ['_build', '_includes', 'Thumbs.db', '.DS_Store']
@@ -71,7 +80,7 @@ pygments_dark_style = 'meetecho_pygments.MeetechoDarkStyle'
 html_static_path = ['_static']
 
 # pages moved in 3.0.0: the old URLs redirect to the new ones
-html_extra_path = ['_redirects']
+html_extra_path = ['_redirects', '_extra']
 
 # long signatures (the node constructors) get one parameter per line
 maximum_signature_line_length = 70
@@ -193,6 +202,44 @@ def _skip_reexported(app, what, name, obj, skip, options):
     return None
 
 
+_NOT_IN_SITEMAP = ('genindex.html', 'search.html', 'py-modindex.html')
+
+
+def _finish_site(app, exception):
+    # every meetecho.com link says which page it comes from, and the site
+    # ships a sitemap and a robots.txt that points to it
+    if exception is not None or app.builder.format != 'html':
+        return
+
+    out = Path(app.outdir)
+    pages = []
+    for page in sorted(out.rglob('*.html')):
+        rel = page.relative_to(out).as_posix()
+        if rel.startswith(('_', 'demos/')):
+            continue
+        text = page.read_text()
+        if 'http-equiv="refresh"' not in text and rel not in _NOT_IN_SITEMAP:
+            pages.append(rel)
+        tagged = text.replace(
+            'utm_campaign=juturna3',
+            f'utm_campaign=juturna3&amp;utm_content={rel[:-5]}',
+        )
+        page.write_text(tagged)
+
+    urls = ''.join(
+        f'  <url><loc>{html_baseurl}{rel}</loc></url>\n' for rel in pages
+    )
+    (out / 'sitemap.xml').write_text(
+        '<?xml version="1.0" encoding="UTF-8"?>\n'
+        '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
+        f'{urls}</urlset>\n'
+    )
+    (out / 'robots.txt').write_text(
+        f'User-agent: *\nAllow: /\n\nSitemap: {html_baseurl}sitemap.xml\n'
+    )
+
+
 def setup(app):
     """Register the build hooks of the documentation."""
     app.connect('autodoc-skip-member', _skip_reexported)
+    app.connect('build-finished', _finish_site)

@@ -1,0 +1,61 @@
+# Juturna
+
+> Juturna is a Python framework by Meetecho for real-time AI pipelines on audio, video and data, built for fast prototyping that doesn't stop at the prototype: the same pipeline then runs behind an HTTP service or with its heaviest nodes on other machines.
+
+A pipeline is a JSON file that lists nodes and the links between them; Juturna runs the graph, each node in worker threads of its own. The official nodes (RTP sources, transcription, voice activity detection, object detection, notifiers) come with the `juturna-nodes` package. Pipelines also run in a browser tab on Pyodide, through `juturna-browser`, with the same configuration format and node model but with nodes written for Pyodide, not the server ones. Juturna needs Python 3.12 or newer and is released under the MIT license.
+
+## Start
+
+- [Quick start](https://meetecho.github.io/juturna/index.html#quick-start): transcribe an audio file with a four-node pipeline
+- [Install](https://meetecho.github.io/juturna/how_to/install.html): Juturna, `juturna-nodes` and the optional groups
+- [Write your first nodes](https://meetecho.github.io/juturna/tutorials/first_pipeline.html): build a pipeline of three nodes from scratch
+- [Upgrade from Juturna 2.x](https://meetecho.github.io/juturna/how_to/migrate_from_2.html): what changed in 3.0
+
+## Examples
+
+- [Examples](https://meetecho.github.io/juturna/examples/index.html): complete pipelines with install, configuration, test input and expected output
+- [Build a voice assistant](https://meetecho.github.io/juturna/examples/voice_assistant.html): speech recognition, a language model on Ollama and a synthetic voice, on the CPU
+- [Detect objects in a video](https://meetecho.github.io/juturna/examples/video_detection.html): YOLOX on ONNX Runtime, events posted to a webhook
+
+## Explanation
+
+- [Why Juturna](https://meetecho.github.io/juturna/explain/rationale.html): the design choices, from spike to production
+- [Pipelines](https://meetecho.github.io/juturna/explain/pipelines.html): configuration and lifecycle
+- [Nodes](https://meetecho.github.io/juturna/explain/nodes.html): the threading model, multiple inputs and the node lifecycle
+- [Messages and payloads](https://meetecho.github.io/juturna/explain/messages.html): frozen messages and typed payloads
+- [Transports](https://meetecho.github.io/juturna/explain/transports.html): threads in one process or Web Workers in a browser tab
+
+## Deploy
+
+- [Choose where it runs](https://meetecho.github.io/juturna/how_to/choose_where_it_runs.html): one process, an HTTP service, a node on another machine, a browser tab
+- [Run pipelines behind an HTTP service](https://meetecho.github.io/juturna/how_to/serve_pipelines.html): `python -m juturna serve` and its REST API
+- [Run a node on another machine](https://meetecho.github.io/juturna/how_to/remotise_node.html): `python -m juturna remotize` and warped nodes
+- [Build a Docker image](https://meetecho.github.io/juturna/how_to/docker.html)
+
+## Nodes
+
+- [Node catalogue](https://meetecho.github.io/juturna/catalog/nodes/overview.html): the nodes of `juturna-nodes`, with their arguments and message formats
+- [Write and package a node](https://meetecho.github.io/juturna/how_to/create_nodes.html): a node repository of your own
+- [Contribute a node to juturna-nodes](https://meetecho.github.io/juturna/catalog/contribute/new_node.html)
+
+## In the browser
+
+- [juturna-browser](https://meetecho.github.io/juturna/browser/index.html): Juturna pipelines on Pyodide, in the Web Workers of a page
+- [Demos](https://meetecho.github.io/juturna/browser/demos.html): background blur, noise suppression, live transcription and translation, with the models running in the page
+- [Run a pipeline in a page](https://meetecho.github.io/juturna/browser/guide.html)
+
+## Reference
+
+- [Configuration file](https://meetecho.github.io/juturna/reference/configuration.html): every key of `pipeline.json`
+- [Command line](https://meetecho.github.io/juturna/reference/cli.html): `launch`, `validate`, `create`, `stub`, `serve`, `remotize`
+- [HTTP API](https://meetecho.github.io/juturna/reference/http_api.html)
+
+## Work with Meetecho
+
+- [Work with Meetecho](https://meetecho.github.io/juturna/work_with_meetecho.html): node development, performance tuning, scaling and consulting from the team that maintains Juturna
+
+## Optional
+
+- [Observe a pipeline](https://meetecho.github.io/juturna/how_to/observe.html): telemetry on node latency
+- [Troubleshooting](https://meetecho.github.io/juturna/troubleshooting.html)
+- [Source code](https://github.com/meetecho/juturna)
