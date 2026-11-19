@@ -1,0 +1,23 @@
+{
+  "version": "3.0.0",
+  "pipeline": {
+    "name": "video_detection",
+    "id": "video_detection_01",
+    "folder": "./run",
+    "nodes": [
+      { "name": "video", "type": "VideoCapture",
+        "configuration": { "source": "Chinese_Signal.webm", "fps": 5 } },
+      { "name": "detector", "type": "DetectorYolox",
+        "configuration": { "model": "yolox_nano" } },
+      { "name": "events", "type": "DetectionEvents",
+        "configuration": { "interval": 2.0 } },
+      { "name": "webhook", "type": "NotifierHTTP",
+        "configuration": { "endpoint": "http://127.0.0.1:8080/events" } }
+    ],
+    "links": [
+      { "from": "video", "to": "detector" },
+      { "from": "detector", "to": "events" },
+      { "from": "events", "to": "webhook" }
+    ]
+  }
+}
