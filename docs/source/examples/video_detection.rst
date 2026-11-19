@@ -9,9 +9,15 @@ Detect objects in a video
 Read a video, detect the objects in it, and send a JSON event to a webhook
 when a class of object shows up:
 
-.. code-block:: text
+.. container:: jt-figure
 
-    video ─► detector ─► events ─► webhook
+   .. raw:: html
+      :file: ../diagrams/video_detection_pipeline.svg
+
+   .. raw:: html
+      :file: ../diagrams/video_detection_pipeline_narrow.svg
+
+   **Figure 1.** The pipeline of this example: four nodes, one after the other.
 
 - :ref:`VideoCapture <node-video-capture>` reads a video file, or a webcam,
   and keeps at most 5 frames per second;

@@ -1,0 +1,14 @@
+<svg viewBox="0 0 400 40" role="img" aria-label="The video detection pipeline: VideoCapture reads the video at most 5 frames per second, DetectorYolox finds the objects with YOLOX nano, DetectionEvents turns them into one event per class at most every 2 seconds, and NotifierHTTP posts each event to a webhook.">
+<defs><marker id="video_detection_mini-ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="ah" d="M0 0 L10 5 L0 10 z"/></marker><marker id="video_detection_mini-aha" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path class="ah acc" d="M0 0 L10 5 L0 10 z"/></marker></defs>
+<rect class="bx" x="2.0" y="2" width="82.5" height="36" rx="10"/>
+<text class="t" x="43.2" y="25" text-anchor="middle">video</text>
+<rect class="bx" x="106.5" y="2" width="82.5" height="36" rx="10"/>
+<text class="t" x="147.8" y="25" text-anchor="middle">detector</text>
+<path class="ln" d="M88.5 20 H 102.5" marker-end="url(#video_detection_mini-ah)"/>
+<rect class="bx" x="211.0" y="2" width="82.5" height="36" rx="10"/>
+<text class="t" x="252.2" y="25" text-anchor="middle">events</text>
+<path class="ln" d="M193.0 20 H 207.0" marker-end="url(#video_detection_mini-ah)"/>
+<rect class="bx" x="315.5" y="2" width="82.5" height="36" rx="10"/>
+<text class="t" x="356.8" y="25" text-anchor="middle">webhook</text>
+<path class="ln" d="M297.5 20 H 311.5" marker-end="url(#video_detection_mini-ah)"/>
+</svg>

@@ -9,11 +9,15 @@ Build a voice assistant
 This example builds a small assistant you talk to: press Enter, ask a question
 in English, press Enter again, and it answers with a synthetic voice.
 
-.. code-block:: text
+.. container:: jt-figure
 
-    microphone ─► stt ─► llm ─► tts ─► speaker
-                   │      │
-                   └──────┴──► console
+   .. raw:: html
+      :file: ../diagrams/voice_assistant_pipeline.svg
+
+   .. raw:: html
+      :file: ../diagrams/voice_assistant_pipeline_narrow.svg
+
+   **Figure 1.** The pipeline of this example: the question goes from the microphone to the speaker, and the console prints both the question and the answer.
 
 - ``MicSource`` records from the microphone, between two presses of Enter;
 - ``TranscriberSherpa`` turns the question into text;
@@ -226,7 +230,7 @@ ends of the pipeline change:
    .. raw:: html
       :file: ../diagrams/voice_assistant_swap.svg
 
-   **Figure 1.** The same assistant on your desk and on real traffic: ``AudioRtp`` and ``AudioWriter`` take the place of ``MicSource`` and ``SpeakerSink``, the nodes in between stay as they are.
+   **Figure 2.** The same assistant on your desk and on real traffic: ``AudioRtp`` and ``AudioWriter`` take the place of ``MicSource`` and ``SpeakerSink``, the nodes in between stay as they are.
 
 ``AudioRtp`` reads the stream with PyAV, so add the ``av`` group:
 

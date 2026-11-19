@@ -9,6 +9,42 @@ output to expect. The configuration files are in the ``examples/`` folder of
 the `Juturna repository <https://github.com/meetecho/juturna>`_, and the
 pages show them as they are.
 
+.. grid:: 1 2 2 2
+    :gutter: 3
+
+    .. grid-item-card:: Build a voice assistant
+        :link: voice_assistant
+        :link-type: doc
+
+        Ask a question out loud and hear the answer, with speech recognition,
+        a language model and a synthetic voice all on your machine.
+
+        .. container:: jt-figure jt-mini
+
+           .. raw:: html
+              :file: ../diagrams/voice_assistant_mini.svg
+
+        +++
+        CPU · about 1.3 GB · Linux
+
+    .. grid-item-card:: Detect objects in a video
+        :link: video_detection
+        :link-type: doc
+
+        Find people, cars and 78 more classes in a video, and post an event
+        to a webhook when one shows up.
+
+        .. container:: jt-figure jt-mini
+
+           .. raw:: html
+              :file: ../diagrams/video_detection_mini.svg
+
+        +++
+        CPU · about 280 MB · Linux
+
+What each example needs
+-----------------------
+
 .. list-table::
    :header-rows: 1
    :widths: 24 16 26 17 17

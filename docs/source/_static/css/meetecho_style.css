@@ -384,6 +384,15 @@ body {
     .jt-figure > svg.jt-narrow { display: block; padding: 12px; }
 }
 
+/* the small diagrams in the cards of the examples index */
+.jt-mini { margin: 0.75rem 0 0; }
+.jt-mini > svg { padding: 0; background: none; border: 0; overflow: visible; }
+
+.sd-card-footer {
+    font-size: 14px;
+    color: var(--jt-muted);
+}
+
 .jt-figure > p {
     margin: 0;
     font-size: 14px;

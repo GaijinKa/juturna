@@ -1,0 +1,23 @@
+<svg class="jt-wide" viewBox="0 0 820 160" role="img" aria-label="The video detection pipeline: VideoCapture reads the video at most 5 frames per second, DetectorYolox finds the objects with YOLOX nano, DetectionEvents turns them into one event per class at most every 2 seconds, and NotifierHTTP posts each event to a webhook.">
+<defs><marker id="video_detection_pipeline-ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="ah" d="M0 0 L10 5 L0 10 z"/></marker><marker id="video_detection_pipeline-aha" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path class="ah acc" d="M0 0 L10 5 L0 10 z"/></marker></defs>
+<rect class="bx grp" x="4" y="10" width="812" height="140" rx="14"/><text class="t lab" x="20" y="34">PIPELINE.JSON</text>
+<rect class="bx" x="20" y="52" width="180" height="80" rx="12"/>
+<text class="t" x="110.0" y="77.0" text-anchor="middle">video</text>
+<text class="t m" x="110.0" y="97.0" text-anchor="middle">VideoCapture</text>
+<text class="t s" x="110.0" y="117.0" text-anchor="middle">at most 5 fps</text>
+<rect class="bx core" x="220" y="52" width="180" height="80" rx="12"/>
+<text class="t" x="310.0" y="77.0" text-anchor="middle">detector</text>
+<text class="t m" x="310.0" y="97.0" text-anchor="middle">DetectorYolox</text>
+<text class="t s" x="310.0" y="117.0" text-anchor="middle">YOLOX nano, 80 classes</text>
+<path class="ln acc" d="M202 92 H 218" marker-end="url(#video_detection_pipeline-aha)"/>
+<rect class="bx" x="420" y="52" width="180" height="80" rx="12"/>
+<text class="t" x="510.0" y="77.0" text-anchor="middle">events</text>
+<text class="t m" x="510.0" y="97.0" text-anchor="middle">DetectionEvents</text>
+<text class="t s" x="510.0" y="117.0" text-anchor="middle">per class, every 2 s</text>
+<path class="ln acc" d="M402 92 H 418" marker-end="url(#video_detection_pipeline-aha)"/>
+<rect class="bx" x="620" y="52" width="180" height="80" rx="12"/>
+<text class="t" x="710.0" y="77.0" text-anchor="middle">webhook</text>
+<text class="t m" x="710.0" y="97.0" text-anchor="middle">NotifierHTTP</text>
+<text class="t s" x="710.0" y="117.0" text-anchor="middle">POST of the event</text>
+<path class="ln acc" d="M602 92 H 618" marker-end="url(#video_detection_pipeline-aha)"/>
+</svg>
