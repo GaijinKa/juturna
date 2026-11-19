@@ -64,5 +64,5 @@ One more variable is read by the pipeline service only:
    * - Variable
      - Meaning
    * - ``JUTURNA_SERVICE_TOKEN``
-     - The token clients of ``juturna serve`` must send. When it is not
+     - The token clients of ``python -m juturna serve`` must send. When it is not
        set, the service generates one at startup.

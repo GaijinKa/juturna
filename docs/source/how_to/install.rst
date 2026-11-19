@@ -33,18 +33,34 @@ installs Juturna as a dependency:
 
     (.venv) $ pip install juturna-nodes
 
-Nodes with heavy dependencies sit behind optional groups (``av``,
-``audio-ml``, ``vision``, ``warp``): see the README of the package for the
-list.
+Nodes with heavy dependencies sit behind optional groups of
+``juturna-nodes``:
+
+- ``av``: PyAV, for ``AudioFile``, ``AudioRtp``, ``VideoCapture`` and
+  ``VideoRtp``
+- ``audio-ml``: faster-whisper and silero-vad (which brings PyTorch), for
+  ``TranscriberWhisper`` and ``VadSilero``
+- ``vision``: ultralytics, for ``DetectorYolo``
+- ``onnx``: ONNX Runtime, for ``DetectorYolox``
+- ``sherpa``: sherpa-onnx, for ``TranscriberSherpa`` and
+  ``SynthesizerSherpa``
+- ``sound``: sounddevice, for ``MicSource`` and ``SpeakerSink``; on Linux it
+  also needs PortAudio from the system (``libportaudio2``)
+- ``warp``: the ``warp`` group of Juturna, for the ``Warp`` node
+- ``all``: every group above
+
+.. code-block:: console
+
+    (.venv) $ pip install "juturna-nodes[av,onnx]"
 
 Optional groups
 ---------------
 
 Some features of Juturna need extra packages, collected in optional groups:
 
-- ``httpwrapper``: the pipeline service (``juturna serve``)
-- ``pipebuilder``: the interactive pipeline builder (``juturna create``)
-- ``warp``: the remote node service (``juturna remotize``)
+- ``httpwrapper``: the pipeline service (``python -m juturna serve``)
+- ``pipebuilder``: the interactive pipeline builder (``python -m juturna create``)
+- ``warp``: the remote node service (``python -m juturna remotize``)
 
 .. code-block:: console
 

@@ -5,18 +5,21 @@ This guide shows how to put together a pipeline from nodes that are already
 installed, check its configuration, and run it from the command line or from
 your own code.
 
-The example uses two nodes of the ``juturna-nodes`` package: ``JsonHTTP``,
-which receives JSON documents over HTTP, and ``PassthroughIdentity``, which
-forwards what it receives after a delay.
+The example transcribes an audio file with four nodes of the
+``juturna-nodes`` package: ``AudioFile`` reads the file in blocks,
+``VadSilero`` keeps the blocks that hold speech, ``TranscriberWhisper`` turns
+them into text, and ``NotifierConsole`` prints the text on the terminal.
 
 Install the nodes
 -----------------
 
 .. code-block:: console
 
-    (.venv) $ pip install juturna-nodes
+    (.venv) $ pip install "juturna-nodes[av,audio-ml]"
 
-The README of
+``av`` is the group of the audio and video nodes, ``audio-ml`` the one of
+the speech models: it pulls in PyTorch, so it is a large download. The
+README of
 `juturna-nodes <https://github.com/meetecho/juturna_nodes>`_ lists the
 available nodes and the optional groups some of them need. Every node comes
 with a ``config.toml`` file holding its arguments and their defaults.
@@ -24,31 +27,48 @@ with a ``config.toml`` file holding its arguments and their defaults.
 Write the configuration
 -----------------------
 
-Save this as ``echo.json``:
+Save this as ``transcribe.json``, and point ``file_source`` to an audio file
+in English:
 
 .. code-block:: json
 
     {
       "version": "3.0.0",
       "pipeline": {
-        "name": "http_echo",
-        "id": "http_echo_01",
+        "name": "transcribe_file",
+        "id": "transcribe_file_01",
         "folder": "./run",
         "nodes": [
           {
-            "name": "receiver",
-            "type": "JsonHTTP",
-            "configuration": { "port": 8888 }
+            "name": "audio",
+            "type": "AudioFile",
+            "configuration": { "file_source": "sample.wav", "block_size": 2 }
           },
           {
-            "name": "delay",
-            "type": "PassthroughIdentity",
-            "configuration": { "delay": 1 },
+            "name": "vad",
+            "type": "VadSilero",
+            "configuration": { "min_silence_duration_ms": 500 }
+          },
+          {
+            "name": "whisper",
+            "type": "TranscriberWhisper",
+            "configuration": {
+              "model_name": "tiny",
+              "only_local": false,
+              "device": "cpu"
+            },
             "auto_dump": true
+          },
+          {
+            "name": "console",
+            "type": "NotifierConsole",
+            "configuration": {}
           }
         ],
         "links": [
-          { "from": "receiver", "to": "delay" }
+          { "from": "audio", "to": "vad" },
+          { "from": "vad", "to": "whisper" },
+          { "from": "whisper", "to": "console" }
         ]
       }
     }
@@ -56,9 +76,11 @@ Save this as ``echo.json``:
 What to know when writing one:
 
 - ``type`` is the class name for the nodes of ``juturna-nodes``
-  (``JsonHTTP``), and the full path for the others
+  (``AudioFile``), and the full path for the others
   (``contrib.<package>.nodes.<Class>``);
-- ``configuration`` only needs the arguments you want to change;
+- ``configuration`` only needs the arguments you want to change: here
+  Whisper may download its model (``only_local``) and runs on the CPU
+  (``device``), as its defaults expect a local model and a GPU;
 - ``folder`` is where the pipeline writes its files: a copy of the
   configuration, and one folder per node;
 - ``auto_dump`` saves every message a node transmits as a JSON file in its
@@ -76,7 +98,7 @@ Check it
 
 .. code-block:: console
 
-    (.venv) $ python -m juturna validate --config echo.json
+    (.venv) $ python -m juturna validate --config transcribe.json
 
 The command checks the structure of the file, that every node type is
 installed, that links join existing nodes, and that the graph has no cycles.
@@ -89,20 +111,20 @@ Run it from the command line
 
 .. code-block:: console
 
-    (.venv) $ python -m juturna launch --config echo.json
+    (.venv) $ python -m juturna launch --config transcribe.json
 
 The pipeline warms up, then waits for you to press enter to start, and again
 to stop. With ``--auto`` it starts on its own and runs until every node has
 stopped, or for ``--timeout`` seconds.
 
-While it runs, send it something from another terminal:
+While it runs, the transcription comes out on the terminal, as lines like
+``[whisper] <the transcribed text>``: Whisper transcribes its last few
+blocks of speech every time a new one arrives, so a sentence grows line
+after line. Every message Whisper sends is also in ``./run/whisper/``, as a
+JSON file.
 
-.. code-block:: console
-
-    $ curl -H 'Content-Type: application/json' \
-           -d '{"text": "hello"}' localhost:8888/juturna
-
-A second later the message is in ``./run/delay/``, as a JSON file.
+``AudioFile`` stops at the end of the file but the other nodes keep
+waiting, so with ``--auto`` give a ``--timeout`` long enough for the file.
 
 Run it from Python
 ------------------
@@ -116,7 +138,7 @@ A pipeline is a plain object, with one method for each step of its life:
     import juturna as jt
 
 
-    pipeline = jt.components.Pipeline.from_json('echo.json')
+    pipeline = jt.components.Pipeline.from_json('transcribe.json')
 
     pipeline.warmup()
     pipeline.start()

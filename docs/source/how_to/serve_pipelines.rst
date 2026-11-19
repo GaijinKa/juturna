@@ -1,7 +1,7 @@
 Run pipelines behind an HTTP service
 ====================================
 
-``juturna serve`` starts a service that creates and manages pipelines for its
+``python -m juturna serve`` starts a service that creates and manages pipelines for its
 clients, over HTTP. Use it when pipelines are launched by another program (a
 web interface, a scheduler) rather than by hand.
 
@@ -35,7 +35,7 @@ environment as the service.
 Create and start a pipeline
 ---------------------------
 
-Send a pipeline configuration (the same JSON file used by ``juturna launch``)
+Send a pipeline configuration (the same JSON file used by ``python -m juturna launch``)
 to ``/pipelines/deploy``. The service creates the pipeline, warms it up and
 starts it:
 
