@@ -21,12 +21,6 @@ when a class of object shows up:
   per class, at most every 2 seconds;
 - :ref:`NotifierHTTP <node-notifier-http>` posts each event to a URL.
 
-.. important::
-
-    ``VideoCapture``, ``DetectorYolox`` and ``DetectionEvents`` ship with the
-    next release of juturna-nodes. Until it is out, the install command below
-    gets a version without them.
-
 Install
 -------
 

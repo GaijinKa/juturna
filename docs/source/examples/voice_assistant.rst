@@ -26,13 +26,6 @@ Everything runs on the CPU, without PyTorch. Once the models are downloaded,
 nothing leaves the machine: speech recognition, the language model and the
 voice all run locally.
 
-.. important::
-
-    ``MicSource``, ``SpeakerSink``, ``TranscriberSherpa``,
-    ``SynthesizerSherpa``, ``PrompterOllama``, ``NotifierConsole`` and
-    ``AudioWriter`` ship with the next release of juturna-nodes. Until it is
-    out, the install commands below get a version without them.
-
 Before you start
 ----------------
 

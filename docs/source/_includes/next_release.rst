@@ -1,3 +1,0 @@
-.. note::
-
-    |next-release-note|

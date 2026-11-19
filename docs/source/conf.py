@@ -182,14 +182,6 @@ html_theme_options = {
     ],
 }
 
-# nodes and extras newer than the juturna-nodes release on PyPI are marked with
-# these; external_docs.py lists the nodes. Remove both after the release
-rst_prolog = """
-.. |next-release| replace:: :bdg-warning-line:`next release`
-.. |next-release-note| replace:: Available from the next juturna-nodes
-   release: version 0.1.0, the one on PyPI today, does not include it.
-"""
-
 
 def _skip_reexported(app, what, name, obj, skip, options):
     # a package re-exports in __all__ the classes of its public subpackages,

@@ -41,16 +41,13 @@ Nodes with heavy dependencies sit behind optional groups of
 - ``audio-ml``: faster-whisper and silero-vad (which brings PyTorch), for
   ``TranscriberWhisper`` and ``VadSilero``
 - ``vision``: ultralytics, for ``DetectorYolo``
-- ``onnx`` |next-release|: ONNX Runtime, for ``DetectorYolox``
-- ``sherpa`` |next-release|: sherpa-onnx, for ``TranscriberSherpa`` and
+- ``onnx``: ONNX Runtime, for ``DetectorYolox``
+- ``sherpa``: sherpa-onnx, for ``TranscriberSherpa`` and
   ``SynthesizerSherpa``
-- ``sound`` |next-release|: sounddevice, for ``MicSource`` and ``SpeakerSink``; on Linux it
+- ``sound``: sounddevice, for ``MicSource`` and ``SpeakerSink``; on Linux it
   also needs PortAudio from the system (``libportaudio2``)
 - ``warp``: the ``warp`` group of Juturna, for the ``Warp`` node
 - ``all``: every group above
-
-The groups marked |next-release| come with the next juturna-nodes release:
-version 0.1.0, the one on PyPI today, does not have them.
 
 .. code-block:: console
 

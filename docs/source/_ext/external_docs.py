@@ -19,20 +19,6 @@ from sphinx.errors import ConfigError
 
 _NODE_SECTIONS = ('nodes', 'contribute')
 
-# nodes missing from the juturna-nodes release on PyPI (0.1.0): their pages
-# and their rows in the overview get the next release marker of conf.py
-_NEXT_RELEASE = {
-    'audio_writer',
-    'detection_events',
-    'detector_yolox',
-    'mic_source',
-    'notifier_console',
-    'prompter_ollama',
-    'speaker_sink',
-    'synthesizer_sherpa',
-    'transcriber_sherpa',
-    'video_capture',
-}
 _NODE_INCLUDE_ROOT = '../../../src/'
 
 _BROWSER_REPO = 'https://github.com/meetecho/juturna-browser'
@@ -84,7 +70,7 @@ def _copy_nodes(srcdir: pathlib.Path):
             readme = src / 'juturna' / 'nodes' / f'_{page.stem}' / 'README.md'
             if readme.is_file():
                 text = _add_readme_sections(text, readme.read_text(), out)
-            out.write_text(_mark_next_release(page.stem, text))
+            out.write_text(text)
 
     missing = sorted(
         d.name[1:]
@@ -137,27 +123,6 @@ def _add_readme_sections(text: str, readme: str, out: pathlib.Path) -> str:
     at = text.find('Reference\n---')
 
     return text + '\n' + added if at < 0 else text[:at] + added + text[at:]
-
-
-def _mark_next_release(stem: str, text: str) -> str:
-    if stem == 'overview':
-        for node in _NEXT_RELEASE:
-            label = '<node-' + node.replace('_', '-') + '>`'
-            text = text.replace(label, label + ' |next-release|')
-
-        return text
-
-    if stem not in _NEXT_RELEASE:
-        return text
-
-    # after the badges under the title, or after the title
-    lines = text.split('\n')
-    at = next(i for i, line in enumerate(lines) if line.startswith('==')) + 1
-    if at + 1 < len(lines) and lines[at + 1].startswith(':bdg'):
-        at += 2
-    lines[at:at] = ['', '.. include:: /_includes/next_release.rst']
-
-    return '\n'.join(lines)
 
 
 def _copy_browser(srcdir: pathlib.Path):
