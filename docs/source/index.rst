@@ -223,8 +223,8 @@ The quick start is audio only: for video, see
 .. card:: Run it in your browser tab
     :class-card: jt-cta
 
-    Juturna pipelines run on Pyodide, inside the page, with the nodes that
-    work there. Nothing to install: the demos run the models in your tab and
+    Juturna pipelines run on Pyodide, inside the page, with nodes written for
+    the browser. Nothing to install: the demos run the models in your tab and
     the audio stays on the device.
 
     .. button-ref:: browser/demos

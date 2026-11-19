@@ -28,7 +28,7 @@ machines only adds their address to the configuration
    **Figure 1.** One ``pipeline.json`` from a laptop to production, each step adding one thing (``launch``, ``serve`` and ``remotize`` run as ``python -m juturna <command>``); the browser edition is a separate path.
 
 Pipelines also run in a browser tab, on Pyodide, between ``BrowserInput`` and
-``BrowserOutput`` and with nodes that work there: see :doc:`/browser/index`.
+``BrowserOutput`` and with nodes written for it: see :doc:`/browser/index`.
 
 A pipeline is a JSON file
 -------------------------

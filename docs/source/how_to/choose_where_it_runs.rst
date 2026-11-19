@@ -5,8 +5,8 @@ Choose where it runs
 
 A pipeline runs in four places. In the first three, the configuration and
 its nodes stay the same. A browser tab uses the same configuration format and
-node model, but only the nodes and models that work on Pyodide, so a pipeline
-written for a server may need other nodes there. Pick the place that fits,
+node model, but not the same nodes: it runs nodes written for Pyodide, so a
+pipeline written for a server needs other nodes there. Pick the place that fits,
 then follow its guide.
 
 One process

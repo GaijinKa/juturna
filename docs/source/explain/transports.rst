@@ -4,11 +4,12 @@ Transports
 ==========
 
 A pipeline runs on the threads of one Python process, or in Web Workers
-inside a browser tab. The configuration format and the node model are the
-same, but in the browser a pipeline can use only the nodes and models that
-work on Pyodide (:doc:`../how_to/choose_where_it_runs` lists the options and
-how to pick one). Nodes and the pipeline never use ``threading`` or ``queue`` directly: they ask a
-**transport** for queues, events, locks and workers, and the transport
+inside a browser tab (:doc:`../how_to/choose_where_it_runs` lists the options
+and how to pick one). The configuration format and the node model are the
+same, but the nodes are not: a browser pipeline runs nodes written for
+Pyodide, joined to the page by ``BrowserInput`` and ``BrowserOutput``, and a
+server pipeline runs the nodes of ``juturna-nodes``. Nodes and the pipeline
+never use ``threading`` or ``queue`` directly: they ask a **transport** for queues, events, locks and workers, and the transport
 decides what those are.
 
 .. container:: jt-figure
