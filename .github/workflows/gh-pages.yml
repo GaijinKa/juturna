@@ -3,6 +3,19 @@ name: Deploy to GitHub Pages
 on:
   push:
     branches: [main]
+  pull_request:
+
+env:
+  # pages and demos built from these commits
+  JUTURNA_NODES_REF: d9a713a6e889b0b3c9a343ffcc21d16985a38e35
+  JUTURNA_BROWSER_REF: 165b84d51fc96a6988d3162882a1af791b7b169d
+  JUTURNA_NODES_DIR: ${{ github.workspace }}/juturna_nodes
+  JUTURNA_BROWSER_DIR: ${{ github.workspace }}/juturna-browser
+
+# a slower older run must not overwrite the site of a newer one
+concurrency:
+  group: pages-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   build-and-deploy:
@@ -11,9 +24,23 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Checkout juturna-nodes
+        uses: actions/checkout@v4
+        with:
+          repository: meetecho/juturna_nodes
+          ref: ${{ env.JUTURNA_NODES_REF }}
+          path: juturna_nodes
+
+      - name: Checkout juturna-browser
+        uses: actions/checkout@v4
+        with:
+          repository: meetecho/juturna-browser
+          ref: ${{ env.JUTURNA_BROWSER_REF }}
+          path: juturna-browser
+
       # Setup Python and Sphinx
       - name: Setup Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: '3.12'
 
@@ -31,6 +58,24 @@ jobs:
         run: |
           sphinx-build -b html docs/source/ docs/build/html
 
+      # on pull requests only: a third-party site down must not stop a deploy
+      - name: Check links
+        if: github.event_name == 'pull_request'
+        run: |
+          sphinx-build -q -b linkcheck docs/source/ docs/build/linkcheck
+
+      # the models in vendor/ are large and pinned by checksum
+      - name: Cache demo assets
+        uses: actions/cache@v4
+        with:
+          path: juturna-browser/vendor
+          key: demo-assets-${{ hashFiles('juturna-browser/**/assets.toml', 'docs/build_demos.sh') }}
+
+      - name: Build demos
+        run: |
+          docs/build_demos.sh "$JUTURNA_BROWSER_DIR" "$JUTURNA_NODES_DIR" \
+            docs/build/html/demos
+
       # copy static files and assets
       - name: Prepare site
         run: |
@@ -40,9 +85,12 @@ jobs:
 
       # Deploy on gh-pages
       - name: Deploy
+        if: github.event_name == 'push'
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./site
           enable_jekyll: false
-          keep_files: false  # Keep previous version of the site
+          keep_files: false
+          # one commit: the demo models would otherwise pile up in the history
+          force_orphan: true
