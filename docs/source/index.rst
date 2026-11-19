@@ -66,7 +66,7 @@
    catalog/nodes/processing
    catalog/nodes/sinks
    how_to/create_nodes
-   catalog/contribute/new_node
+   Contribute a node to juturna-nodes <catalog/contribute/new_node>
 
 .. toctree::
    :maxdepth: 2
