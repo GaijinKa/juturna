@@ -89,8 +89,14 @@ full control over threading, error boundaries, and lifecycle management.
    Nodes use FIFO (First-In, First-Out) queues. This ensures messages are
    processed in the order they are produced, even when a source node generates
    data faster than its descendants can consume it. While ``update()`` is busy,
-   new messages wait in the inbound queue; once the queue is full, upstream
-   nodes block on it until there is room again.
+   new messages wait in the inbound queue. The queue holds
+   ``JUTURNA_MAX_QUEUE_SIZE`` messages, 999 by default
+   (:doc:`/reference/constants`), or ``queue_capacity`` in the browser
+   (:doc:`transports`). Once it is full, ``transmit()`` in the upstream node
+   waits until there is room again, so a slow node slows down the nodes that
+   feed it; while the nodes run, no message is dropped. A policy that drops
+   the oldest messages instead is an open feature request
+   (`issue #268 <https://github.com/meetecho/juturna/issues/268>`_).
 
 For source nodes, the ``_source`` thread runs in parallel to the ``_worker``
 thread. Its sole purpose is to repeatedly invoke a user-provided callable
@@ -107,6 +113,11 @@ In short:
 #. the ``_worker`` thread pops the received message from the queue, and invokes
    the blocking ``update()`` method with it, where the actual data elaboration
    and subsequent transmission downstream take place.
+
+The threads of all the nodes share one Python interpreter: CPU-bound Python
+code in ``update()`` takes turns with the other nodes under the GIL, while
+heavy models, which run in native libraries, release it while they compute.
+The test suite also runs on free-threaded Python (3.14t) in CI.
 
 Multiple inputs
 ---------------
