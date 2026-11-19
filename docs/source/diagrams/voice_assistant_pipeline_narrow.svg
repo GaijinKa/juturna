@@ -1,0 +1,32 @@
+<svg class="jt-narrow" viewBox="0 0 360 564" role="img" aria-label="The voice assistant pipeline: MicSource records the question, TranscriberSherpa turns it into text, PrompterOllama asks a language model served by Ollama, SynthesizerSherpa speaks the answer and SpeakerSink plays it. The transcription and the answer also go to NotifierConsole, which prints them on the terminal.">
+<defs><marker id="voice_assistant_pipeline_narrow-ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="ah" d="M0 0 L10 5 L0 10 z"/></marker><marker id="voice_assistant_pipeline_narrow-aha" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path class="ah acc" d="M0 0 L10 5 L0 10 z"/></marker></defs>
+<rect class="bx grp" x="4" y="10" width="352" height="554" rx="14"/><text class="t lab" x="20" y="34">PIPELINE.JSON</text>
+<rect class="bx" x="20" y="52" width="220" height="80" rx="12"/>
+<text class="t" x="130.0" y="77.0" text-anchor="middle">microphone</text>
+<text class="t m" x="130.0" y="97.0" text-anchor="middle">MicSource</text>
+<text class="t s" x="130.0" y="117.0" text-anchor="middle">between two Enter</text>
+<path class="ln acc" d="M130 134 V 154" marker-end="url(#voice_assistant_pipeline_narrow-aha)"/>
+<rect class="bx core" x="20" y="156" width="220" height="80" rx="12"/>
+<text class="t" x="130.0" y="181.0" text-anchor="middle">stt</text>
+<text class="t m" x="130.0" y="201.0" text-anchor="middle">TranscriberSherpa</text>
+<text class="t s" x="130.0" y="221.0" text-anchor="middle">speech to text</text>
+<path class="ln acc" d="M130 238 V 258" marker-end="url(#voice_assistant_pipeline_narrow-aha)"/>
+<rect class="bx core" x="20" y="260" width="220" height="80" rx="12"/>
+<text class="t" x="130.0" y="285.0" text-anchor="middle">llm</text>
+<text class="t m" x="130.0" y="305.0" text-anchor="middle">PrompterOllama</text>
+<text class="t s" x="130.0" y="325.0" text-anchor="middle">model on Ollama</text>
+<path class="ln acc" d="M130 342 V 362" marker-end="url(#voice_assistant_pipeline_narrow-aha)"/>
+<rect class="bx core" x="20" y="364" width="220" height="80" rx="12"/>
+<text class="t" x="130.0" y="389.0" text-anchor="middle">tts</text>
+<text class="t m" x="130.0" y="409.0" text-anchor="middle">SynthesizerSherpa</text>
+<text class="t s" x="130.0" y="429.0" text-anchor="middle">text to speech</text>
+<path class="ln acc" d="M130 446 V 466" marker-end="url(#voice_assistant_pipeline_narrow-aha)"/>
+<rect class="bx" x="20" y="468" width="220" height="80" rx="12"/>
+<text class="t" x="130.0" y="493.0" text-anchor="middle">speaker</text>
+<text class="t m" x="130.0" y="513.0" text-anchor="middle">SpeakerSink</text>
+<text class="t s" x="130.0" y="533.0" text-anchor="middle">plays the answer</text>
+<rect class="bx" x="256" y="176" width="92" height="144" rx="12"/>
+<text class="t" x="302" y="253.0" text-anchor="middle">console</text>
+<path class="ln" d="M242 196 H 254" marker-end="url(#voice_assistant_pipeline_narrow-ah)"/>
+<path class="ln" d="M242 300 H 254" marker-end="url(#voice_assistant_pipeline_narrow-ah)"/>
+</svg>

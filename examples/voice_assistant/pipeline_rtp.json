@@ -1,0 +1,54 @@
+{
+  "version": "3.0.0",
+  "pipeline": {
+    "name": "voice_assistant",
+    "id": "voice_assistant_01",
+    "folder": "./run",
+    "nodes": [
+      {
+        "name": "question",
+        "type": "AudioRtp",
+        "configuration": {
+          "port": 5004,
+          "payload_type": 0,
+          "encoding_clock_chan": "PCMU/8000",
+          "resampler_format": "flt",
+          "block_size": 1
+        }
+      },
+      {
+        "name": "stt",
+        "type": "TranscriberSherpa",
+        "configuration": {}
+      },
+      {
+        "name": "llm",
+        "type": "PrompterOllama",
+        "configuration": { "model_name": "qwen2.5:1.5b" }
+      },
+      {
+        "name": "tts",
+        "type": "SynthesizerSherpa",
+        "configuration": {}
+      },
+      {
+        "name": "answer",
+        "type": "AudioWriter",
+        "configuration": { "file_name": "answer.wav" }
+      },
+      {
+        "name": "console",
+        "type": "NotifierConsole",
+        "configuration": {}
+      }
+    ],
+    "links": [
+      { "from": "question", "to": "stt" },
+      { "from": "stt", "to": "llm" },
+      { "from": "stt", "to": "console" },
+      { "from": "llm", "to": "tts" },
+      { "from": "llm", "to": "console" },
+      { "from": "tts", "to": "answer" }
+    ]
+  }
+}
