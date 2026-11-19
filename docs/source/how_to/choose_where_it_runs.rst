@@ -3,8 +3,11 @@
 Choose where it runs
 ====================
 
-The same pipeline configuration runs in four places, and its nodes do not
-change from one to the other. Pick the one that fits, then follow its guide.
+A pipeline runs in four places. In the first three, the configuration and
+its nodes stay the same. A browser tab uses the same configuration format and
+node model, but only the nodes and models that work on Pyodide, so a pipeline
+written for a server may need other nodes there. Pick the place that fits,
+then follow its guide.
 
 One process
     ``python -m juturna launch --config pipeline.json``: every node in worker
