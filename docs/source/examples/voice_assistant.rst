@@ -283,62 +283,31 @@ padding, the last sentence waits until the pipeline stops, and is answered
 only then. Juturna does not yet tell the
 nodes that a stream has ended; it is on the roadmap.
 
-From demo to production: guardrails
------------------------------------
+From demo to production
+-----------------------
 
 The demo shows what the pipeline can do, not how well. On a laptop, with 20
 synthetic questions asked three times each:
 
-- the transcriber misheard 6 questions out of 20, mostly as homophones
+- the transcriber misheard 6 of the 20 questions, mostly as homophones
   ("too" for "two", "for" for "four", "heart" for "hot"), and most of the
   wrong answers start there;
 - ``qwen2.5:0.5b`` got simple facts wrong (Florence as the capital of Italy,
   Mercury as the red planet); ``qwen2.5:1.5b``, with a system prompt that
   asks for numbers in words, answered 55 of 60 correctly;
 - the lexicon of the Kitten voice has no digits, so "100" is not spoken at
-  all; asking the model for numbers in words halves the problem, but does not
+  all: asking the model for numbers in words halves the problem, but does not
   solve it.
 
-Each fix is a node you put between two others, or on a new branch, without
-touching the rest of the pipeline. None of the nodes below exists yet: they
-are the steps a production assistant would add.
+A production assistant needs more care at each of these steps: about what was
+heard before it answers, about what it answers, and about how the answer is
+spoken. Part of that work is outside the pipeline: choosing the models for
+the language and the domain, and sizing and tuning the hardware they run on,
+so that answers come in time with the traffic you expect. To take an
+assistant like this one to production, :doc:`work with Meetecho
+</work_with_meetecho>`.
 
-.. list-table::
-    :header-rows: 1
-    :widths: 30 40 30
-
-    * - Guardrail
-      - What it solves
-      - Where it goes
-    * - Text normalisation
-      - Numbers, acronyms and symbols the voice cannot read
-      - Between ``llm`` and ``tts``
-    * - Transcript check
-      - Empty, very short or unlikely questions: ask to repeat instead of
-        answering (the transcriber gives no confidence score today)
-      - Between ``stt`` and ``llm``, with a branch to ``tts`` for the
-        "please repeat"
-    * - Answer filter
-      - Answers that are too long, unsafe or off topic
-      - Between ``llm`` and ``tts``
-    * - Grounding on your data
-      - Answers from your documents instead of what the model remembers
-        (retrieval-augmented generation)
-      - Between ``stt`` and ``llm``, adding the retrieved text to the
-        question
-    * - Fallback answer
-      - Ollama slow or down: today ``PrompterOllama`` logs the error and
-        drops the question, so the user hears nothing
-      - Between ``llm`` and ``tts``, also fed by ``stt``: it passes the
-        answer on, or says "sorry, try again" when the answer is late
-    * - Echo cancellation and barge-in
-      - Hands-free use without push-to-talk: the microphone hears the
-        speaker, and the user wants to interrupt a long answer
-      - Between ``question`` and ``stt``. The speaker signal it needs comes
-        from the audio device: a link from ``tts`` would close a loop, and
-        ``validate`` rejects graphs with cycles
-
-To see where the time goes before and after each change, turn on telemetry:
+To see where the time goes, turn on telemetry:
 it records when each node receives and transmits a message, which gives the
 latency of every node. :doc:`/how_to/observe` shows how to turn it on and what the
 records hold.
