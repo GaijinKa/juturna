@@ -61,6 +61,7 @@ linkcheck_ignore = [
     r'https://meetecho\.github\.io/juturna/demos/',
     # answers 403 to every client that is not a browser
     r'https://www\.meetecho\.com/',
+    r'https://www\.npmjs\.com/',
 ]
 
 # open external links in blank targets
