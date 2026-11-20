@@ -233,6 +233,7 @@ def _finish_site(app, exception):
     pages += sorted(
         f'demos/{demo.relative_to(browser).as_posix()}'
         for demo in browser.glob('examples/**/*.html')
+        if 'standalone' not in demo.parts
     )
 
     urls = ''.join(
