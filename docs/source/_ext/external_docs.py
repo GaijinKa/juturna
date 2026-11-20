@@ -158,6 +158,11 @@ def _copy_browser(srcdir: pathlib.Path):
                     f']({name})', f']({_BROWSER_REPO}/blob/main/{name})'
                 )
 
+        # examples/standalone is not a demo of the site: link it on GitHub
+        examples = f']({_BROWSER_REPO}/tree/main/examples/'
+        for prefix in ('](examples/', '](../examples/'):
+            text = text.replace(prefix, examples)
+
         # the demos are published with the site (docs/build_demos.sh), under
         # demos/ next to browser/
         text = text.replace('http://localhost:8765/', _DEMOS_URL)

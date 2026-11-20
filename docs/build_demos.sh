@@ -42,6 +42,8 @@ EOF
 rm -rf "$out"
 mkdir -p "$out"
 cp -r src examples dist vendor "$out"
+# examples/standalone needs its own build (npm package), it is not a demo
+rm -rf "$out/examples/standalone"
 # the pages read the transformers.js models from Hugging Face, not vendor/
 rm -rf "$out"/vendor/*/models
 # the demos link back to their index: the demos page of the documentation
