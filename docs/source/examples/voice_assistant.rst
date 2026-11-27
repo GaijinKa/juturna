@@ -156,10 +156,14 @@ assistant does not hear itself through the speaker. When you stop talking,
 it sends a second of silence, and the transcriber closes the sentence at
 once. You see the final text of each question only, never partial guesses.
 
-After the second Enter, the answer needs the time of the language model,
-which returns the whole answer at once as the node does not stream, and of
-the voice. ``PrompterOllama`` and ``SynthesizerSherpa`` add their own time
-to the ``timers`` of each message: set ``"auto_dump": true`` on a node to find them
+``PrompterOllama`` transmits the answer one sentence at a time, while the
+model writes it, so the voice starts on the first sentence instead of waiting
+for the whole answer: a long answer comes out as several ``[llm]`` lines. A
+new question interrupts the answer in progress, but the sentences already
+sent to the voice are still spoken.
+
+``PrompterOllama`` and ``SynthesizerSherpa`` add their own time to the
+``timers`` of each message: set ``"auto_dump": true`` on a node to find them
 in the JSON files of its folder. For the latency of every node, turn on
 telemetry (:doc:`/how_to/observe`).
 
