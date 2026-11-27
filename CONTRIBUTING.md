@@ -5,8 +5,8 @@ improving documentation, or submitting a pull request — you're welcome here.
 
 ## Code of Conduct
 
-We expect everyone to be respectful and constructive. If you're a jerk, your PR
-will be closed. Simple as that.
+We expect everyone to be respectful and constructive. Pull requests and
+comments that break this rule may be closed.
 
 See our [CODE OF CONDUCT](CODE_OF_CONDUCT.md) for further details
 
@@ -121,6 +121,34 @@ git commit -m "feat: add feature"
 ```
 
 You need **both** installed for complete validation!
+
+### 3. Run the tests
+
+Install Juturna with the `test` and `full` groups, then from the repository
+folder:
+
+```bash
+pytest
+```
+
+### 4. Build the documentation
+
+Install Juturna with the `doc` group. Part of the documentation is copied at
+build time from checkouts of
+[juturna-nodes](https://github.com/meetecho/juturna_nodes) and
+[juturna-browser](https://github.com/meetecho/juturna-browser): point two
+variables to them, then build from the repository folder (`sphinx-apidoc`
+refreshes the API pages, as CI does):
+
+```bash
+export JUTURNA_NODES_DIR=../juturna_nodes
+export JUTURNA_BROWSER_DIR=../juturna-browser
+sphinx-apidoc -f -o docs/source/apis --no-toc juturna/
+sphinx-build -b html docs/source docs/build/html
+```
+
+While writing, `sphinx-autobuild docs/source docs/build/html` (in the same
+group) rebuilds the pages whenever a file changes.
 
 ## Automated Checks
 

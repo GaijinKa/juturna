@@ -70,42 +70,8 @@ Some features of Juturna need extra packages, collected in optional groups:
     # several groups
     (.venv) $ pip install -U 'juturna[httpwrapper,warp]'
 
-Other groups hold the development dependencies:
-
-- ``doc``: Sphinx and what is needed to build this documentation
-- ``dev``: pre-commit hooks and security checks
-- ``lint``: ``ruff``
-- ``test``: ``pytest`` and the testing packages
-
-Three groups collect the others:
-
-- ``full`` installs ``httpwrapper``, ``pipebuilder`` and ``warp``
-- ``dev_full`` installs ``doc``, ``dev``, ``lint`` and ``test``
-- ``all`` installs ``full`` and ``dev_full``
-
-Build the documentation
------------------------
-
-Install Juturna with the ``doc`` group, then from the repository folder:
-
-.. code-block:: console
-
-    (.venv) $ cd docs && sphinx-build -b html ./source ./build/html
-
-While writing, ``sphinx-autobuild`` (in the same group) rebuilds the pages
-whenever a file in ``source`` changes:
-
-.. code-block:: console
-
-    (.venv) $ cd docs
-    (.venv) $ sphinx-autobuild ./source ./build/html
-
-Run the tests
--------------
-
-Install Juturna with the ``test`` and ``full`` groups, then from the
-repository folder:
-
-.. code-block:: console
-
-    (.venv) $ pytest
+Other groups hold the development dependencies (``doc``, ``dev``, ``lint``,
+``test``), and three collect the others: ``full`` installs ``httpwrapper``,
+``pipebuilder`` and ``warp``, ``dev_full`` the development groups, ``all``
+both. To build this documentation or run the tests, see the
+`contributing guide <https://github.com/meetecho/juturna/blob/main/CONTRIBUTING.md>`_.
