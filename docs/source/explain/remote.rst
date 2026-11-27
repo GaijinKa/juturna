@@ -3,49 +3,26 @@
 Remote components
 =================
 
-A pipeline builds all its nodes in the process that runs it. That is what
-you want while you write and check nodes on your own machine, but in
-production some nodes need resources the machine does not have, such as a
-GPU. Juturna can run such a node on another machine and still use it as if it
-were local: this is **warping**.
+A pipeline builds all its nodes in the process that runs it. Some nodes need
+resources that machine does not have, such as a GPU: Juturna can run such a
+node on another machine and still use it as if it were local. This is
+**warping**. A remote node also has its own dependencies, which cannot clash
+with those of the other nodes, and a remote service can serve several
+pipelines at once or run as replicas behind a load balancer.
 
-A warped node runs in a remote service, and the pipeline talks to it over the
-network with gRPC and `Protocol Buffers
-<https://github.com/protocolbuffers/protobuf>`_. The remote service manages
-the lifecycle of the node and passes the messages of its input and output
-queues.
+.. warning::
 
-Warping helps in several deployments. A remote node has its own
-dependencies, so they cannot clash with those of the other nodes in the
-pipeline. A remote service can also serve several pipelines at once, or run
-as several replicas behind a load balancer.
-
-.. admonition:: Remotisation is young
-    :class: :WARNING:
-
-    The infrastructure to run Juturna nodes remotely is still under active
-    development. The remote service has no authentication and no encryption
-    (see `Who can reach the service`_), so it is meant for trusted networks
-    or a VPN only. TLS and client authentication are tracked in
-    `issue #270 <https://github.com/meetecho/juturna/issues/270>`_.
+    The remote service has no authentication and no encryption yet: use it on
+    trusted networks only (see `Who can reach the service`_).
 
 Warping fundamentals
 --------------------
 
-When a node is configured for remote execution, two components work together. On
-the local side (the main Juturna process) a node intended for remote
-deployment is masked by a **warp node**. A warp node is a simple processing node
-acting as local client or proxy for the remote node. Warp nodes are responsible
-for managing the communication with the remote service behind which the concrete
-node lives. This means, they receive messages from the pipeline normally, turn
-them into protocol buffers, send them over the remote service, and then unpack
-the responses they receive.
-
-On the remote side runs the **remote service**, a standalone gRPC server that
-holds the concrete node doing the actual computation work, acting as a
-publish/subscribe broker for its input and output queues. Similarly to the warp
-node, the remote service manages the marshalling and unmarshalling of the data
-received from the local pipeline.
+On the local side, the node is replaced by a **warp node**, a processing node
+that acts as a client: it turns each message into `Protocol Buffers
+<https://github.com/protocolbuffers/protobuf>`_, sends it over gRPC and
+transmits the answer downstream. On the remote side, the **remote service**,
+a standalone gRPC server, runs the concrete node and its lifecycle.
 
 .. container:: jt-figure
 
@@ -154,29 +131,11 @@ the version ``juturna-nodes`` was installed with.
 Limits
 ------
 
-The remote service keeps the state of at most ``--max-clients`` sticky warp
-nodes (1024 by default) and refuses new ones with the ``RESOURCE_EXHAUSTED``
-status, until a state is dropped after an hour without requests. It accepts
-``--max-requests`` requests at once (10 for each worker by default), in
-progress or waiting for a worker, and refuses the others with the same
-status. A request whose warp node cancels it or disconnects is not processed
-if it is still waiting.
+Past ``--max-clients`` sticky states, or ``--max-requests`` requests at once
+(defaults in :ref:`reference_cli`), the service refuses new ones with the
+``RESOURCE_EXHAUSTED`` status. A sticky state is dropped after an hour
+without requests. A request whose warp node cancels it or disconnects is not
+processed if it is still waiting.
 
-``python -m juturna remotize`` exits with status 1 when the node cannot be built or the
-address is already in use: two services never share a port.
-
-Developer notes
----------------
-
-Juturna comes with pre-compiled protobuf classes, ready to use out of
-the box. However, if you need to modify the .proto definitions or recompile them
-for development purposes, two utility scripts are provided:
-
-- ``juturna/remotizer/compile_protos.sh``: Recompiles the .proto files into
-  Python classes
-- ``juturna/remotizer/expose_protos.sh``: Exports the compiled protobuf classes
-  for external use. This requires to install the additional ``protoletariat``
-  dependency.
-
-These scripts should only be needed when modifying the protocol definitions or
-contributing to the warp node.
+The protobuf classes come compiled with Juturna. To change the ``.proto``
+definitions, recompile them with ``juturna/remotizer/compile_protos.sh``.

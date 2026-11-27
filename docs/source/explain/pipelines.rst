@@ -3,27 +3,15 @@
 Pipelines
 =========
 
-Pipelines act as graph managers and lifecycle coordinators. A pipeline object
-knows when to start nodes, how to connect them, and where to store their state.
-It transforms a declarative configuration into a running, observable dataflow
-system.
-
-At its core, a Pipeline is a configuration interpreter. Strictly speaking, it
-doesn't contain business logic, so its only responsibility is to instantiate
-nodes, wire them together according to the graph definition, and manage their
-collective lifecycle. This separation of concerns is deliberate: the pipeline
-handles topology, while nodes handle data processing and transformation.
-
-The easiest way to interact with Juturna pipelines is through ``JSON`` objects.
-The definition of a pipeline graph can be included in a plain ``JSON`` file, and
-the library will *compile* it into a pipeline instance. When defining a
-pipeline, however, we still need to provide Juturna with a few extra bits of
-information.
+A pipeline is a configuration interpreter: it builds the nodes described in a
+JSON configuration, links them, keeps their state and runs their lifecycle.
+It holds no business logic: the pipeline handles the topology, the nodes
+process the data.
 
 Configuration
 -------------
 
-A pipeline configuration looks something like this:
+A pipeline configuration looks like this:
 
 .. code-block:: json
 
@@ -43,51 +31,21 @@ id by tools that manage several pipelines at once. ``folder`` is where the
 pipeline keeps its files: a copy of the configuration, and one folder for each
 node, where the node can store data and artifacts. ``nodes`` and ``links``
 describe the graph. Every key is described in
-:ref:`reference_configuration`.
-
-Once we have this configuration in place, we can create the pipeline object.
-
-.. code-block:: python
-
-    import juturna as jt
-
-
-    pipe = jt.components.Pipeline.from_json('path/to/config.json')
-
-The ``Pipeline`` class constructor also accepts dictionary objects:
-
-.. code-block:: python
-
-    import json
-
-    import juturna as jt
-
-
-    with open('path/to/config.json') as f:
-        config = json.load(f)
-
-    pipe = jt.components.Pipeline(config)
+:ref:`reference_configuration`. How to create a pipeline from a file or a
+dictionary and run it from Python is in :doc:`/how_to/create_pipelines`.
 
 Pipeline lifecycle
 ------------------
 
-Instantiating a pipeline object doesn't really do much. An empty pipeline
-container is created, with all the instructions required to build the actual
-nodes and linking them.
+Creating a pipeline object builds no node yet. A pipeline is always in one of
+five states:
 
-A pipeline object is always in one of five states:
-
-- a ``NEW`` pipeline is freshly created, but the nodes within the graph still
-  need to be instantiated;
-- a ``READY`` pipeline instantiated all the concrete nodes, and acquired
-  system and external resources required for its functioning - as the state
-  name says, this pipeline is ready to go;
-- a ``RUNNING`` pipeline is consuming data sources, processing and sending them,
-  so it is working (hopefully) just how it is supposed to;
-- a ``STOPPED`` pipeline was running, and is not anymore. It cannot be started
-  again;
-- a ``DESTROYED`` pipeline released everything it held, and is of no further
-  use.
+- ``NEW``: created, its nodes not built yet;
+- ``READY``: its nodes are built, linked, and hold the resources they need;
+- ``RUNNING``: its nodes consume, process and send data;
+- ``STOPPED``: it was running and is not anymore. It cannot be started
+  again: destroy it and create a new one from the same configuration;
+- ``DESTROYED``: it released everything it held.
 
 .. container:: jt-figure
 
@@ -98,15 +56,12 @@ A pipeline object is always in one of five states:
 
 These methods move a pipeline through its lifecycle:
 
-``warmup()`` triggers node instantiation and linking, moving a pipeline from
-``NEW`` to ``READY``. Internally, this calls the warm up method on every node in
-the pipeline. Depending on the resources nodes need to acquire (learning
-models, third-party services, network connections), calling the ``warmup`` can
-be time-consuming.
+``warmup()`` builds and links the nodes, and calls the warm up of each
+(:ref:`explain_nodes`), moving the pipeline from ``NEW`` to ``READY``. It can
+take a while, when nodes load models or open connections.
 
-``start()`` triggers the beginning of the pipeline workflow, moving its state
-from ``READY`` to ``RUNNING``. Internally, this calls the start method on every
-node in the pipeline.
+``start()`` starts every node, moving the pipeline from ``READY`` to
+``RUNNING``.
 
 ``stop()`` interrupts the pipeline execution, moving it from ``RUNNING`` to
 ``STOPPED``. Nodes are stopped from the sources down, and each one processes
@@ -167,19 +122,3 @@ pipeline) does nothing.
 
 If a node fails during ``warmup()`` or ``start()``, the pipeline undoes what
 it did and goes back to the state it was in, so the call can be tried again.
-
-.. admonition:: Warming up and configuring
-    :class: :NOTE:
-
-    A node defines 2 separate methods to get up and running: ``warmup`` and
-    ``configure``. Ideally, you want to use the ``configure`` method to acquire
-    resources that need to be acquired externally, so depend not only on the
-    node implementation (ports, connections), and the ``warmup`` to prepare the
-    node internal status for execution.
-
-.. admonition:: A stopped pipeline stays stopped
-    :class: :ATTENTION:
-
-    **Pipelines cannot be restarted once stopped, only destroyed.** If you
-    need to stop a pipeline and later run it again, destroy it and create a
-    new one from the same configuration.

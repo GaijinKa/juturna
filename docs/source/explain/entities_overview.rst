@@ -1,12 +1,8 @@
 Entities overview
 =================
 
-Juturna was designed with developers in mind. This means, there is only a
-handful of entities you should really get a good look at, then you are good to
-go, and starting from there you can create new components in minutes and
-customise them as you see fit.
-
-So, let's take a look at:
+Juturna was designed with developers in mind: there are only three entities
+to get a good look at, then you are good to go.
 
 - pipelines
 - nodes
@@ -15,22 +11,11 @@ So, let's take a look at:
 Pipeline
 --------
 
-A :ref:`pipeline <explain_pipelines>` is a processing structure that
-instantiates and aggregates nodes, managing their links and lifecycle. Pipelines
-can be seen as multi-input, multi-output entities, where the underlying data
-consumption and generation are of course performed by the constructing nodes.
-
-A basic, minimal Juturna pipeline can be somehow seen as a
-`DAG <https://en.wikipedia.org/wiki/Directed_acyclic_graph>`_, a graph with a
-single root node with in-degree of 0 (of course, this is not *technically* true,
-as the root node of a pipeline still receives data from somewhere), and every
-other node with an in-degree of 1 or more. Nodes can have as many outbound
-connections as the pipeline structure requires.
-
-If you look at the picture below, you should see: an external source feeding
-the root node of our pipeline, a bunch of nodes moving forward processed and
-transformed data, and some destination (local or remote, it does not really
-make much difference).
+A :ref:`pipeline <explain_pipelines>` builds the nodes, links them and runs
+them. The links form a
+`DAG <https://en.wikipedia.org/wiki/Directed_acyclic_graph>`_: data enters at
+the source nodes, can split into branches and join again, and every branch
+ends at a destination of its own.
 
 .. container:: jt-figure
 
@@ -39,14 +24,9 @@ make much difference).
 
    **Figure 1.** A pipeline with one source node, highlighted. Data can split into branches and branches can join; each branch ends at its own destination.
 
-A Juturna pipeline can also be **multi-source**: several root nodes will feed
-different branches of the graph. This could be very useful when heterogeneous
-data need to be gathered from independent sources. As an example, think of a
-video stream, and its corresponding audio stream, sent using RTP over different
-ports. In such a scenario, we can design a pipeline that fetches both streams,
-transcribes and translates the audio, and produces the textual translation and
-a video stream with subtitles. For Juturna, this is a single pipeline entity,
-for which 2 source nodes are defined.
+A pipeline can have several source nodes, for data that comes from
+independent places, such as the audio and the video of the same stream on two
+RTP ports.
 
 .. container:: jt-figure
 
@@ -58,20 +38,12 @@ for which 2 source nodes are defined.
 Node
 ----
 
-A :ref:`node <explain_nodes>` is a component that receives data from one or more
-sources (a node source can be external, like we saw earlier, or it can be an
-upstream edge to another node), processes them, and makes the produced data
-available to all its downstream destinations.
+A :ref:`node <explain_nodes>` receives data, processes it, and sends the
+result to all its downstream nodes. Depending on where it sits, a node is
+one of three kinds.
 
-So, a node receives data, and spits out data.
-
-Broadly speaking, nodes can be split into three logical categories, depending on
-the task they are programmed to perform:
-
-**Source nodes** are root nodes that either consume external data (obtained from
-real-time streams, remote or local files, databases, HTTP or websocket
-requests...) or generate data, to ultimately push them downstream into the
-pipeline. In the above pipeline examples, source nodes are the highlighted ones.
+**Source nodes** bring data into the pipeline: they read a stream, a file, a
+database or a request, or generate data on their own.
 
 .. container:: jt-figure
 
@@ -80,14 +52,9 @@ pipeline. In the above pipeline examples, source nodes are the highlighted ones.
 
    **Figure 3.** A source node: ``_source()`` brings data in, ``update()`` processes it and transmits it to every downstream node.
 
-**Processing nodes** (proc node if you are in a hurry) are intermediate nodes in
-the pipeline. A processing node receives data from all its upstream connections,
-processes them, and sends the results downstream into the pipeline. Looking back
-at the previous audio/video pipeline example, ``stt`` is a proc node with a
-single input and multiple outputs, ``translate`` is a proc node with a single
-input and a single output, and ``subtitles`` is a proc node with multiple inputs
-and a single output. The missing configuration, multiple input / multiple
-output, is still possible albeit not depicted.
+**Processing nodes** (proc nodes, if you are in a hurry) sit in the middle,
+with any number of inputs and outputs: in figure 2, ``stt`` has one input
+and two outputs, ``subtitles`` two inputs and one output.
 
 .. container:: jt-figure
 
@@ -96,11 +63,8 @@ output, is still possible albeit not depicted.
 
    **Figure 4.** A processing node: messages from every upstream node reach ``update()`` one at a time; what has to wait for another input stays in the node state.
 
-**Sink nodes** deliver to remote or local destinations the data they receive
-from the nodes they are connected to. Remote destinations could be anything you
-can think of: HTTP endpoints, websocket servers, databases or caches, RTP
-streams. Of course, if there is no node capable of transmitting to the
-destination you need to reach, you can still create a custom node for it!
+**Sink nodes** deliver what they receive outside the pipeline: an HTTP
+endpoint, a websocket, a database, an RTP stream.
 
 .. container:: jt-figure
 
@@ -109,23 +73,18 @@ destination you need to reach, you can still create a custom node for it!
 
    **Figure 5.** A sink node: ``update()`` delivers what it receives to a destination outside the pipeline.
 
-When designing a pipeline, there are some alternatives for how to get the nodes
-you need:
+The core library ships no nodes: it finds the ones installed in your
+environment. To get the nodes a pipeline needs:
 
 #. use the **official nodes** of the ``juturna-nodes`` package, maintained by
-   the Juturna team
-#. use **community nodes**, distributed like any other Python package
-#. implement your own **custom nodes** (this is the fun solution!)
-
-The core library itself ships no nodes: it finds the ones installed in your
-environment.
+   the Juturna team;
+#. use **community nodes**, distributed like any other Python package;
+#. write your own **custom nodes** (this is the fun solution!).
 
 Messages and payloads
 ---------------------
 
-Nodes within a pipeline pass data around using
-:ref:`messages <explain_messages>`. A message is just a data container with some
-utilities attached to it. Also, messages can be created with the definition of
-the type of data they are going to encapsulate (a **payload**). This comes
-especially helpful when nodes are defined, so that users can have an idea of
-what kind of data a node expects at the input, and produces at the output.
+Nodes pass data around in :ref:`messages <explain_messages>`. A message is
+an envelope with metadata, and its **payload** is the data, of a declared
+type: the payload types of a node tell what it expects as input and what it
+produces as output.

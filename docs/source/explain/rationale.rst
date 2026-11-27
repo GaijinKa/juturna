@@ -3,11 +3,8 @@
 Why Juturna
 ===========
 
-Juturna is a Python framework for real-time AI pipelines on audio, video and
-data, built for fast prototyping that doesn't stop at the prototype. Data
-enters a source node, crosses the processing nodes and leaves through a sink,
-while every node works on its own. This page lists the choices behind it,
-and where each one is documented.
+This page lists the choices behind Juturna, and where each one is
+documented.
 
 From spike to production
 ------------------------
@@ -17,20 +14,16 @@ A JSON file and a few nodes give you a working pipeline in minutes: the
 behind an HTTP service with ``python -m juturna serve``
 (:doc:`/how_to/serve_pipelines`), and moving its heaviest nodes to other
 machines only adds their address to the configuration
-(:doc:`/how_to/remotise_node`): the nodes are not rewritten. For now that
-needs a trusted network or a VPN, since the connection to a remote node has
-no authentication and no encryption yet (:doc:`remote`). See
-:doc:`/how_to/choose_where_it_runs`. Releases follow semantic versioning.
+(:doc:`/how_to/remotise_node`, trusted networks only for now): the nodes
+are not rewritten. See :doc:`/how_to/choose_where_it_runs`. Releases follow
+semantic versioning.
 
 .. container:: jt-figure
 
    .. raw:: html
       :file: ../diagrams/spike_to_production.svg
 
-   **Figure 1.** One ``pipeline.json`` from a laptop to production, each step adding one thing (``launch``, ``serve`` and ``remotize`` run as ``python -m juturna <command>``); the browser edition is a separate path.
-
-Pipelines also run in a browser tab, on Pyodide, between ``BrowserInput`` and
-``BrowserOutput`` and with nodes written for it: see :doc:`/browser/index`.
+   **Figure 1.** One ``pipeline.json`` from a laptop to production, each step adding one thing (``launch``, ``serve`` and ``remotize`` run as ``python -m juturna <command>``); the browser edition is a separate path (:doc:`/browser/index`).
 
 A pipeline is a JSON file
 -------------------------
@@ -62,8 +55,7 @@ Heavy nodes can run elsewhere
 A node that needs a GPU, or dependencies that clash with the rest of the
 pipeline, can run as a remote service started with ``python -m juturna remotize``. The
 pipeline marks it as ``warped`` and gives the address of the service; the
-other nodes do not change. The service is meant for a trusted network or a
-VPN until it gets authentication and encryption. See :doc:`remote` and
+other nodes do not change. See :doc:`remote` and
 :doc:`/how_to/remotise_node`.
 
 A small core

@@ -3,27 +3,10 @@
 Messages and payloads
 =====================
 
-The ``Message`` class is Juturna's fundamental unit of data transfer. Messages
-are designed to carry data payloads decorated with versioning, timing, and
-arbitrary metadata. Every byte that flows through a pipeline flows inside a
-message.
-
-Considering how messages are designed, they can be seen as a two-part entity: a
-message acts as an immutable envelope, carrying data and its corresponding
-metadata, while a payload contains the actual domain data to be transferred.
-
-This design favours:
-
-- **type safety**, as ideally nodes always have both knowledge of the type of
-  data they will receive as input, and instruction for how to generate data to
-  transmit as output;
-- **separation of concerns**, since payload processing is decoupled from
-  metadata tracking;
-- **observability**, as every message carries its own timing and provenance
-  data;
-- **isolation** as a direct consequence of the nature of messages (at any given
-  time, a message can be evaluated without extra information needed on its
-  context).
+Every byte that flows through a pipeline flows inside a ``Message``. A
+message is an envelope, with versioning, timing and metadata, and its
+payload is the data, of a declared type. Every message carries who made it
+and when, so it can be read without any other context.
 
 .. container:: jt-figure
 
@@ -35,22 +18,14 @@ This design favours:
 Messages
 --------
 
-As said, a message is just a simple data container. It carries a payload, plus
-some extra fields that can be useful to determine who generated it, when, and in
-which order compared to other messages.
+Besides ``creator``, ``version``, ``payload``, ``meta`` and ``timers``, a
+message has a few methods:
 
-Other than its basic properties, such as ``creator``, ``version``, ``payload``,
-``meta`` and ``timers``, a message offers a few methods that can help with
-managing its content and representation:
+``message.to_dict()`` and ``message.to_json(encoder)`` serialise it, for a
+destination that needs text (nodes use them in ``dump_json()``).
 
-``message.to_dict()`` and ``message.to_json(encoder)`` offer serialisation
-options for when a message needs to be converted, stored, or transmitted to a
-destination that requires serialised content (these are also used by nodes
-through their ``dump_json()`` method).
-
-``message.timeit(t_name)`` is a context manager supposed to ease the collection
-of elapsed time during processing. It can be used to isolate a specific
-operation or group of operations, and store their execution time:
+``message.timeit(t_name)`` is a context manager that stores in ``timers``
+how long the operations inside it took:
 
 .. code-block:: python
 
@@ -63,11 +38,8 @@ operation or group of operations, and store their execution time:
 Payloads
 --------
 
-All payload types inherit from a ``BasePayload``, which provides a ``clone()``
-method for deep copying. This can be useful when the same message must be sent
-to multiple destinations without shared state.
-
-Juturna offers a number of built-in media and structural payloads.
+All payload types inherit from ``BasePayload``, whose ``clone()`` makes a
+deep copy. The built-in payloads:
 
 - ``AudioPayload`` carries ``np.ndarray`` audio waveforms with metadata
   (sampling rate, channels, start/end timestamps).
@@ -92,15 +64,13 @@ are values of an ``ObjectPayload`` or of the message ``meta``.
 Immutability
 ------------
 
-The key aspect of both messages and payloads is **immutability**. In short:
+Messages and payloads are **immutable** once transmitted. This is what makes
+transmission zero-copy: every destination gets the same object, and can be
+sure no other node changed the data in it.
 
-- received messages within a node are immutable;
-- payloads are always immutable, so they cannot be modified once created;
-- messages can be `drafted`, so they can be modified before being finalised for
-  transmission.
-
-Aside from its payload, a freshly created message can be modified, just like any
-other object.
+A payload never changes once created; only a ``Draft`` (below) can be filled
+in until the message is transmitted. A new message can be changed, apart
+from its payload, until a node transmits it:
 
 .. code-block:: python
 
@@ -125,11 +95,9 @@ other object.
   File "<string>", line 4, in __setattr__
   dataclasses.FrozenInstanceError: cannot assign to field 'channels'
 
-There are situations where it might be convenient to iteratively create a
-payload, without the need to store its attribute values somewhere and assign
-them only once. In this case, a message can be created with a payload draft. A
-payload draft accepts the type of payload it will eventually be turned into as
-argument. Other than that, it behaves exactly like a normal payload.
+To fill a payload one field at a time, create the message with a ``Draft``
+of the payload type: it behaves like that payload, but can be changed until
+the message is transmitted.
 
 .. code-block:: python
 
@@ -175,8 +143,3 @@ data, assign a new payload, built with a ``Draft`` or from
 The standard ``copy.copy()``, ``copy.deepcopy()`` and ``pickle`` work on
 messages too, with a different meaning: they give the same message again,
 with the same ``id``, and frozen if the original is.
-
-Message and payload immutability is a powerful feature: it allows for zero-copy
-transmission of every bit of data flowing through a pipeline, ensuring integrity
-and consistency (multiple nodes receiving the same message can be sure the data
-within that message were not modified by any other node).
