@@ -20,10 +20,12 @@
   </td></tr>
 </table>
 
-## Important to know
-Juturna is actively evolving with exciting new features and improvements being
-added regularly. We're using semantic versioning to clearly communicate any
-breaking changes between releases, so you can upgrade with confidence.
+## Stability
+Juturna follows [Semantic Versioning](https://semver.org): breaking changes
+come only with a new major version, and are listed in the
+[changelog](https://github.com/meetecho/juturna/blob/main/CHANGELOG.md). The
+versions that get security fixes are in the
+[security policy](https://github.com/meetecho/juturna/blob/main/SECURITY.md#2-supported-versions).
 
 ## At a glance
 
@@ -33,29 +35,22 @@ prototype: a JSON file and a few Python nodes give you a working pipeline in
 minutes, and the same pipeline then runs behind an HTTP service, with its
 heaviest nodes on other machines, without rewriting its nodes.
 
-Among its many features, there are a few keypoints to highlight about Juturna:
+Highlights:
 
 * **Real-Time Streaming:** continuously process audio, video and
   arbitrary data streams
 * **Modularity:** create your own nodes and share them as Python packages
 * **Composable workloads:** design pipelines to solve complex tasks in
   minutes
-* **Parallelism & Batching:** parallel, non-blocking execution for high
-  throughput
-* **Observability:** built-in logging and metrics support
+* **Concurrency:** every node runs on workers of its own, fed by a bounded
+  queue: threads by default, Web Workers in the browser
+* **Observability:** a logger and failure counters for every node, and
+  optional telemetry of every message received and transmitted
 
 ## Quick start
 
-> **About this example.** A minimal example: it shows how nodes compose into
-> a pipeline that does something real, in a few minutes. Its limits are
-> deliberate: it needs no GPU and uses small models, and has no guardrails or
-> hardening, so its quality and latency are not those of a tuned deployment.
-> To adapt it, follow the [guides](https://meetecho.github.io/juturna/how_to/create_pipelines.html);
-> to extend it, pick nodes from the
-> [node catalogue](https://meetecho.github.io/juturna/catalog/nodes/overview.html);
-> to take it to production, with tuned performance, hardware sized to the
-> workload and scaling,
-> [work with Meetecho](https://meetecho.github.io/juturna/work_with_meetecho.html).
+> A minimal example: no GPU, small models, not tuned for quality or latency.
+> For production, [work with Meetecho](https://meetecho.github.io/juturna/work_with_meetecho.html).
 
 Transcribe an audio file: Juturna reads it in blocks, a voice activity
 detector cuts it into speech segments, Whisper transcribes them and the
@@ -137,18 +132,11 @@ Meetecho: [https://www.meetecho.com/en/](https://www.meetecho.com/en/?utm_source
 
 ## Contributing
 
-We are so glad you decided to contribute! We truly value your time and help in
-making Juturna better, and look forward to every single PR, whether you are
-fixing typos, proposing the next big feature, or extending the documentation.
-
-To make sure we’re all on the same page and to get your changes merged as
-quickly as possible, please take a peek at our
+We are glad you want to contribute, whether with a typo fix, a new feature
+or more documentation.
 [`CONTRIBUTING.md`](https://github.com/meetecho/juturna/blob/main/CONTRIBUTING.md)
-guide. It covers the essentials, including:
-
-* branching & PR workflow
-* code style, linting and commit messages
-* the pre-commit hooks and the checks CI runs
+covers the branch and PR workflow, code style, commit messages and the checks
+CI runs.
 
 Bugs and feature requests have their
 [issue templates](https://github.com/meetecho/juturna/tree/main/.github/ISSUE_TEMPLATE),
@@ -161,13 +149,6 @@ To report a vulnerability, follow the
 
 If you are not sure where to start, feel free to open an issue to discuss your
 ideas first. We’re happy to help guide you through the process!
-
-## Changelog
-
-All notable changes are documented in
-[`CHANGELOG.md`](https://github.com/meetecho/juturna/blob/main/CHANGELOG.md) - we
-follow [Semantic Versioning](https://semver.org), so you'll always know how
-exactly updates affect your setup.
 
 ## License
 

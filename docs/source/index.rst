@@ -126,13 +126,9 @@ Juturna
 Juturna is a Python framework for real-time AI pipelines on audio, video and
 data, built for fast prototyping that doesn't stop at the prototype.
 You write the processing steps as nodes, describe how they connect in a JSON
-file, and Juturna runs the graph: each node in worker threads of its own,
-with messages frozen on the way out so several nodes can read the same
-payload without copying it. The pipeline you try out in one process is the
-one you deploy: it also runs behind an HTTP service, or with its heaviest
-nodes moved to other machines, such as a model on a GPU, without rewriting
-its nodes. For now, remote nodes need a trusted network or a VPN: their
-connection has no authentication and no encryption yet.
+file, and Juturna runs the graph. The pipeline you try out in one process is
+the one you deploy: behind an HTTP service, or with its heaviest nodes on
+other machines, such as a model on a GPU, without rewriting its nodes.
 
 .. container:: jt-figure
 
@@ -248,61 +244,49 @@ Explore the documentation
         :link: how_to/install
         :link-type: doc
 
-        New to Juturna? Install it with the optional groups you need, then
-        run the quick start above. Coming from 2.x? The migration guide is
-        here too.
+        Install, the first tutorial, and the upgrade from 2.x.
 
     .. grid-item-card:: ``jt/examples``
         :link: examples
         :link-type: ref
 
-        Complete pipelines to run and adapt: a voice assistant, object
-        detection on a video. Each one with its install, configuration and
-        expected output.
+        A voice assistant and object detection on a video, ready to run.
 
     .. grid-item-card:: ``jt/deploy``
         :link: how_to/choose_where_it_runs
         :link-type: doc
 
-        Run pipelines behind a REST API, move a heavy node to another
-        machine, ship it all in a container.
+        An HTTP service, a node on another machine, a container.
 
     .. grid-item-card:: ``jt/guides``
         :link: how_to/create_pipelines
         :link-type: doc
 
-        Recipes for the tasks you will meet: building pipelines,
-        environment variables, observing a running pipeline,
-        troubleshooting.
+        Build, configure, observe and troubleshoot a pipeline.
 
     .. grid-item-card:: ``jt/reference``
         :link: reference/configuration
         :link-type: doc
 
-        The facts: configuration file, CLI, HTTP API, constants and the
-        Python API.
+        Configuration, CLI, HTTP API, constants and Python API.
 
     .. grid-item-card:: ``jt/explain``
         :link: rationale
         :link-type: ref
 
-        The ideas behind Juturna: pipelines, nodes, messages, and how they
-        work together.
+        Pipelines, nodes, messages, and how they work together.
 
     .. grid-item-card:: ``jt/nodes``
         :link: catalog/nodes/overview
         :link-type: doc
 
-        Nodes ready to use from ``juturna-nodes``: RTP sources,
-        transcription, voice activity detection, object detection,
-        notifiers. And how to write your own.
+        The nodes of ``juturna-nodes``, and how to write your own.
 
     .. grid-item-card:: ``jt/browser``
         :link: browser/index
         :link-type: doc
 
-        Juturna pipelines on Pyodide, in the Web Workers of a page, with
-        demos to try.
+        Pipelines on Pyodide, in a web page, with demos to try.
 
 Brewed by Meetecho
 ------------------
@@ -320,5 +304,4 @@ Juturna is open source under the MIT license: the code is on
 `GitHub <https://github.com/meetecho/juturna>`_, and the
 `contributing guidelines <https://github.com/meetecho/juturna/blob/main/CONTRIBUTING.md>`_
 explain how to propose a change. To report a vulnerability, follow the
-`security policy <https://github.com/meetecho/juturna/blob/main/SECURITY.md>`_: it covers private reporting, handling and
-coordinated disclosure, under the EU Cyber Resilience Act.
+`security policy <https://github.com/meetecho/juturna/blob/main/SECURITY.md>`_.
