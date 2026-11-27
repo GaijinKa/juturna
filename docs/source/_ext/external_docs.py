@@ -11,6 +11,7 @@ Both variables point to a checkout; the copies go to folders listed in
 
 import os
 import pathlib
+import re
 import shutil
 
 import juturna
@@ -128,6 +129,8 @@ def _add_readme_sections(text: str, readme: str, out: pathlib.Path) -> str:
             continue
         # .inc is not a source suffix: Sphinx reads it only through include
         snippet = out.with_name(f'{out.stem}.readme{i}.inc')
+        # a README link to its own heading has no target once split
+        body = re.sub(r'\[([^\]]+)\]\(#[^)]*\)', r'\1', body)
         snippet.write_text(body + '\n')
         added += (
             f'{title}\n{"-" * len(title)}\n\n'
