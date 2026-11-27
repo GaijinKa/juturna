@@ -7,34 +7,19 @@ health of its nodes, telemetry records, and the files it writes.
 Logging
 -------
 
-Nodes have a built-in logger that can be used straight out of the box. A node
-logger is created as a sublogger of its containing pipeline, which in turn is
-a sublogger of the juturna process. Nothing special is required to use the
-juturna logger within a node, and it can be used anywhere in its class code:
+Every node has a logger, ``self.logger``, ready to use anywhere in its code:
 
 .. code-block:: python
-
-    from juturna.components import Node
-    from juturna.components import Message
-    from juturna.payloads import BasePayload
-
 
     class MyAwesomeNode(Node[BasePayload, BasePayload]):
-        def __init__(self, *args, **kwargs):
-            super().__init__(**kwargs)
-
-            # initialisation code
-
-            self.logger.info('awesome node created!')
-
         def update(self, message: Message[BasePayload], **kwargs):
-            # run the node update logic
-
             self.logger.info('node did something awesome!')
 
-Logging messages will carry useful pieces of information so that, once printed,
-it will be easy to understand which entry is printed by which node. As an
-example, consider the script below, loading a pipe called ``my_pipe``:
+The logger of a node is a child of the logger of its pipeline, which is a
+child of ``jt``: every entry names the pipeline and the node that wrote it.
+Since loggers are named after the components, you can set the level of each
+one. Here everything logs at ``DEBUG``, except ``node_1``, which logs errors
+only:
 
 .. code-block:: python
 
@@ -42,49 +27,12 @@ example, consider the script below, loading a pipe called ``my_pipe``:
 
     import juturna as jt
 
-
-    jt.log.jt_logger().setLevel(logging.DEBUG)
-
-    pipe = jt.components.Pipeline.from_json('config.json')
-    pipe.warmup()
-
-This will generate logging entries split by node:
-
-.. code-block:: console
-
-    2026-02-12 15:03:54 | INFO     | jt.my_pipe.node_0       | init sources: []
-    2026-02-12 15:03:54 | INFO     | jt.my_pipe.node_0       | trx created, model id 123197287926000
-    2026-02-12 15:03:55 | INFO     | jt.my_pipe.node_1       | audio loaded
-    2026-02-12 15:03:55 | INFO     | jt.my_pipe.node_1       | duration: 149.942875
-    2026-02-12 15:03:55 | INFO     | jt.my_pipe              | warmed up node node_0
-    2026-02-12 15:03:55 | ERROR    | jt.my_pipe.node_1       | model not found, defaulting
-    2026-02-12 15:03:55 | INFO     | jt.my_pipe              | warmed up node node_1
-    2026-02-12 15:03:55 | INFO     | jt.my_pipe              | warmed up node node_2
-    2026-02-12 15:03:55 | INFO     | jt.my_pipe.node_3       | endpoint reached
-    2026-02-12 15:03:55 | INFO     | jt.my_pipe              | warmed up node node_3
-    2026-02-12 15:03:55 | INFO     | jt.my_pipe              | pipe warmed up!
-
-Here we can see that each entry tells us the node that generated it, the pipe it
-belongs to, and lastly the logging message.
-
-Thanks to their hierarchical structure, loggers can be selectively enabled or
-disabled through the names of their corresponding components. Looking again
-at the pipe above, we can tell the loggers to raise the level to ``ERROR`` only
-for ``node_1``:
-
-.. code-block:: python
-
-    import logging
-
-    import juturna as jt
 
     jt.log.jt_logger().setLevel(logging.DEBUG)
     jt.log.jt_logger('my_pipe.node_1').setLevel(logging.ERROR)
 
     pipe = jt.components.Pipeline.from_json('config.json')
     pipe.warmup()
-
-This time, the logs will look like:
 
 .. code-block:: console
 
@@ -101,9 +49,9 @@ This time, the logs will look like:
 Formatters and handlers
 ^^^^^^^^^^^^^^^^^^^^^^^
 
-Logs in juturna can be formatted using built-in formatters: ``simple``,
-``colored``, ``full`` (default), ``compact``, ``development``, ``minimal`` and
-``json``. To change it, run:
+``jt.log.formatter()`` picks one of the built-in formatters: ``simple``,
+``colored``, ``full`` (default), ``compact``, ``development``, ``minimal``
+and ``json``. ``jt.log.add_handler()`` adds a handler, such as a file:
 
 .. code-block:: python
 
@@ -112,39 +60,8 @@ Logs in juturna can be formatted using built-in formatters: ``simple``,
     import juturna as jt
 
 
-    jt.log.jt_logger().setLevel(logging.DEBUG)
     jt.log.formatter('minimal')
-
-    pipe = jt.components.Pipeline.from_json('config.json')
-    pipe.warmup()
-
-.. code-block:: console
-
-    INFO: init sources: []
-    INFO: trx created, model id 123197287926000
-    INFO: audio loaded
-    INFO: duration: 149.942875
-    INFO: warmed up node node_0
-    ERROR: model not found, defaulting
-    INFO: warmed up node node_1
-    INFO: warmed up node node_2
-    INFO: endpoint reached
-    INFO: warmed up node node_3
-    INFO: pipe warmed up!
-
-New handlers can also be added to the juturna logger. As an example, a file
-handler can be added, to store the logs into a file:
-
-.. code-block:: python
-
-    import logging
-
-    import juturna as jt
-
-
-    handler = logging.FileHandler('juturna.log')
-
-    jt.log.add_handler(handler, formatter='development')
+    jt.log.add_handler(logging.FileHandler('juturna.log'), formatter='development')
 
 Health
 ------

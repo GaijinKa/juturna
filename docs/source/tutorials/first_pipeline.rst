@@ -36,8 +36,9 @@ Check that the command line tools answer:
 
     (.venv) $ python -m juturna --help
 
-You should see the list of commands: ``launch``, ``validate``, ``stub`` and a
-few more.
+You should see the list of commands: ``launch``, ``validate`` and ``stub``.
+``create``, ``serve`` and ``remotize`` join them when their optional groups
+are installed (:doc:`/reference/cli`).
 
 Create the nodes
 ----------------

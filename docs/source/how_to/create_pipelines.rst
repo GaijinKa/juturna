@@ -152,9 +152,6 @@ A pipeline is a plain object, with one method for each step of its life:
 ``Pipeline(config)`` takes the configuration as a dictionary instead of a
 file path.
 
-``stop()`` lets the nodes finish the messages they already received. When
-that could take too long, ``kill()`` drops them instead:
-:ref:`explain_pipelines` tells the two apart.
-
-A stopped pipeline cannot be started again: destroy it, and create a new
-one.
+``stop()`` lets the nodes finish the messages they already received, and
+``kill()`` drops them. A stopped pipeline cannot be started again. The whole
+lifecycle is in :ref:`explain_pipelines`.

@@ -83,15 +83,8 @@ Let configurations read environment variables
 ---------------------------------------------
 
 Clients cannot read the environment of the service through ``$JT_ENV_``
-values. Give them the variables they need in a file, which you can change
-without restarting the service:
-
-.. code-block:: console
-
-    (.venv) $ python -m juturna serve -p 8000 -f ./pipelines --env-file pipelines.env
-
-``--allow-env`` allows variables of the service environment instead, by name
-or by pattern. See :doc:`environment`.
+values: give them the variables they need with ``--env-file`` or
+``--allow-env``, as :doc:`environment` shows.
 
 Get the logs you need
 ---------------------
