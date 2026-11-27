@@ -48,13 +48,14 @@ What each example needs
      - Hardware
      - OS
    * - :doc:`voice_assistant`
-     - ``sherpa``, ``sound``
+     - ``mic-source``, ``transcriber-sherpa``, ``synthesizer-sherpa``,
+       ``speaker-sink``
      - about 240 MB of packages, 107 MB of speech models, and the 986 MB
        language model through Ollama
      - CPU, microphone and speaker
      - Linux (tested); no push-to-talk on Windows
    * - :doc:`video_detection`
-     - ``av``, ``onnx``
+     - ``video-capture``, ``detector-yolox``
      - about 270 MB of packages, a 3.7 MB model, a 2 MB video
      - CPU
      - Linux (tested)

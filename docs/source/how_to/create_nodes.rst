@@ -102,13 +102,13 @@ Add dependencies
 ----------------
 
 The node builds on :ref:`DetectorYolox <node-detector-yolox>`, which runs
-YOLOX models on ONNX Runtime and comes with the ``onnx`` group of
+YOLOX models on ONNX Runtime and comes with the ``detector-yolox`` group of
 ``juturna-nodes``. List it in the dependencies of your package (see
 `Package the nodes`_), and install it in your environment:
 
 .. code-block:: console
 
-    (.venv) $ pip install "juturna-nodes[onnx]"
+    (.venv) $ pip install "juturna-nodes[detector-yolox]"
 
 .. note::
 
@@ -310,7 +310,7 @@ using ``hatchling``:
     name = "catwatch-nodes"
     version = "0.1.0"
     requires-python = ">=3.12"
-    dependencies = ["juturna>=3.0.0", "juturna-nodes[onnx]"]
+    dependencies = ["juturna>=3.0.0", "juturna-nodes[detector-yolox]"]
 
     [build-system]
     requires = ["hatchling"]

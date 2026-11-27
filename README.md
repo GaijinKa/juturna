@@ -57,25 +57,25 @@ detector cuts it into speech segments, Whisper transcribes them and the
 text is printed on the terminal. Juturna needs Python 3.12 or newer.
 
 ```bash
-pip install juturna "juturna-nodes[av,audio-ml]" \
+pip install juturna "juturna-nodes[audio-file,vad-silero,transcriber-whisper]" \
     --index-url https://download.pytorch.org/whl/cpu \
     --extra-index-url https://pypi.org/simple
 ```
 
-The `audio-ml` group pulls in PyTorch. On Linux, the PyTorch wheels on PyPI
+`vad-silero` pulls in PyTorch. On Linux, the PyTorch wheels on PyPI
 pull in the CUDA libraries: the two index options install the CPU-only build,
 and the whole environment takes about 1.4 GB. With uv, add
 `--index-strategy unsafe-best-match`:
 
 ```bash
-uv pip install juturna "juturna-nodes[av,audio-ml]" \
+uv pip install juturna "juturna-nodes[audio-file,vad-silero,transcriber-whisper]" \
     --index-url https://download.pytorch.org/whl/cpu \
     --extra-index-url https://pypi.org/simple \
     --index-strategy unsafe-best-match
 ```
 
 On macOS and Windows the PyTorch wheels on PyPI carry no CUDA libraries, so
-`pip install juturna "juturna-nodes[av,audio-ml]"` is enough.
+`pip install juturna "juturna-nodes[audio-file,vad-silero,transcriber-whisper]"` is enough.
 
 A pipeline is a JSON file that lists nodes and the links between them. Save
 this as `pipeline.json`, and point `file_source` to an audio file in English

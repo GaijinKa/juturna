@@ -52,10 +52,10 @@ Install
 
 .. code-block:: console
 
-    (.venv) $ pip install juturna "juturna-nodes[sherpa,sound]"
+    (.venv) $ pip install juturna "juturna-nodes[mic-source,transcriber-sherpa,synthesizer-sherpa,speaker-sink]"
 
-``sherpa`` brings sherpa-onnx, for speech recognition and synthesis, and
-``sound`` brings sounddevice, for the microphone and the speaker. On Linux,
+The sherpa nodes bring sherpa-onnx, for speech recognition and synthesis,
+and the microphone and speaker nodes bring sounddevice. On Linux,
 sounddevice also needs PortAudio from the system:
 
 .. code-block:: console

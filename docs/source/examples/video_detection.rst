@@ -32,9 +32,10 @@ Install
 
 .. code-block:: console
 
-    $ pip install juturna "juturna-nodes[av,onnx]"
+    $ pip install juturna "juturna-nodes[video-capture,detector-yolox]"
 
-``av`` reads the video with PyAV, ``onnx`` runs the model with ONNX Runtime.
+``video-capture`` reads the video with PyAV, ``detector-yolox`` runs the
+model with ONNX Runtime.
 No PyTorch and no GPU are needed.
 
 Get a test video

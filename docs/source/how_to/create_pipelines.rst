@@ -15,10 +15,10 @@ Install the nodes
 
 .. code-block:: console
 
-    (.venv) $ pip install "juturna-nodes[av,audio-ml]"
+    (.venv) $ pip install "juturna-nodes[audio-file,vad-silero,transcriber-whisper]"
 
-``av`` is the group of the audio and video nodes, ``audio-ml`` the one of
-the speech models: it pulls in PyTorch, so it is a large download. The
+Each node with heavy dependencies has an extra named after it:
+``vad-silero`` pulls in PyTorch, so it is a large download. The
 README of
 `juturna-nodes <https://github.com/meetecho/juturna_nodes>`_ lists the
 available nodes and the optional groups some of them need. Every node comes
