@@ -6,8 +6,7 @@ Examples
 Each example is a complete pipeline you can run in a few minutes: an
 install command, the configuration file, an input to test it on, and the
 output to expect. The configuration files are in the ``examples/`` folder of
-the `Juturna repository <https://github.com/meetecho/juturna>`_, and the
-pages show them as they are.
+the `Juturna repository <https://github.com/meetecho/juturna>`_.
 
 .. grid:: 1 2 2 2
     :gutter: 3
@@ -24,9 +23,6 @@ pages show them as they are.
            .. raw:: html
               :file: ../diagrams/voice_assistant_mini.svg
 
-        +++
-        CPU · about 1.3 GB · Linux
-
     .. grid-item-card:: Detect objects in a video
         :link: video_detection
         :link-type: doc
@@ -38,9 +34,6 @@ pages show them as they are.
 
            .. raw:: html
               :file: ../diagrams/video_detection_mini.svg
-
-        +++
-        CPU · about 280 MB · Linux
 
 What each example needs
 -----------------------
@@ -69,8 +62,7 @@ What each example needs
 The download is the size of a fresh virtual environment with the example
 installed, plus the model and the test input fetched on the first run.
 
-**Taking a pipeline to production?** The catalogue goes beyond these
-examples: :ref:`AudioRtp <node-audio-rtp>`, for one, receives the calls of
-Janus or Asterisk. Production is another job: one pipeline for each call,
-many calls at once, scaling and tuning on your hardware. For that, and for
-MQTT sources or edge devices, :doc:`work with Meetecho </work_with_meetecho>`.
+More nodes are in the :doc:`catalogue </catalog/nodes/overview>`, such as
+:ref:`AudioRtp <node-audio-rtp>`, which receives the calls of Janus or
+Asterisk; to take a pipeline to production,
+:doc:`work with Meetecho </work_with_meetecho>`.

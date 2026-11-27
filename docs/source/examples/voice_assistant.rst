@@ -30,19 +30,25 @@ Everything runs on the CPU, without PyTorch. Once the models are downloaded,
 nothing leaves the machine: speech recognition, the language model and the
 voice all run locally.
 
-Before you start
-----------------
+Limits
+------
 
-It is a demo, and it has limits:
+The demo shows what the pipeline can do, not how well. The numbers below
+come from 20 synthetic questions asked three times each, on a laptop:
 
 - it needs a microphone and a speaker on the machine that runs the pipeline:
   it does not work over SSH or on a server without audio;
 - push-to-talk does not work on Windows, as it waits for Enter with
   ``select`` on the standard input;
-- speech recognition is not precise, and a small language model gets facts
-  wrong;
+- the transcriber misheard 6 of the 20 questions, mostly as homophones
+  ("too" for "two", "for" for "four", "heart" for "hot"), and most of the
+  wrong answers start there;
+- a small language model gets facts wrong: ``qwen2.5:0.5b`` put the capital
+  of Italy in Florence (see `Choose a model`_);
 - the voice skips the words missing from its pronunciation lexicon, which
-  leaves out most names.
+  leaves out most names, and the lexicon has no digits, so "100" is not
+  spoken at all: asking the model for numbers in words halves the problem,
+  but does not solve it.
 
 Install
 -------
@@ -160,14 +166,14 @@ After the second Enter, the answer needs the time of the language model and
 of the voice. On a laptop CPU, measured on recorded questions:
 
 - about 0.5 seconds for ``qwen2.5:1.5b`` to return the whole answer, from the
-  request to Ollama to the last word, as the node does not stream (0.46 s
-  median over 60 questions);
+  request to Ollama to the last word, as the node does not stream;
 - about 1 second to synthesise a one-sentence answer, with the default
   2 threads.
 
 ``PrompterOllama`` and ``SynthesizerSherpa`` add their own time to the
 ``timers`` of each message: set ``"auto_dump": true`` on a node to find them
-in the JSON files of its folder.
+in the JSON files of its folder. For the latency of every node, turn on
+telemetry (:doc:`/how_to/observe`).
 
 Choose a model
 --------------
@@ -218,32 +224,3 @@ The node pages tell the arguments and the message formats of each node:
 :ref:`PrompterOllama <node-prompter-ollama>`,
 :ref:`SynthesizerSherpa <node-synthesizer-sherpa>`,
 :ref:`SpeakerSink <node-speaker-sink>`.
-
-From demo to production
------------------------
-
-The demo shows what the pipeline can do, not how well. On a laptop, with 20
-synthetic questions asked three times each:
-
-- the transcriber misheard 6 of the 20 questions, mostly as homophones
-  ("too" for "two", "for" for "four", "heart" for "hot"), and most of the
-  wrong answers start there;
-- ``qwen2.5:0.5b`` got simple facts wrong (Florence as the capital of Italy,
-  Mercury as the red planet); ``qwen2.5:1.5b``, with a system prompt that
-  asks for numbers in words, answered 55 of 60 correctly;
-- the lexicon of the Kitten voice has no digits, so "100" is not spoken at
-  all: asking the model for numbers in words halves the problem, but does not
-  solve it.
-
-A production assistant needs more care at each of these steps: about what was
-heard before it answers, about what it answers, and about how the answer is
-spoken. Part of that work is outside the pipeline: choosing the models for
-the language and the domain, and sizing and tuning the hardware they run on,
-so that answers come in time with the traffic you expect. To take an
-assistant like this one to production, :doc:`work with Meetecho
-</work_with_meetecho>`.
-
-To see where the time goes, turn on telemetry:
-it records when each node receives and transmits a message, which gives the
-latency of every node. :doc:`/how_to/observe` shows how to turn it on and what the
-records hold.

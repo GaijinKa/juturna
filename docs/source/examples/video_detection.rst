@@ -119,12 +119,8 @@ What to change
   accurate; any YOLOX model exported to ONNX works too, given its path.
 - **The sink.** Change ``endpoint`` to your service.
   :ref:`NotifierConsole <node-notifier-console>` prints the events on the
-  terminal instead, with no listener to run.
-  :ref:`NotifierUDP <node-notifier-udp>` sends the same messages over UDP,
-  split into chunks and base64 encoded by default: set its ``endpoint`` and
-  ``port``, and put the chunks back together on the receiving side. The
+  terminal instead, with no listener to run, and
+  :ref:`NotifierUDP <node-notifier-udp>` sends them over UDP, in chunks. The
   :doc:`catalogue </catalog/nodes/overview>` lists the other sinks.
 - **A node of your own.** To count objects across frames, draw boxes or
-  write events to a database, create a node with
-  ``python -m juturna stub`` (see :doc:`/reference/cli`) and follow
-  :doc:`/how_to/create_nodes`.
+  write events to a database, follow :doc:`/how_to/create_nodes`.
