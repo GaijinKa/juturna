@@ -33,22 +33,19 @@ voice all run locally.
 Limits
 ------
 
-The demo shows what the pipeline can do, not how well. The numbers below
-come from 20 synthetic questions asked three times each, on a laptop:
+The demo shows what the pipeline can do, not how well:
 
 - it needs a microphone and a speaker on the machine that runs the pipeline:
   it does not work over SSH or on a server without audio;
 - push-to-talk does not work on Windows, as it waits for Enter with
   ``select`` on the standard input;
-- the transcriber misheard 6 of the 20 questions, mostly as homophones
-  ("too" for "two", "for" for "four", "heart" for "hot"), and most of the
-  wrong answers start there;
-- a small language model gets facts wrong: ``qwen2.5:0.5b`` put the capital
-  of Italy in Florence (see `Choose a model`_);
+- the transcriber mishears homophones ("too" for "two", "for" for "four"),
+  and a wrong question gets a wrong answer;
+- a small language model gets facts wrong;
 - the voice skips the words missing from its pronunciation lexicon, which
   leaves out most names, and the lexicon has no digits, so "100" is not
-  spoken at all: asking the model for numbers in words halves the problem,
-  but does not solve it.
+  spoken at all: asking the model for numbers in words helps, but does not
+  solve it.
 
 Install
 -------
@@ -159,19 +156,10 @@ assistant does not hear itself through the speaker. When you stop talking,
 it sends a second of silence, and the transcriber closes the sentence at
 once. You see the final text of each question only, never partial guesses.
 
-How long it takes
------------------
-
-After the second Enter, the answer needs the time of the language model and
-of the voice. On a laptop CPU, measured on recorded questions:
-
-- about 0.5 seconds for ``qwen2.5:1.5b`` to return the whole answer, from the
-  request to Ollama to the last word, as the node does not stream;
-- about 1 second to synthesise a one-sentence answer, with the default
-  2 threads.
-
-``PrompterOllama`` and ``SynthesizerSherpa`` add their own time to the
-``timers`` of each message: set ``"auto_dump": true`` on a node to find them
+After the second Enter, the answer needs the time of the language model,
+which returns the whole answer at once as the node does not stream, and of
+the voice. ``PrompterOllama`` and ``SynthesizerSherpa`` add their own time
+to the ``timers`` of each message: set ``"auto_dump": true`` on a node to find them
 in the JSON files of its folder. For the latency of every node, turn on
 telemetry (:doc:`/how_to/observe`).
 
@@ -180,12 +168,8 @@ Choose a model
 
 Any model served by Ollama works: pull it and change ``model_name``, nothing
 else in the pipeline changes. Larger models answer more reliably, and take
-longer and more memory for each answer. On 20 short questions asked three
-times each, on CPU:
-
-- ``qwen2.5:0.5b`` answered 44 of 60 correctly, in 0.28 s (median);
-- ``qwen2.5:1.5b``, the default of ``PrompterOllama``, answered 55 of 60
-  correctly, in 0.46 s (median).
+longer and more memory for each answer. ``qwen2.5:1.5b`` is the default of
+``PrompterOllama``.
 
 .. list-table::
     :header-rows: 1
@@ -209,9 +193,8 @@ times each, on CPU:
       - 4.7 GB
       - Apache-2.0
 
-Sizes and licenses are those listed by the Ollama registry; only the two
-``qwen2.5`` models above have been measured. Check the license of the model you pick
-before shipping it in a product.
+Sizes and licenses are those listed by the Ollama registry. Check the
+license of the model you pick before shipping it in a product.
 
 Each question is sent on its own: the assistant keeps no memory of the
 conversation. The ``system_prompt`` argument of ``PrompterOllama`` sets how
